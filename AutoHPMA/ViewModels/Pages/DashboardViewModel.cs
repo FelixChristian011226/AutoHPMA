@@ -14,6 +14,8 @@ using Wpf.Ui.Controls;
 using AutoHPMA.Views.Windows;
 using Microsoft.Extensions.Logging;
 using AutoHPMA.ViewModels.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -41,6 +43,7 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _stopButtonEnabled = true;
 
         private MaskWindow? _maskWindow;
+        private LogWindow _logWindow; // 添加一个 LogWindow 变量
         //private readonly ILogger<HomePageViewModel> _logger = App.GetLogger<HomePageViewModel>();
 
         //private readonly TaskTriggerDispatcher _taskDispatcher;
@@ -95,6 +98,10 @@ namespace AutoHPMA.ViewModels.Pages
                 _taskDispatcherEnabled = true;
                 StartButtonVisibility = Visibility.Collapsed;
                 StopButtonVisibility = Visibility.Visible;
+                // 在启动触发器时显示日志窗口
+                _logWindow = LogWindow.Instance();
+                //_logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
+                _logWindow.RefreshPosition(hWnd);
             }
 
         }
@@ -112,6 +119,8 @@ namespace AutoHPMA.ViewModels.Pages
                 //_mouseKeyMonitor.Unsubscribe();
                 StartButtonVisibility = Visibility.Visible;
                 StopButtonVisibility = Visibility.Collapsed;
+                // 在停止触发器时隐藏日志窗口
+                _logWindow?.Hide();
             }
         }
 
@@ -130,5 +139,28 @@ namespace AutoHPMA.ViewModels.Pages
         {
             //throw new NotImplementedException();
         }
+
+        private Window GetMumuSimulatorWindow()
+        {
+            var hWnd = SystemControl.FindMumuSimulatorHandle();
+            if (hWnd != IntPtr.Zero)
+            {
+                var hwndSource = HwndSource.FromHwnd(hWnd);
+                if (hwndSource != null)
+                {
+                    var rootVisual = hwndSource.RootVisual;
+                    if (rootVisual != null)
+                    {
+                        var parent = VisualTreeHelper.GetParent(rootVisual);
+                        if (parent is Window window)
+                        {
+                            return window;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
     }
 }
