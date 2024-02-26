@@ -11,6 +11,9 @@ using AutoHPMA.Views.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 using System.IO;
 using System.Reflection;
 using System.Windows.Threading;
@@ -33,6 +36,24 @@ namespace AutoHPMA
             .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)); })
             .ConfigureServices((context, services) =>
             {
+                var logFolder = Path.Combine(AppContext.BaseDirectory, "log");
+                Directory.CreateDirectory(logFolder);
+                var logFile = Path.Combine(logFolder, "better-genshin-impact.log");
+
+                var maskWindow = new MaskWindow();
+                services.AddSingleton(maskWindow);
+
+                var loggerConfiguration = new LoggerConfiguration()
+                    .WriteTo.File(path: logFile, outputTemplate: "[{Timestamp:HH:mm:ss.fff}] [{Level:u3}] {SourceContext}{NewLine}{Message}{NewLine}{Exception}{NewLine}", rollingInterval: RollingInterval.Day)
+                    .MinimumLevel.Information()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning);
+                //if (all.MaskWindowConfig.MaskEnabled)
+                //{
+                //    loggerConfiguration.WriteTo.RichTextBox(maskWindow.LogBox, outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+                //}
+                Log.Logger = loggerConfiguration.CreateLogger();
+                services.AddLogging(c => c.AddSerilog());
                 services.AddHostedService<ApplicationHostService>();
 
                 // Page resolver service
@@ -58,6 +79,11 @@ namespace AutoHPMA
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
             }).Build();
+
+        public static ILogger<T> GetLogger<T>()
+        {
+            return _host.Services.GetService<ILogger<T>>()!;
+        }
 
         /// <summary>
         /// Gets registered service.

@@ -11,6 +11,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using System.Diagnostics;
 using Wpf.Ui.Controls;
+using AutoHPMA.Views.Windows;
+using Microsoft.Extensions.Logging;
+using AutoHPMA.ViewModels.Windows;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -25,6 +28,7 @@ namespace AutoHPMA.ViewModels.Pages
         //    Counter++;
         //}
 
+        private bool _taskDispatcherEnabled = false;
 
         [ObservableProperty] private Visibility _startButtonVisibility = Visibility.Visible;
         [ObservableProperty] private Visibility _stopButtonVisibility = Visibility.Collapsed;
@@ -36,7 +40,37 @@ namespace AutoHPMA.ViewModels.Pages
         [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
         private bool _stopButtonEnabled = true;
 
+        private MaskWindow? _maskWindow;
+        //private readonly ILogger<HomePageViewModel> _logger = App.GetLogger<HomePageViewModel>();
+
         //private readonly TaskTriggerDispatcher _taskDispatcher;
+        //private readonly MouseKeyMonitor _mouseKeyMonitor = new();
+
+        //public DashboardViewModel(IConfigService configService, TaskTriggerDispatcher taskTriggerDispatcher)
+        //{
+        //    _taskDispatcher = taskTriggerDispatcher;
+        //    Config = configService.Get();
+        //    ReadGameInstallPath();
+        //    WeakReferenceMessenger.Default.Register<PropertyChangedMessage<object>>(this, (sender, msg) =>
+        //    {
+        //        if (msg.PropertyName == "Close")
+        //        {
+        //            OnClosed();
+        //        }
+        //        else if (msg.PropertyName == "SwitchTriggerStatus")
+        //        {
+        //            if (_taskDispatcherEnabled)
+        //            {
+        //                OnStopTrigger();
+        //            }
+        //            else
+        //            {
+        //                _ = OnStartTriggerAsync();
+        //            }
+        //        }
+        //    });
+        //}
+
 
         private bool CanStartTrigger() => StartButtonEnabled;
 
@@ -52,17 +86,17 @@ namespace AutoHPMA.ViewModels.Pages
                     return;
                 }
             }
-
-            //if (!_taskDispatcherEnabled)
-            //{
-            //    _taskDispatcher.Start(hWnd, Config.CaptureMode.ToCaptureMode(), Config.TriggerInterval);
-            //    _maskWindow = MaskWindow.Instance();
-            //    _maskWindow.RefreshPosition(hWnd);
-            //    _mouseKeyMonitor.Subscribe(hWnd);
-            //    _taskDispatcherEnabled = true;
+            if (!_taskDispatcherEnabled)
+            {
+                //_taskDispatcher.Start(hWnd, Config.CaptureMode.ToCaptureMode(), Config.TriggerInterval);
+                _maskWindow = MaskWindow.Instance();
+                _maskWindow.RefreshPosition(hWnd);
+                //_mouseKeyMonitor.Subscribe(hWnd);
+                _taskDispatcherEnabled = true;
                 StartButtonVisibility = Visibility.Collapsed;
                 StopButtonVisibility = Visibility.Visible;
-            //}
+            }
+
         }
 
         private bool CanStopTrigger() => StopButtonEnabled;
@@ -70,8 +104,15 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanStopTrigger))]
         private void OnStopTrigger()
         {
-            StartButtonVisibility = Visibility.Visible;
-            StopButtonVisibility = Visibility.Collapsed;
+            if (_taskDispatcherEnabled)
+            {
+                _maskWindow?.Hide();
+                //_taskDispatcher.Stop();
+                _taskDispatcherEnabled = false;
+                //_mouseKeyMonitor.Unsubscribe();
+                StartButtonVisibility = Visibility.Visible;
+                StopButtonVisibility = Visibility.Collapsed;
+            }
         }
 
         [RelayCommand]
