@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AutoHPMA.ViewModels.Pages;
+using AutoHPMA.Views.Windows;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +22,29 @@ namespace AutoHPMA.Views.Pages
     /// </summary>
     public partial class ScreenshotPage : Page
     {
-        public ScreenshotPage()
+        private LogWindow _logWindow;
+        private readonly ScreenshotViewModel _viewModel;
+        public ScreenshotPage(LogWindow logWindow)
         {
+            DataContext = _viewModel;
+            _logWindow = logWindow;
+            _viewModel = new ScreenshotViewModel(logWindow);
             InitializeComponent();
+        }
+        private void AddToLog_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(InputTextBox.Text);
+            if (_logWindow != null && !string.IsNullOrWhiteSpace(InputTextBox.Text))
+            {
+                _logWindow.AddLogMessage(InputTextBox.Text);
+                _logWindow.AddLogMessage("HHHH");
+            }
+        }
+
+        private void TestScreenshot_Click(object sender, RoutedEventArgs e)
+        {
+            Uri uri = new Uri("/Screenshots/test.png", UriKind.Relative);
+            this.TestScreenshotImage.Source = new BitmapImage(new Uri("pack://application:,,,/Screenshots/test.png"));
         }
     }
 }

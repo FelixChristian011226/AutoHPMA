@@ -5,6 +5,8 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace AutoHPMA.Views.Windows
 {
@@ -12,11 +14,20 @@ namespace AutoHPMA.Views.Windows
     {
         private const int WS_EX_TRANSPARENT = 0x00000020;
         private const int GWL_EXSTYLE = -20;
+        private ObservableCollection<string> _logMessages = new ObservableCollection<string>();
 
         public LogWindow()
         {
             InitializeComponent();
             SetWindowStyle();
+            // 绑定日志消息集合到TextBlock
+            LogListBox.ItemsSource = _logMessages;
+        }
+
+        // 添加日志消息
+        public void AddLogMessage(string message)
+        {
+            _logMessages.Add(message);
         }
 
         public static LogWindow Instance()
@@ -34,8 +45,8 @@ namespace AutoHPMA.Views.Windows
             var rect = new RECT();
             if (GetWindowRect(hWnd, out rect))
             {
-                Left = rect.Left;
-                Top = rect.Top;
+                Left = rect.Left+50;
+                Top = rect.Top+50;
                 //Width = rect.Right - rect.Left;
                 //Height = rect.Bottom - rect.Top;
             }

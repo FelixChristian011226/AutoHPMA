@@ -40,23 +40,15 @@ namespace AutoHPMA
                 //var configService = new ConfigService();
                 //services.AddSingleton<IConfigService>(sp => configService);
                 //var all = configService.Get();
-                var logFolder = Path.Combine(AppContext.BaseDirectory, "log");
-                Directory.CreateDirectory(logFolder);
-                var logFile = Path.Combine(logFolder, "better-genshin-impact.log");
 
                 var maskWindow = new MaskWindow();
                 services.AddSingleton(maskWindow);
 
-                var loggerConfiguration = new LoggerConfiguration()
-                    .WriteTo.File(path: logFile, outputTemplate: "[{Timestamp:HH:mm:ss.fff}] [{Level:u3}] {SourceContext}{NewLine}{Message}{NewLine}{Exception}{NewLine}", rollingInterval: RollingInterval.Day)
-                    .MinimumLevel.Information()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning);
+                var logWindow = new LogWindow();
+                services.AddSingleton(logWindow);
+
                 //if (all.MaskWindowConfig.MaskEnabled)
                 //{
-                loggerConfiguration.WriteTo.RichTextBox(maskWindow.LogBox, outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
-                //}
-                Log.Logger = loggerConfiguration.CreateLogger();
                 services.AddLogging(c => c.AddSerilog());
                 services.AddHostedService<ApplicationHostService>();
 
@@ -76,6 +68,8 @@ namespace AutoHPMA
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
 
+                services.AddSingleton<ScreenshotPage>();
+                services.AddSingleton<ScreenshotViewModel>();
                 services.AddSingleton<DashboardPage>();
                 services.AddSingleton<DashboardViewModel>();
                 services.AddSingleton<DataPage>();

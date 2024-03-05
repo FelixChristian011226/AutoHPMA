@@ -3,13 +3,11 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="LogWindow"
-    Width="600"
-    Height="400"
+    Width="400"
+    Height="300"
     AllowsTransparency="True"
-    Background="Transparent"
-    BorderBrush="#D3D3D3"
-    BorderThickness="1"
     MouseLeftButtonDown="Window_MouseLeftButtonDown"
+    Topmost="True"
     WindowStyle="None">
     <!--<Window.Background>
         <SolidColorBrush Color="#80D3D3D3" />
@@ -17,15 +15,29 @@
     <!--  半透明的浅灰色  -->
     <!--
     </Window.Background>-->
-
-    <Grid>
-        <!--  这里可以放置显示日志信息的控件，比如 TextBlock、ListBox 或者 DataGrid  -->
-        <TextBlock
+    <Border
+        BorderBrush="LightGray"
+        BorderThickness="2"
+        CornerRadius="5">
+        <Grid Background="#80D4D4D4">
+            <!--  这里可以放置显示日志信息的控件，比如 TextBlock、ListBox 或者 DataGrid  -->
+            <!--<TextBlock
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             FontSize="16"
             Foreground="White"
-            Text="这里是日志信息" />
-    </Grid>
+            Text="这里是日志信息" />-->
+            <ListBox
+                x:Name="LogListBox"
+                Width="380"
+                Height="280"
+                Margin="10,10,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                FontSize="6"
+                ScrollViewer.VerticalScrollBarVisibility="Auto" />
+        </Grid>
+    </Border>
+
 
 </Window>

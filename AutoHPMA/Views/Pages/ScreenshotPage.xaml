@@ -1,14 +1,48 @@
-﻿<Page x:Class="AutoHPMA.Views.Pages.ScreenshotPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:AutoHPMA.Views.Pages"
-      mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="ScreenshotPage">
+﻿<Page
+    x:Class="AutoHPMA.Views.Pages.ScreenshotPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:AutoHPMA.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="ScreenshotPage"
+    d:DataContext="{d:DesignInstance local:ScreenshotPage,
+                                     IsDesignTimeCreatable=False}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
 
     <Grid>
-        
+        <StackPanel>
+            <Grid>
+                <TextBox
+                    x:Name="InputTextBox"
+                    Width="400"
+                    MinWidth="400"
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center" />
+                <Button
+                    Width="100"
+                    Margin="410,0,0,0"
+                    HorizontalAlignment="Left"
+                    Click="AddToLog_Click"
+                    Content="Add to Log" />
+                <Button
+                    Width="50"
+                    Margin="0,0,10,0"
+                    HorizontalAlignment="Right"
+                    Click="TestScreenshot_Click"
+                    Content="Test" />
+            </Grid>
+            <Viewbox Margin="10">
+                <Image
+                    x:Name="TestScreenshotImage"
+                    Width="{Binding RelativeSource={RelativeSource Self}, Path=Source.PixelWidth}"
+                    Height="{Binding RelativeSource={RelativeSource Self}, Path=Source.PixelHeight}"
+                    Stretch="None" />
+
+            </Viewbox>
+        </StackPanel>
     </Grid>
 </Page>
