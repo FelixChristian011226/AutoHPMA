@@ -17,6 +17,7 @@ using Wpf.Ui.Controls;
 using Microsoft.Extensions.Logging;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Net.WebSockets;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -50,7 +51,8 @@ namespace AutoHPMA.ViewModels.Pages
         //private readonly TaskTriggerDispatcher _taskDispatcher;
         //private readonly MouseKeyMonitor _mouseKeyMonitor = new();
 
-        private LogWindowConfig _logWindowConfig;
+        public LogWindowConfig _logWindowConfig { get; set; }
+        public Boolean LWE = true;
 
         public DashboardViewModel()
         {
@@ -65,18 +67,6 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 _logWindowConfig = value;
                 OnPropertyChanged();
-            }
-        }
-        public bool LogWindowEnabled
-        {
-            get => _logWindowConfig.LogWindowEnabled;
-            set
-            {
-                if (_logWindowConfig.LogWindowEnabled != value)
-                {
-                    _logWindowConfig.LogWindowEnabled = value;
-                    OnPropertyChanged(nameof(LogWindowEnabled));
-                }
             }
         }
 
@@ -130,7 +120,7 @@ namespace AutoHPMA.ViewModels.Pages
                 StartButtonVisibility = Visibility.Collapsed;
                 StopButtonVisibility = Visibility.Visible;
                 // 在启动触发器时显示日志窗口
-                if(LogWindowConfig.LogWindowEnabled)
+                if(_logWindowConfig.LogWindowEnabled)
                 {
                     _logWindow = LogWindow.Instance();
                     _logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner

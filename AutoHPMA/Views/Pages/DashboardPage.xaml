@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:AutoHPMA.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="clr-namespace:AutoHPMA.ViewModels.Pages"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="DashboardPage"
     d:DataContext="{d:DesignInstance Type=pages:DashboardViewModel}"
@@ -252,7 +253,7 @@
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         Margin="0,0,24,0"
-                        IsChecked="{Binding Config.LogWindowConfig.LogWindowEnabled, Mode=TwoWay}" />
+                        IsChecked="{Binding LogWindowConfig.LogWindowEnabled, Mode=TwoWay}" />
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel>
@@ -284,7 +285,7 @@
                         MinWidth="300"
                         MaxWidth="800"
                         Margin="0,0,36,0"
-                        Text="{Binding Config.LogWindowConfig.LogWindowLeft, Mode=TwoWay}"
+                        Text="{Binding LogWindowConfig.LogWindowLeft, Mode=TwoWay}"
                         TextWrapping="Wrap" />
                 </Grid>
                 <Grid Margin="16">
@@ -315,7 +316,7 @@
                         MinWidth="300"
                         MaxWidth="800"
                         Margin="0,0,36,0"
-                        Text="{Binding Config.LogWindowConfig.LogWindowTop, Mode=TwoWay}"
+                        Text="{Binding LogWindowConfig.LogWindowTop, Mode=TwoWay}"
                         TextWrapping="Wrap" />
                 </Grid>
             </StackPanel>

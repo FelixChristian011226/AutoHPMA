@@ -10,13 +10,13 @@ namespace AutoHPMA.Views.Pages
 {
     public partial class DashboardPage : INavigableView<DashboardViewModel>
     {
-        public DashboardViewModel ViewModel { get; }
+        public DashboardViewModel ViewModel { get; set; }
 
         public DashboardPage(DashboardViewModel viewModel)
         {
+
             ViewModel = viewModel;
             DataContext = this;
-
             InitializeComponent();
         }
     }
