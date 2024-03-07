@@ -114,8 +114,8 @@ namespace AutoHPMA.ViewModels.Pages
                     _logWindow = LogWindow.Instance();
                     _logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
                     _logWindow.RefreshPosition(hWnd);
-                    _logWindow.AddLogMessage("开始触发器"); // 添加日志消息
-                    for(int i=0; i<100; i++) { _logWindow.AddLogMessage("消息"+i); }
+                    _logWindow.AddLogMessage("INF","开始触发器"); // 添加日志消息
+                    for(int i=0; i<100; i++) { _logWindow.AddLogMessage("INF","消息"+i); }
                 }
             }
 
@@ -134,7 +134,7 @@ namespace AutoHPMA.ViewModels.Pages
                 StartButtonVisibility = Visibility.Visible;
                 StopButtonVisibility = Visibility.Collapsed;
                 // 在停止触发器时隐藏日志窗口
-                _logWindow?.AddLogMessage("停止触发器"); // 添加日志消息
+                _logWindow?.AddLogMessage("INF", "停止触发器"); // 添加日志消息
                 _logWindow.Close();
             }
         }

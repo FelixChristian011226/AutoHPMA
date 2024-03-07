@@ -45,7 +45,7 @@ namespace AutoHPMA.ViewModels.Pages
         {
             if (!string.IsNullOrWhiteSpace(InputText) && _logWindow != null)
             {
-                _logWindow.AddLogMessage(InputText);
+                _logWindow.AddLogMessage("INF", InputText);
                 InputText = ""; // 清空输入框
             }
         }

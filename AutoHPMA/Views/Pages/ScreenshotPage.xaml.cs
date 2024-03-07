@@ -36,8 +36,7 @@ namespace AutoHPMA.Views.Pages
             MessageBox.Show(InputTextBox.Text);
             if (_logWindow != null && !string.IsNullOrWhiteSpace(InputTextBox.Text))
             {
-                _logWindow.AddLogMessage(InputTextBox.Text);
-                _logWindow.AddLogMessage("HHHH");
+                _logWindow.AddLogMessage("INF", InputTextBox.Text);
             }
         }
 

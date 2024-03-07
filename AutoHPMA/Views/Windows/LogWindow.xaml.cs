@@ -7,14 +7,22 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using AutoHPMA.Helpers;
 
 namespace AutoHPMA.Views.Windows
 {
+    public class LogMessage
+    {
+        public DateTime Timestamp { get; set; }
+        public string Category { get; set; }
+        public string Content { get; set; }
+    }
+
     public partial class LogWindow : Window
     {
         private const int WS_EX_TRANSPARENT = 0x00000020;
         private const int GWL_EXSTYLE = -20;
-        private ObservableCollection<string> _logMessages = new ObservableCollection<string>();
+        private ObservableCollection<LogMessage> _logMessages = new ObservableCollection<LogMessage>();
 
         public LogWindow()
         {
@@ -25,9 +33,20 @@ namespace AutoHPMA.Views.Windows
         }
 
         // 添加日志消息
-        public void AddLogMessage(string message)
+        public void AddLogMessage(string category, string content)
         {
+            var message = new LogMessage
+            {
+                Timestamp = DateTime.Now,
+                Category = category,
+                Content = content
+            };
             _logMessages.Add(message);
+            //自动滚动
+            if (LogListBox.Items.Count > 0)
+            {
+                LogListBox.ScrollIntoView(LogListBox.Items[LogListBox.Items.Count - 1]);
+            }
         }
 
         public static LogWindow Instance()
