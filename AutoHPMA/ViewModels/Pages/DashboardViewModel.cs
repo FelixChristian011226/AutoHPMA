@@ -18,6 +18,9 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Net.WebSockets;
 using System.Windows.Threading;
+using AutoHPMA.Helpers;
+using System.IO;
+using System.Drawing;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -26,6 +29,7 @@ namespace AutoHPMA.ViewModels.Pages
 
         private bool _taskDispatcherEnabled = false;
         private DispatcherTimer _syncWindowTimer;
+        private DispatcherTimer _captureTimer;
 
         [ObservableProperty]
         private bool _logWindowEnabled = true;
@@ -54,16 +58,41 @@ namespace AutoHPMA.ViewModels.Pages
 
         public DashboardViewModel()
         {
+            InitializeCaptureTimer();
             InitializeSyncWindowTimer();
+        }
+        private void InitializeCaptureTimer()
+        {
+            _captureTimer = new DispatcherTimer();
+            _captureTimer.Interval = TimeSpan.FromMilliseconds(500); // 每500毫秒截图一次，可根据需要调整
+            _captureTimer.Tick += CaptureTimer_Tick;
         }
         public void InitializeSyncWindowTimer()
         {
             _syncWindowTimer = new DispatcherTimer();
-            _syncWindowTimer.Interval = TimeSpan.FromSeconds(1); // 每秒检查一次
+            _syncWindowTimer.Interval = TimeSpan.FromMilliseconds(50); // 每50毫秒检查一次
             _syncWindowTimer.Tick += SyncWindowTimer_Tick;
-            _syncWindowTimer.Start();
         }
+        private void CaptureTimer_Tick(object sender, EventArgs e)
+        {
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle(); // 获取Mumu模拟器窗口句柄
+            if (mumuHwnd != IntPtr.Zero)
+            {
+                // 截取窗口图像
+                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
 
+                // 确保目标文件夹存在
+                string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                Directory.CreateDirectory(folderPath);
+
+                // 为新图像生成唯一的文件名
+                //string fileName = $"Capture_{DateTime.Now:yyyyMMdd_HHmmss}.png";
+                string fileName = "capture.png";
+
+                // 保存图像文件
+                ScreenCaptureHelper.SaveBitmapToFile(bmp, folderPath, fileName);
+            }
+        }
         private void SyncWindowTimer_Tick(object? sender, EventArgs e)
         {
             var mumuHwnd = SystemControl.FindMumuSimulatorHandle(); // 获取Mumu模拟器的句柄
@@ -150,6 +179,8 @@ namespace AutoHPMA.ViewModels.Pages
                     _logWindow.AddLogMessage("INF","开始触发器"); // 添加日志消息
                     for(int i=0; i<100; i++) { _logWindow.AddLogMessage("INF","消息"+i); }
                 }
+                _captureTimer.Start();
+                _syncWindowTimer.Start();
             }
 
         }
