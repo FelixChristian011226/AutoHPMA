@@ -41,9 +41,6 @@ namespace AutoHPMA
                 //services.AddSingleton<IConfigService>(sp => configService);
                 //var all = configService.Get();
 
-                var maskWindow = new MaskWindow();
-                services.AddSingleton(maskWindow);
-
                 var logWindow = new LogWindow();
                 services.AddSingleton(logWindow);
 

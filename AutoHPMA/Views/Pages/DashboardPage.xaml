@@ -253,7 +253,7 @@
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         Margin="0,0,24,0"
-                        IsChecked="{Binding LogWindowConfig.LogWindowEnabled, Mode=TwoWay}" />
+                        IsChecked="{Binding ViewModel.LogWindowEnabled, Mode=TwoWay}" />
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel>
@@ -285,7 +285,7 @@
                         MinWidth="300"
                         MaxWidth="800"
                         Margin="0,0,36,0"
-                        Text="{Binding LogWindowConfig.LogWindowLeft, Mode=TwoWay}"
+                        Text="{Binding ViewModel.LogWindowLeft, Mode=TwoWay}"
                         TextWrapping="Wrap" />
                 </Grid>
                 <Grid Margin="16">
@@ -316,7 +316,7 @@
                         MinWidth="300"
                         MaxWidth="800"
                         Margin="0,0,36,0"
-                        Text="{Binding LogWindowConfig.LogWindowTop, Mode=TwoWay}"
+                        Text="{Binding ViewModel.LogWindowTop, Mode=TwoWay}"
                         TextWrapping="Wrap" />
                 </Grid>
             </StackPanel>
