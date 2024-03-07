@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Net.WebSockets;
+using System.Windows.Threading;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -24,6 +25,7 @@ namespace AutoHPMA.ViewModels.Pages
     {
 
         private bool _taskDispatcherEnabled = false;
+        private DispatcherTimer _syncWindowTimer;
 
         [ObservableProperty]
         private bool _logWindowEnabled = true;
@@ -45,10 +47,40 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _stopButtonEnabled = true;
 
         private LogWindow? _logWindow; // 添加一个 LogWindow 变量
-                                      //private readonly ILogger<HomePageViewModel> _logger = App.GetLogger<HomePageViewModel>();
+                                       //private readonly ILogger<HomePageViewModel> _logger = App.GetLogger<HomePageViewModel>();
 
         //private readonly TaskTriggerDispatcher _taskDispatcher;
         //private readonly MouseKeyMonitor _mouseKeyMonitor = new();
+
+        public DashboardViewModel()
+        {
+            InitializeSyncWindowTimer();
+        }
+        public void InitializeSyncWindowTimer()
+        {
+            _syncWindowTimer = new DispatcherTimer();
+            _syncWindowTimer.Interval = TimeSpan.FromSeconds(1); // 每秒检查一次
+            _syncWindowTimer.Tick += SyncWindowTimer_Tick;
+            _syncWindowTimer.Start();
+        }
+
+        private void SyncWindowTimer_Tick(object? sender, EventArgs e)
+        {
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle(); // 获取Mumu模拟器的句柄
+            if (mumuHwnd != IntPtr.Zero)
+            {
+                if (NativeMethodsService.IsIconic(mumuHwnd)) // 如果Mumu模拟器最小化
+                {
+                    if (_logWindow.WindowState != WindowState.Minimized)
+                        _logWindow.WindowState = WindowState.Minimized;
+                }
+                else
+                {
+                    if (_logWindow.WindowState != WindowState.Normal)
+                        _logWindow.WindowState = WindowState.Normal; // 恢复日志窗口
+                }
+            }
+        }
 
         //public DashboardViewModel(IConfigService configService, TaskTriggerDispatcher taskTriggerDispatcher)
         //{
@@ -112,6 +144,7 @@ namespace AutoHPMA.ViewModels.Pages
                 if (_logWindowEnabled)
                 {
                     _logWindow = LogWindow.Instance();
+                    _logWindow.ShowInTaskbar = false;
                     _logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
                     _logWindow.RefreshPosition(hWnd);
                     _logWindow.AddLogMessage("INF","开始触发器"); // 添加日志消息

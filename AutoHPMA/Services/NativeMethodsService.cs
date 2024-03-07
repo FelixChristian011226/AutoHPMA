@@ -9,6 +9,10 @@ public static class NativeMethodsService
     [DllImport("user32.dll")]
     public static extern bool SetForegroundWindow(IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool IsIconic(IntPtr hWnd); // 用来检查窗口是否最小化
+
     public const int SW_SHOW = 5;
     public const int SW_RESTORE = 9;
 
