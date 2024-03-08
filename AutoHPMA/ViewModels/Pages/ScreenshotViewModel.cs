@@ -2,11 +2,14 @@
 using AutoHPMA.Views.Windows;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Wpf.Ui.Controls;
 
 namespace AutoHPMA.ViewModels.Pages
@@ -16,46 +19,51 @@ namespace AutoHPMA.ViewModels.Pages
 
         private bool _isInitialized = false;
         private readonly LogWindow _logWindow;
-
-        private string _inputText;
-
-        public string InputText
+        private ImageSource _imageSource;
+        public ImageSource ImageSource
         {
-            get { return _inputText; }
-            set
-            {
-                if (_inputText != value)
-                {
-                    _inputText = value;
-                    OnPropertyChanged();
-                }
-            }
+            get => _imageSource;
+            set => SetProperty(ref _imageSource, value);
         }
 
-        public ICommand AddToLogCommand { get; }
+        public ScreenshotViewModel()
+        {
+            
+        }
+
+        private void BitmapUpdated(Bitmap bmp)
+        {
+            using (var memory = new MemoryStream())
+            {
+                bmp.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
+                memory.Position = 0;
+
+                var bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+
+                // 必须在UI线程上更新
+                Application.Current.Dispatcher.Invoke(() => ImageSource = bitmapImage);
+            }
+        }
 
         public ScreenshotViewModel(LogWindow logWindow)
         {
+            DashboardViewModel.ScreenshotUpdated += BitmapUpdated;
             _logWindow = logWindow;
-
-            AddToLogCommand = new RelayCommand(AddToLog);
         }
 
-        private void AddToLog()
-        {
-            if (!string.IsNullOrWhiteSpace(InputText) && _logWindow != null)
-            {
-                _logWindow.AddLogMessage("INF", InputText);
-                InputText = ""; // 清空输入框
-            }
-        }
         public void OnNavigatedTo()
         {
             if (!_isInitialized)
                 InitializeViewModel();
         }
 
-        public void OnNavigatedFrom() { }
+        public void OnNavigatedFrom() {
+            DashboardViewModel.ScreenshotUpdated -= BitmapUpdated;
+        }
 
         private void InitializeViewModel()
         {

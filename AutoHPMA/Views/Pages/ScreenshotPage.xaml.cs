@@ -26,24 +26,16 @@ namespace AutoHPMA.Views.Pages
         private readonly ScreenshotViewModel _viewModel;
         public ScreenshotPage(LogWindow logWindow)
         {
-            DataContext = _viewModel;
+            InitializeComponent();
             _logWindow = logWindow;
             _viewModel = new ScreenshotViewModel(logWindow);
-            InitializeComponent();
-        }
-        private void AddToLog_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show(InputTextBox.Text);
-            if (_logWindow != null && !string.IsNullOrWhiteSpace(InputTextBox.Text))
-            {
-                _logWindow.AddLogMessage("INF", InputTextBox.Text);
-            }
+            DataContext = _viewModel;
         }
 
-        private void TestScreenshot_Click(object sender, RoutedEventArgs e)
-        {
-            Uri uri = new Uri("/Screenshots/test.png", UriKind.Relative);
-            this.TestScreenshotImage.Source = new BitmapImage(new Uri("pack://application:,,,/Screenshots/test.png"));
-        }
+        //private void TestScreenshot_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Uri uri = new Uri("/Screenshots/test.png", UriKind.Relative);
+        //    this.TestScreenshotImage.Source = new BitmapImage(new Uri("pack://application:,,,/Screenshots/test.png"));
+        //}
     }
 }

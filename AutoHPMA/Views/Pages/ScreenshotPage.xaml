@@ -14,32 +14,11 @@
 
     <Grid>
         <StackPanel>
-            <Grid>
-                <TextBox
-                    x:Name="InputTextBox"
-                    Width="400"
-                    MinWidth="400"
-                    Margin="0,0,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center" />
-                <Button
-                    Width="100"
-                    Margin="410,0,0,0"
-                    HorizontalAlignment="Left"
-                    Click="AddToLog_Click"
-                    Content="Add to Log" />
-                <Button
-                    Width="50"
-                    Margin="0,0,10,0"
-                    HorizontalAlignment="Right"
-                    Click="TestScreenshot_Click"
-                    Content="Test" />
-            </Grid>
+
             <Viewbox Margin="10">
                 <Image
                     x:Name="TestScreenshotImage"
-                    Width="{Binding RelativeSource={RelativeSource Self}, Path=Source.PixelWidth}"
-                    Height="{Binding RelativeSource={RelativeSource Self}, Path=Source.PixelHeight}"
+                    Source="{Binding ImageSource}"
                     Stretch="None" />
 
             </Viewbox>

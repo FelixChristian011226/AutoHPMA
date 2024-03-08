@@ -53,6 +53,13 @@ namespace AutoHPMA.ViewModels.Pages
         private LogWindow? _logWindow; // 添加一个 LogWindow 变量
                                        //private readonly ILogger<HomePageViewModel> _logger = App.GetLogger<HomePageViewModel>();
 
+        public static event Action<Bitmap> ScreenshotUpdated;
+
+        private static void OnScreenshotUpdated(Bitmap bmp)
+        {
+            ScreenshotUpdated?.Invoke(bmp);
+        }
+
         //private readonly TaskTriggerDispatcher _taskDispatcher;
         //private readonly MouseKeyMonitor _mouseKeyMonitor = new();
 
@@ -80,6 +87,7 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 // 截取窗口图像
                 Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                OnScreenshotUpdated(bmp); // 发布截图更新事件
 
                 // 确保目标文件夹存在
                 string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
@@ -218,6 +226,8 @@ namespace AutoHPMA.ViewModels.Pages
                 // 在停止触发器时隐藏日志窗口
                 _logWindow?.AddLogMessage("INF", "停止触发器"); // 添加日志消息
                 _logWindow.Close();
+                _captureTimer.Stop();
+                _syncWindowTimer.Stop();
             }
         }
 
