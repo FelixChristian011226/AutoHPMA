@@ -13,6 +13,10 @@ public static class NativeMethodsService
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool IsIconic(IntPtr hWnd); // 用来检查窗口是否最小化
 
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool IsZoomed(IntPtr hWnd); // 用来检查窗口是否最大化
+
     public const int SW_SHOW = 5;
     public const int SW_RESTORE = 9;
 

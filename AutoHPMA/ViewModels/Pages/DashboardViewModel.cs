@@ -158,8 +158,26 @@ namespace AutoHPMA.ViewModels.Pages
                 _taskDispatcherEnabled = true;
                 StartButtonVisibility = Visibility.Collapsed;
                 StopButtonVisibility = Visibility.Visible;
+
+                // 根据窗口当前状态选择适当的SW命令
+                int showWindowCommand;
+                if (NativeMethodsService.IsZoomed(hWnd))
+                {
+                    // 如果窗口已经是最大化状态，则只需要将其置于前端
+                    showWindowCommand = NativeMethodsService.SW_SHOW;
+                }
+                else if (NativeMethodsService.IsIconic(hWnd))
+                {
+                    // 如果窗口是最小化的，则恢复
+                    showWindowCommand = NativeMethodsService.SW_RESTORE;
+                }
+                else
+                {
+                    // 如果窗口既不是最小化也不是最大化，则不做状态改变，只尝试置于前端
+                    showWindowCommand = NativeMethodsService.SW_SHOW;
+                }
                 // 从最小化状态恢复窗口并试图将其置于前端。
-                NativeMethodsService.ShowWindow(hWnd, NativeMethodsService.SW_RESTORE);
+                NativeMethodsService.ShowWindow(hWnd, showWindowCommand);
                 NativeMethodsService.SetForegroundWindow(hWnd);
 
                 // 隐藏WPF应用的主窗口。基于你的项目设置，可能需要调整获取主窗口的方式。
