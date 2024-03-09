@@ -45,7 +45,7 @@
                             <!--  将时间和类别括在一起显示，格式化时间为时分秒  -->
                             <TextBlock>
                                 <Run Text="[" />
-                                <Run Foreground="Black" Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" />
+                                <Run Foreground="DarkSlateGray" Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" />
                                 <Run Text=" " />
                                 <Run
                                     FontWeight="Bold"
@@ -53,7 +53,7 @@
                                     Text="{Binding Category}" />
                                 <Run Text="] " />
                             </TextBlock>
-                            <TextBlock Foreground="DarkGoldenrod" Text="{Binding Content}" />
+                            <TextBlock Foreground="Black" Text="{Binding Content}" />
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

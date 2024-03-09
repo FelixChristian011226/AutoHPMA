@@ -156,7 +156,12 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 if (hWnd == IntPtr.Zero)
                 {
-                    System.Windows.MessageBox.Show("未找到Mumu模拟器窗口，请先启动Mumu模拟器！");
+                    var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                    {
+                        Title = "错误",
+                        Content = "未找到Mumu模拟器窗口。\n请先启动Mumu模拟器！",
+                    };
+                    var result = await uiMessageBox.ShowDialogAsync();
                     return;
                 }
             }
@@ -203,8 +208,8 @@ namespace AutoHPMA.ViewModels.Pages
                     _logWindow.ShowInTaskbar = false;
                     _logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
                     _logWindow.RefreshPosition(hWnd, _logWindowLeft, _logWindowTop);
-                    _logWindow.AddLogMessage("INF","开始触发器"); // 添加日志消息
-                    for(int i=0; i<100; i++) { _logWindow.AddLogMessage("INF","消息"+i); }
+                    _logWindow.AddLogMessage("INF","---日志窗口已启动---"); // 添加日志消息
+                    for (int i = 0; i < 100; i++) { _logWindow.AddLogMessage("INF", "消息" + i); }
                 }
                 _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
                 _captureTimer.Start();
@@ -226,7 +231,6 @@ namespace AutoHPMA.ViewModels.Pages
                 StartButtonVisibility = Visibility.Visible;
                 StopButtonVisibility = Visibility.Collapsed;
                 // 在停止触发器时隐藏日志窗口
-                _logWindow?.AddLogMessage("INF", "停止触发器"); // 添加日志消息
                 _logWindow.Close();
                 _captureTimer.Stop();
                 _syncWindowTimer.Stop();
@@ -237,6 +241,17 @@ namespace AutoHPMA.ViewModels.Pages
         public void OnGoToWikiUrl()
         {
             Process.Start(new ProcessStartInfo("https://baidu.com") { UseShellExecute = true });
+        }
+
+        [RelayCommand]
+        public async void OnGoToScreenshotPage(object sender)
+        {
+            var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+            {
+                Title = "提示",
+                Content = "请进入截屏测试页面",
+            };
+            var result = await uiMessageBox.ShowDialogAsync();
         }
 
         public void OnNavigatedFrom()

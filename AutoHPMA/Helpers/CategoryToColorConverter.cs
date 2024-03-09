@@ -17,7 +17,7 @@ namespace AutoHPMA.Helpers
                 case "ERR":
                     return Brushes.Red;
                 case "INF":
-                    return Brushes.Blue;
+                    return Brushes.DarkCyan;
                 default:
                     return Brushes.Gray;
             }
