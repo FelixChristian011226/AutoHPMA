@@ -33,12 +33,13 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private bool _logWindowEnabled = true;
-
         [ObservableProperty]
         private int _logWindowLeft = 50;
-
         [ObservableProperty]
         private int _logWindowTop = 50;
+
+        [ObservableProperty]
+        private int _captureInterval = 500;
 
         [ObservableProperty] private Visibility _startButtonVisibility = Visibility.Visible;
         [ObservableProperty] private Visibility _stopButtonVisibility = Visibility.Collapsed;
@@ -205,6 +206,7 @@ namespace AutoHPMA.ViewModels.Pages
                     _logWindow.AddLogMessage("INF","开始触发器"); // 添加日志消息
                     for(int i=0; i<100; i++) { _logWindow.AddLogMessage("INF","消息"+i); }
                 }
+                _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
                 _captureTimer.Start();
                 _syncWindowTimer.Start();
             }
