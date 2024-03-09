@@ -7,6 +7,7 @@ namespace AutoHPMA.Helpers
 {
     public static class ScreenCaptureHelper
     {
+        public const int PW_CLIENTONLY = 0x00000001;
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hWnd, out Rectangle lpRect);
 
@@ -52,7 +53,7 @@ namespace AutoHPMA.Helpers
             IntPtr oldBitmap = SelectObject(memDC, hBitmap);
 
             // 将目标窗口内容打印到内存DC中的位图上
-            PrintWindow(hWnd, memDC, 0);
+            PrintWindow(hWnd, memDC, PW_CLIENTONLY);
 
             // 从内存DC中获取位图信息
             Bitmap bmp = Bitmap.FromHbitmap(hBitmap);

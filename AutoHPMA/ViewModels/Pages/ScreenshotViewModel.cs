@@ -59,6 +59,7 @@ namespace AutoHPMA.ViewModels.Pages
         {
             if (!_isInitialized)
                 InitializeViewModel();
+            DashboardViewModel.ScreenshotUpdated += BitmapUpdated;
         }
 
         public void OnNavigatedFrom() {
