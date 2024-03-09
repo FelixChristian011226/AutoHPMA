@@ -24,9 +24,15 @@ namespace AutoHPMA.ViewModels.Windows
             },
             new NavigationViewItem()
             {
-                Content = "截屏测试",
+                Content = "截屏",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Screenshot24 },
                 TargetPageType = typeof(Views.Pages.ScreenshotPage)
+            },
+            new NavigationViewItem()
+            {
+                Content = "测试",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.DesktopEdit24 },
+                TargetPageType = typeof(Views.Pages.TestPage)
             },
             new NavigationViewItem()
             {

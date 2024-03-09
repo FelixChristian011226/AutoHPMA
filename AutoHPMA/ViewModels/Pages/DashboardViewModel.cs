@@ -6,7 +6,7 @@
 using AutoHPMA.Views;
 using AutoHPMA.GameTask;
 using AutoHPMA.Views.Windows;
-using AutoHPMA.ViewModels.Windows;
+using AutoHPMA.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -18,9 +18,9 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Net.WebSockets;
 using System.Windows.Threading;
-using AutoHPMA.Helpers;
 using System.IO;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -94,12 +94,8 @@ namespace AutoHPMA.ViewModels.Pages
                 string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                 Directory.CreateDirectory(folderPath);
 
-                // 为新图像生成唯一的文件名
-                //string fileName = $"Capture_{DateTime.Now:yyyyMMdd_HHmmss}.png";
-                string fileName = "capture.png";
-
                 // 保存图像文件
-                ScreenCaptureHelper.SaveBitmapToFile(bmp, folderPath, fileName);
+                ImageProcessingHelper.SaveBitmapAs(bmp, folderPath,"capture.png", ImageFormat.Png);
             }
         }
         private void SyncWindowTimer_Tick(object? sender, EventArgs e)
@@ -249,7 +245,7 @@ namespace AutoHPMA.ViewModels.Pages
             var uiMessageBox = new Wpf.Ui.Controls.MessageBox
             {
                 Title = "提示",
-                Content = "请进入截屏测试页面",
+                Content = "请进入截屏页面",
             };
             var result = await uiMessageBox.ShowDialogAsync();
         }

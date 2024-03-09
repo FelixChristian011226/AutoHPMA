@@ -1,5 +1,4 @@
 ﻿using AutoHPMA.ViewModels.Pages;
-using AutoHPMA.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,23 +13,22 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Wpf.Ui.Controls;
 
 namespace AutoHPMA.Views.Pages
 {
     /// <summary>
-    /// ScreenshotPage.xaml 的交互逻辑
+    /// TestPage.xaml 的交互逻辑
     /// </summary>
-    public partial class ScreenshotPage : Page
+    public partial class TestPage : INavigableView<TestViewModel>
     {
-        private LogWindow _logWindow;
-        private readonly ScreenshotViewModel _viewModel;
-        public ScreenshotPage(LogWindow logWindow)
-        {
-            InitializeComponent();
-            _logWindow = logWindow;
-            _viewModel = new ScreenshotViewModel(logWindow);
-            DataContext = _viewModel;
-        }
 
+        public TestViewModel ViewModel { get; set; }
+        public TestPage(TestViewModel viewModel)
+        {
+            ViewModel = viewModel;
+            DataContext = this;
+            InitializeComponent();
+        }
     }
 }

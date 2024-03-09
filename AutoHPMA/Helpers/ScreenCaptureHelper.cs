@@ -67,10 +67,5 @@ namespace AutoHPMA.Helpers
             return bmp;
         }
 
-        public static void SaveBitmapToFile(Bitmap bitmap, string folderPath, string fileName)
-        {
-            string fullPath = System.IO.Path.Combine(folderPath, fileName);
-            bitmap.Save(fullPath, ImageFormat.Png);
-        }
     }
 }

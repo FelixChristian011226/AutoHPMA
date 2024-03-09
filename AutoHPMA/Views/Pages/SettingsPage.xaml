@@ -21,10 +21,10 @@
     </Page.Resources>
 
     <StackPanel>
-        <ui:TextBlock FontTypography="Title" Text="个性化" />
+        <ui:TextBlock FontTypography="Subtitle" Text="个性化" />
         <ui:TextBlock
             Margin="0,12,0,0"
-            FontTypography="Subtitle"
+            FontTypography="BodyStrong"
             Text="Theme" />
         <RadioButton
             Margin="0,12,0,0"

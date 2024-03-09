@@ -65,10 +65,12 @@ namespace AutoHPMA
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
 
-                services.AddSingleton<ScreenshotPage>();
-                services.AddSingleton<ScreenshotViewModel>();
                 services.AddSingleton<DashboardPage>();
                 services.AddSingleton<DashboardViewModel>();
+                services.AddSingleton<ScreenshotPage>();
+                services.AddSingleton<ScreenshotViewModel>();
+                services.AddSingleton<TestPage>();
+                services.AddSingleton<TestViewModel>();
                 services.AddSingleton<DataPage>();
                 services.AddSingleton<DataViewModel>();
                 services.AddSingleton<SettingsPage>();
