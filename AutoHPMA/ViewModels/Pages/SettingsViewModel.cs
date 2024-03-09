@@ -29,7 +29,7 @@ namespace AutoHPMA.ViewModels.Pages
         private void InitializeViewModel()
         {
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
-            AppVersion = $"UiDesktopApp1 - {GetAssemblyVersion()}";
+            AppVersion = $"AutoHPMA - {GetAssemblyVersion()}";
 
             _isInitialized = true;
         }
