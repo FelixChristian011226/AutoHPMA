@@ -35,10 +35,10 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _logWindowEnabled = true;
 
         [ObservableProperty]
-        private int _logWindowLeft = 0;
+        private int _logWindowLeft = 50;
 
         [ObservableProperty]
-        private int _logWindowTop = 0;
+        private int _logWindowTop = 50;
 
         [ObservableProperty] private Visibility _startButtonVisibility = Visibility.Visible;
         [ObservableProperty] private Visibility _stopButtonVisibility = Visibility.Collapsed;
@@ -201,7 +201,7 @@ namespace AutoHPMA.ViewModels.Pages
                     _logWindow = LogWindow.Instance();
                     _logWindow.ShowInTaskbar = false;
                     _logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
-                    _logWindow.RefreshPosition(hWnd);
+                    _logWindow.RefreshPosition(hWnd, _logWindowLeft, _logWindowTop);
                     _logWindow.AddLogMessage("INF","开始触发器"); // 添加日志消息
                     for(int i=0; i<100; i++) { _logWindow.AddLogMessage("INF","消息"+i); }
                 }

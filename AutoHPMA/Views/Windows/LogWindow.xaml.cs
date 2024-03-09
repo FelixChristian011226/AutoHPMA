@@ -59,13 +59,13 @@ namespace AutoHPMA.Views.Windows
             return instance;
         }
 
-        public void RefreshPosition(IntPtr hWnd)
+        public void RefreshPosition(IntPtr hWnd, int Loffset, int Toffset)
         {
             var rect = new RECT();
             if (GetWindowRect(hWnd, out rect))
             {
-                Left = rect.Left+50;
-                Top = rect.Top+50;
+                Left = rect.Left+ Loffset;
+                Top = rect.Top+ Toffset;
                 //Width = rect.Right - rect.Left;
                 //Height = rect.Bottom - rect.Top;
             }
