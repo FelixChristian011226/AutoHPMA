@@ -50,6 +50,14 @@ namespace AutoHPMA.Views.Windows
             }
         }
 
+        public void DeleteLastLogMessage()
+        {
+            if (_logMessages.Count > 0)
+            {
+                _logMessages.RemoveAt(_logMessages.Count - 1);
+            }
+        }
+
         public static LogWindow GetInstance()
         {
             if (_instance == null || !_instance.IsLoaded)

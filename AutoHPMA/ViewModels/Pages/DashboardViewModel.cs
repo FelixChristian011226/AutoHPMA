@@ -242,6 +242,7 @@ namespace AutoHPMA.ViewModels.Pages
                 _logWindow?.Close();
                 _captureTimer.Stop();
                 _syncWindowTimer.Stop();
+                _taskFlow.Reset();
             }
         }
 

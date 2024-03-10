@@ -26,9 +26,9 @@ namespace AutoHPMA.GameTask
         private static Bitmap[] options = new Bitmap[4];
         private static Bitmap time0,time6,time10,time15,time16,time17,time18,time20;
         private static TaskFlow _taskflow;
-        private static Boolean _isEnabled = true;
         private static Boolean _nextQuestion = false;
         private TaskFlowState _currentState = TaskFlowState.Waiting;
+        private readonly SemaphoreSlim workAsyncLock = new SemaphoreSlim(1, 1);
 
         int questionIndex = 0;
         int roundIndex = 0;
@@ -43,6 +43,11 @@ namespace AutoHPMA.GameTask
 
         private const int MOUSEEVENTF_LEFTDOWN = 0x02;
         private const int MOUSEEVENTF_LEFTUP = 0x04;
+
+        public void Reset()
+        {
+            _currentState = TaskFlowState.Waiting;
+        }
 
         public void Init(LogWindow logWindow)
         {
@@ -81,119 +86,133 @@ namespace AutoHPMA.GameTask
             Bitmap croppedBmp;
             double similarity;
 
-            if (!_isEnabled)
-                return;
+            await workAsyncLock.WaitAsync();
 
-            switch (_currentState)
+            try
             {
-                case TaskFlowState.Waiting:
-                    // 执行等待状态的逻辑...
-                    _currentState = TaskFlowState.Gathering;
-                    break;
-
-                case TaskFlowState.Gathering:
-                    // 执行集结状态的逻辑...
-                    croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
-                    similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(gather, croppedBmp));
-                    if (similarity > 0.9)
-                    {
-                        _logWindow?.AddLogMessage("INF", "定位到社团集结，准备开始！");
-                        await ClickAtPositionAsync(1550, 1420);
-                        await Task.Delay(2000);
-                        await ClickAtPositionAsync(2100, 417);
-                        await Task.Delay(1000);
-                        await ClickAtPositionAsync(2100, 417);
-
-                        _currentState = TaskFlowState.Preparing;
-                    }
-                    break;
-
-                case TaskFlowState.Preparing:
-                    // 执行准备状态的逻辑...
-                    croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1951, 373, 2042 - 1951, 442 - 373);
-                    similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(tip, croppedBmp));
-                    if (similarity > 0.9)
-                    {
-                        _logWindow?.AddLogMessage("INF", "定位到活动目标，准备答题！");
-                        roundIndex++;
-                        await ClickAtPositionAsync(1997, 403);
-                        await Task.Delay(1000);
-                        await ClickAtPositionAsync(1997, 403);
-                        _logWindow?.AddLogMessage("INF", "-----第"+roundIndex+"轮答题-----");
-                        _currentState = TaskFlowState.Answering;
-                    }
-                    if (FindTime(bmp))
-                        _currentState = TaskFlowState.Answering;
-                    break;
-
-                case TaskFlowState.Answering:
-                    // 执行答题状态的逻辑...
-                    croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1106, 1452, 1473 - 1106, 1492 - 1452);   //答题结束检验
-                    similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(over, croppedBmp));
-                    if (similarity > 0.9)
-                    {
-                        _logWindow?.AddLogMessage("INF", "-----答题结束-----");
-                        await Task.Delay(1000);
-                        await ClickAtPositionAsync(1287, 1377);
-                        await Task.Delay(3000);
-                        await ClickAtPositionAsync(750, 900);
-                        await Task.Delay(1000);
-                        await ClickAtPositionAsync(750, 900);
-                        _currentState = TaskFlowState.Gapping;
-                    }
-
-                    croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1227, 125, 1328 - 1227, 187 - 125);
-                    similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(time0, croppedBmp));
-                    if (_nextQuestion && similarity > 0.9)
-                    {
-                        questionIndex++;
-                        _logWindow?.AddLogMessage("INF", "第"+questionIndex+"题，选"+option+"。");
-                        _nextQuestion = false;
-                    }
-
-                    if (!FindTime(bmp))
+                switch (_currentState)
+                {
+                    case TaskFlowState.Waiting:
+                        // 执行等待状态的逻辑...
+                        _currentState = TaskFlowState.Gathering;
                         break;
 
-                    _nextQuestion = true;
-                    switch (FindAnswer(bmp))
-                    {
-                        case 0:
-                            await ClickAtPositionAsync(1000, 1230);
-                            option = 'A';
-                            break;
-                        case 1:
-                            await ClickAtPositionAsync(2300, 1230);
-                            option = 'B';
-                            break;
-                        case 2:
-                            await ClickAtPositionAsync(1000, 1415);
-                            option = 'C';
-                            break;
-                        case 3:
-                            await ClickAtPositionAsync(2300, 1415);
-                            option = 'D';
-                            break;
-                        default:
-                            option = 'X';
-                            break;
-                    }
-                    _currentState = TaskFlowState.Answering;
-                    break;
+                    case TaskFlowState.Gathering:
+                        // 执行集结状态的逻辑...
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
+                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(gather, croppedBmp));
+                        if (similarity > 0.9)
+                        {
+                            _logWindow?.AddLogMessage("INF", "定位到社团集结，准备开始！");
+                            await ClickAtPositionAsync(1550, 1420);
+                            await Task.Delay(2000);
+                            await ClickAtPositionAsync(2100, 417);
+                            await Task.Delay(1000);
+                            await ClickAtPositionAsync(2100, 417);
 
-                case TaskFlowState.Gapping:
-                    // 执行间隔状态的逻辑...
-                    questionIndex = 0;
-                    _logWindow?.AddLogMessage("INF", "等待下一场答题...");
-                    await Task.Delay(60000);
-                    await ClickAtPositionAsync(1111, 1425);
-                    await Task.Delay(1000);
-                    await ClickAtPositionAsync(92, 166);
-                    await Task.Delay(1000);
-                    await ClickAtPositionAsync(92, 166);
-                    _currentState = TaskFlowState.Gathering;
-                    break;
+                            _currentState = TaskFlowState.Preparing;
+                        }
+                        break;
 
+                    case TaskFlowState.Preparing:
+                        // 执行准备状态的逻辑...
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1951, 373, 2042 - 1951, 442 - 373);
+                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(tip, croppedBmp));
+                        if (similarity > 0.9)
+                        {
+                            _logWindow?.AddLogMessage("INF", "定位到活动目标，准备答题！");
+                            roundIndex++;
+                            await ClickAtPositionAsync(1997, 403);
+                            await Task.Delay(1000);
+                            await ClickAtPositionAsync(1997, 403);
+                            _logWindow?.AddLogMessage("INF", "-----第" + roundIndex + "轮答题-----");
+                            _currentState = TaskFlowState.Answering;
+                        }
+                        if (FindTime(bmp))
+                            _currentState = TaskFlowState.Answering;
+                        break;
+
+                    case TaskFlowState.Answering:
+                        // 执行答题状态的逻辑...
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1106, 1452, 1473 - 1106, 1492 - 1452);   //答题结束检验
+                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(over, croppedBmp));
+                        if (similarity > 0.9)
+                        {
+                            _logWindow?.AddLogMessage("INF", "-----答题结束-----");
+                            await Task.Delay(1000);
+                            await ClickAtPositionAsync(1287, 1377);
+                            await Task.Delay(3000);
+                            await ClickAtPositionAsync(750, 900);
+                            await Task.Delay(1000);
+                            await ClickAtPositionAsync(750, 900);
+                            _currentState = TaskFlowState.Gapping;
+                        }
+
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1227, 125, 1328 - 1227, 187 - 125);
+                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(time0, croppedBmp));
+                        if (_nextQuestion && similarity > 0.9)
+                        {
+                            questionIndex++;
+                            _logWindow?.AddLogMessage("INF", "第" + questionIndex + "题，选" + option + "。");
+                            _nextQuestion = false;
+                        }
+
+                        if (!FindTime(bmp))
+                            break;
+
+                        _nextQuestion = true;
+                        switch (FindAnswer(bmp))
+                        {
+                            case 0:
+                                await ClickAtPositionAsync(1000, 1230);
+                                option = 'A';
+                                break;
+                            case 1:
+                                await ClickAtPositionAsync(2300, 1230);
+                                option = 'B';
+                                break;
+                            case 2:
+                                await ClickAtPositionAsync(1000, 1415);
+                                option = 'C';
+                                break;
+                            case 3:
+                                await ClickAtPositionAsync(2300, 1415);
+                                option = 'D';
+                                break;
+                            default:
+                                option = 'X';
+                                break;
+                        }
+                        _currentState = TaskFlowState.Answering;
+                        break;
+
+                    case TaskFlowState.Gapping:
+                        // 执行间隔状态的逻辑...
+                        questionIndex = 0;
+                        _logWindow?.AddLogMessage("INF", "等待下一场答题...");
+                        for (int i = 60; i > 0; i--)
+                        {
+                            _logWindow?.AddLogMessage("INF", "还剩" + i + "秒...");
+                            await Task.Delay(1000);
+                            _logWindow?.DeleteLastLogMessage();
+                        }
+
+                        await ClickAtPositionAsync(1111, 1425);
+                        await Task.Delay(1000);
+                        await ClickAtPositionAsync(92, 166);
+                        await Task.Delay(1000);
+                        await ClickAtPositionAsync(92, 166);
+                        _currentState = TaskFlowState.Gathering;
+                        break;
+
+                }
             }
+            finally
+            {
+                workAsyncLock.Release();
+            }
+
+            
         }
 
         public static int FindAnswer(Bitmap bmp)
