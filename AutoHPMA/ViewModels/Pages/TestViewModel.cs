@@ -1,5 +1,6 @@
 ﻿using AutoHPMA.GameTask;
 using AutoHPMA.Helpers;
+using OpenCvSharp;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -8,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -39,6 +41,9 @@ namespace AutoHPMA.ViewModels.Pages
                 Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, _screenshotLeft, _screenshotTop, _screenshotWidth, _screenshotHeight);
                 // 保存图像文件
                 ImageProcessingHelper.SaveBitmapAs(croppedBmp, folderPath, _screenshotFilename + ".png", ImageFormat.Png);
+
+                //Scalar similarity = ImageProcessingHelper.Compare_SSIM("D:\\Learning\\VisualStudio\\source\\repo\\AutoHPMA\\AutoHPMA\\bin\\Debug\\net8.0-windows\\Captures\\CaptureTest1.bmp", "D:\\Learning\\VisualStudio\\source\\repo\\AutoHPMA\\AutoHPMA\\bin\\Debug\\net8.0-windows\\Captures\\CaptureTest2.bmp");
+                //MessageBox.Show($"相似度：{similarity}");
 
 
             }
