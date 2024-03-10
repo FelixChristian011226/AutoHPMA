@@ -195,6 +195,26 @@
                     Content="截取集结"
                     Cursor="" />
             </Grid>
+            <Grid>
+                <ui:Button
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Margin="10,0,36,0"
+                    Command="{Binding ViewModel.CaptureTipCommand}"
+                    Content="截取提示"
+                    Cursor="" />
+            </Grid>
+            <Grid>
+                <ui:Button
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Margin="10,0,36,0"
+                    Command="{Binding ViewModel.CaptureTimeCommand}"
+                    Content="截取时间"
+                    Cursor="" />
+            </Grid>
         </StackPanel>
 
         <ui:TextBlock
@@ -210,6 +230,26 @@
                     Margin="10,0,36,0"
                     Command="{Binding ViewModel.CompareGatherCommand}"
                     Content="比对集结"
+                    Cursor="" />
+            </Grid>
+            <Grid>
+                <ui:Button
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Margin="10,0,36,0"
+                    Command="{Binding ViewModel.CompareTipCommand}"
+                    Content="比对提示"
+                    Cursor="" />
+            </Grid>
+            <Grid>
+                <ui:Button
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Margin="10,0,36,0"
+                    Command="{Binding ViewModel.CompareTimeCommand}"
+                    Content="比对时间"
                     Cursor="" />
             </Grid>
         </StackPanel>

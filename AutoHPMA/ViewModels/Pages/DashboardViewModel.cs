@@ -34,9 +34,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private bool _logWindowEnabled = true;
         [ObservableProperty]
-        private int _logWindowLeft = 50;
+        private int _logWindowLeft = 150;
         [ObservableProperty]
-        private int _logWindowTop = 50;
+        private int _logWindowTop = 100;
 
         [ObservableProperty]
         private int _captureInterval = 500;
@@ -53,6 +53,8 @@ namespace AutoHPMA.ViewModels.Pages
 
         private LogWindow? _logWindow; // 添加一个 LogWindow 变量
                                        //private readonly ILogger<HomePageViewModel> _logger = App.GetLogger<HomePageViewModel>();
+
+        private TaskFlow _taskFlow;
 
         public static event Action<Bitmap> ScreenshotUpdated;
 
@@ -89,13 +91,14 @@ namespace AutoHPMA.ViewModels.Pages
                 // 截取窗口图像
                 Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
                 OnScreenshotUpdated(bmp); // 发布截图更新事件
-
                 // 确保目标文件夹存在
                 string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                 Directory.CreateDirectory(folderPath);
-
                 // 保存图像文件
                 ImageProcessingHelper.SaveBitmapAs(bmp, folderPath,"capture.png", ImageFormat.Png);
+
+                _taskFlow.WorkAsync(mumuHwnd, bmp);
+
             }
         }
         private void SyncWindowTimer_Tick(object? sender, EventArgs e)
@@ -196,20 +199,24 @@ namespace AutoHPMA.ViewModels.Pages
                     Application.Current.MainWindow.Hide();
                 });
 
+                _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
+                _captureTimer.Start();
+                _taskFlow = TaskFlow.Instance();
                 // 在启动触发器时显示日志窗口
                 _taskDispatcherEnabled = true;
                 if (_logWindowEnabled)
                 {
+                    _syncWindowTimer.Start();
                     _logWindow = LogWindow.Instance();
                     _logWindow.ShowInTaskbar = false;
                     _logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
                     _logWindow.RefreshPosition(hWnd, _logWindowLeft, _logWindowTop);
                     _logWindow.AddLogMessage("INF","---日志窗口已启动---"); // 添加日志消息
-                    for (int i = 0; i < 100; i++) { _logWindow.AddLogMessage("INF", "消息" + i); }
+                    //for (int i = 0; i < 100; i++) { _logWindow.AddLogMessage("INF", "消息" + i); }
                 }
-                _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
-                _captureTimer.Start();
-                _syncWindowTimer.Start();
+                _taskFlow.Init(_logWindow);
+
+
             }
 
         }
@@ -227,7 +234,7 @@ namespace AutoHPMA.ViewModels.Pages
                 StartButtonVisibility = Visibility.Visible;
                 StopButtonVisibility = Visibility.Collapsed;
                 // 在停止触发器时隐藏日志窗口
-                _logWindow.Close();
+                _logWindow?.Close();
                 _captureTimer.Stop();
                 _syncWindowTimer.Stop();
             }

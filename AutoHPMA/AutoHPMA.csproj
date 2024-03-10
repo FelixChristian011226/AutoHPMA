@@ -38,6 +38,14 @@
 
   <ItemGroup>
     <None Remove="Assets\Captures\gather.png" />
+    <None Remove="Assets\Captures\Time\10.png" />
+    <None Remove="Assets\Captures\Time\15.png" />
+    <None Remove="Assets\Captures\Time\16.png" />
+    <None Remove="Assets\Captures\Time\17.png" />
+    <None Remove="Assets\Captures\Time\18.png" />
+    <None Remove="Assets\Captures\Time\20.png" />
+    <None Remove="Assets\Captures\Time\6.png" />
+    <None Remove="Assets\Captures\tip.png" />
     <None Remove="Assets\hpma.png" />
     <None Remove="Assets\Logo.ico" />
     <None Remove="Assets\wpfui-icon-256.png" />
@@ -47,6 +55,30 @@
 
   <ItemGroup>
     <Content Include="Assets\Captures\gather.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Time\10.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Time\15.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Time\16.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Time\17.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Time\18.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Time\20.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Time\6.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\tip.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Assets\hpma.png" />

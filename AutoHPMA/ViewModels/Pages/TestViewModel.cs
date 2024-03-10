@@ -21,9 +21,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private int _screenshotTop = 0;
         [ObservableProperty]
-        private int _screenshotWidth = 500;
+        private int _screenshotWidth = 2582;
         [ObservableProperty]
-        private int _screenshotHeight = 500;
+        private int _screenshotHeight = 1550;
         [ObservableProperty]
         private string _screenshotFilename = "CaptureTest";
 
@@ -65,6 +65,34 @@ namespace AutoHPMA.ViewModels.Pages
         }
 
         [RelayCommand]
+        public async void OnCaptureTip(object sender)
+        {
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
+            if (mumuHwnd != IntPtr.Zero)
+            {
+                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                Directory.CreateDirectory(folderPath);
+                Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1951, 373, 2042 - 1951, 442 - 373);
+                ImageProcessingHelper.SaveBitmapAs(croppedBmp, folderPath, "[Test]tip" + ".png", ImageFormat.Png);
+            }
+        }
+
+        [RelayCommand]
+        public async void OnCaptureTime(object sender)
+        {
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
+            if (mumuHwnd != IntPtr.Zero)
+            {
+                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                Directory.CreateDirectory(folderPath);
+                Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1227, 125, 1328 - 1227, 187 - 125);
+                ImageProcessingHelper.SaveBitmapAs(croppedBmp, folderPath, "[Test]time" + ".png", ImageFormat.Png);
+            }
+        }
+
+        [RelayCommand]
         public async void OnCompareGather(object sender)
         {
             Bitmap gather = new Bitmap("Assets/Captures/gather.png");
@@ -79,6 +107,62 @@ namespace AutoHPMA.ViewModels.Pages
                 _logWindow.AddLogMessage("INF","相似度：" + similarity);
             }
         }
+
+        [RelayCommand]
+        public async void OnCompareTip(object sender)
+        {
+            Bitmap tip = new Bitmap("Assets/Captures/tip.png");
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
+            if (mumuHwnd != IntPtr.Zero)
+            {
+                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1951, 373, 2042 - 1951, 442 - 373);
+
+                double similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(tip, croppedBmp));
+                LogWindow _logWindow = LogWindow.GetInstance();
+                _logWindow.AddLogMessage("INF", "相似度：" + similarity);
+            }
+        }
+
+        [RelayCommand]
+        public async void OnCompareTime(object sender)
+        {
+            Bitmap Time6 = new Bitmap("Assets/Captures/Time/6.png");
+            Bitmap Time10 = new Bitmap("Assets/Captures/Time/10.png");
+            Bitmap Time15 = new Bitmap("Assets/Captures/Time/15.png");
+            Bitmap Time16 = new Bitmap("Assets/Captures/Time/16.png");
+            Bitmap Time17 = new Bitmap("Assets/Captures/Time/17.png");
+            Bitmap Time18 = new Bitmap("Assets/Captures/Time/18.png");
+            Bitmap Time20 = new Bitmap("Assets/Captures/Time/20.png");
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
+            if (mumuHwnd != IntPtr.Zero)
+            {
+                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1227, 125, 1328 - 1227, 187 - 125);
+
+                double[] similarity = new double[7];
+                similarity[0]  = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(Time6, croppedBmp));
+                similarity[1] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(Time10, croppedBmp));
+                similarity[2] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(Time15, croppedBmp));
+                similarity[3] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(Time16, croppedBmp));
+                similarity[4] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(Time17, croppedBmp));
+                similarity[5] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(Time18, croppedBmp));
+                similarity[6] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(Time20, croppedBmp));
+                String[] strings = new String[7] { "6", "10", "15", "16", "17", "18", "20" };
+
+                LogWindow _logWindow = LogWindow.GetInstance();
+
+                for(int i=0; i<7; i++)
+                {
+                    if (similarity[i] > 0.9)
+                    {
+                        _logWindow.AddLogMessage("INF", "相似度：" + similarity[i].ToString("N4") + "  时间：" + strings[i]);
+                    }
+                }
+                //_logWindow.AddLogMessage("INF", "相似度：" + similarity[0]);
+            }
+        }
+
 
     }
 }
