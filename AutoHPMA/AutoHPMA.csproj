@@ -38,6 +38,12 @@
 
   <ItemGroup>
     <None Remove="Assets\Captures\gather.png" />
+    <None Remove="Assets\Captures\Option\A.png" />
+    <None Remove="Assets\Captures\Option\B.png" />
+    <None Remove="Assets\Captures\Option\C.png" />
+    <None Remove="Assets\Captures\Option\D.png" />
+    <None Remove="Assets\Captures\Over.png" />
+    <None Remove="Assets\Captures\Time\0.png" />
     <None Remove="Assets\Captures\Time\10.png" />
     <None Remove="Assets\Captures\Time\15.png" />
     <None Remove="Assets\Captures\Time\16.png" />
@@ -55,6 +61,21 @@
 
   <ItemGroup>
     <Content Include="Assets\Captures\gather.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Option\A.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Option\B.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Option\C.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Option\D.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\Time\0.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Captures\Time\10.png">
@@ -79,6 +100,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Captures\tip.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\over.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Assets\hpma.png" />

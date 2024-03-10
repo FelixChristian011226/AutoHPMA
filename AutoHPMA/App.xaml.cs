@@ -3,6 +3,7 @@
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
+using AutoHPMA.GameTask;
 using AutoHPMA.Services;
 using AutoHPMA.ViewModels.Pages;
 using AutoHPMA.ViewModels.Windows;
@@ -107,7 +108,6 @@ namespace AutoHPMA
         private async void OnExit(object sender, ExitEventArgs e)
         {
             await _host.StopAsync();
-
             _host.Dispose();
         }
 

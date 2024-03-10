@@ -74,7 +74,7 @@ namespace AutoHPMA.ViewModels.Pages
         private void InitializeCaptureTimer()
         {
             _captureTimer = new DispatcherTimer();
-            _captureTimer.Interval = TimeSpan.FromMilliseconds(500); // 每500毫秒截图一次，可根据需要调整
+            _captureTimer.Interval = TimeSpan.FromMilliseconds(500); // 每500毫秒截图一次
             _captureTimer.Tick += CaptureTimer_Tick;
         }
         public void InitializeSyncWindowTimer()
@@ -107,6 +107,11 @@ namespace AutoHPMA.ViewModels.Pages
             if (mumuHwnd != IntPtr.Zero)
             {
                 if (NativeMethodsService.IsIconic(mumuHwnd)) // 如果Mumu模拟器最小化
+                {
+                    if (_logWindow.WindowState != WindowState.Minimized)
+                        _logWindow.WindowState = WindowState.Minimized;
+                }
+                else if (NativeMethodsService.GetForegroundWindow()!=mumuHwnd) // 如果Mumu模拟器不在顶层
                 {
                     if (_logWindow.WindowState != WindowState.Minimized)
                         _logWindow.WindowState = WindowState.Minimized;
