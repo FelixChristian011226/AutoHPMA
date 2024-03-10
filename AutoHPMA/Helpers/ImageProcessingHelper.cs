@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using OpenCvSharp;
+using OpenCvSharp.Extensions;
 namespace AutoHPMA.Helpers
 {
     public class ImageProcessingHelper
@@ -79,6 +80,54 @@ namespace AutoHPMA.Helpers
         {
             var image1 = Cv2.ImRead(imgFile1);
             var image2Tmp = Cv2.ImRead(imgFile2);
+            // 将两个图片处理成同样大小，否则会有错误： The operation is neither 'array op array' (where arrays have the same size and the same number of channels), nor 'array op scalar', nor 'scalar op array'
+            var image2 = new Mat();
+            Cv2.Resize(image2Tmp, image2, new OpenCvSharp.Size(image1.Size().Width, image1.Size().Height));
+            double C1 = 6.5025, C2 = 58.5225;
+            var validImage1 = new Mat();
+            var validImage2 = new Mat();
+            image1.ConvertTo(validImage1, MatType.CV_32F); //数据类型转换为 float,防止后续计算出现错误
+            image2.ConvertTo(validImage2, MatType.CV_32F);
+
+
+            Mat image1_1 = validImage1.Mul(validImage1); //图像乘积
+            Mat image2_2 = validImage2.Mul(validImage2);
+            Mat image1_2 = validImage1.Mul(validImage2);
+
+            Mat gausBlur1 = new Mat(), gausBlur2 = new Mat(), gausBlur12 = new Mat();
+            Cv2.GaussianBlur(validImage1, gausBlur1, new OpenCvSharp.Size(11, 11), 1.5); //高斯卷积核计算图像均值
+            Cv2.GaussianBlur(validImage2, gausBlur2, new OpenCvSharp.Size(11, 11), 1.5);
+            Cv2.GaussianBlur(image1_2, gausBlur12, new OpenCvSharp.Size(11, 11), 1.5);
+
+            Mat imageAvgProduct = gausBlur1.Mul(gausBlur2); //均值乘积
+            Mat u1Squre = gausBlur1.Mul(gausBlur1); //各自均值的平方
+            Mat u2Squre = gausBlur2.Mul(gausBlur2);
+
+            Mat imageConvariance = new Mat(), imageVariance1 = new Mat(), imageVariance2 = new Mat();
+            Mat squreAvg1 = new Mat(), squreAvg2 = new Mat();
+            Cv2.GaussianBlur(image1_1, squreAvg1, new OpenCvSharp.Size(11, 11), 1.5); //图像平方的均值
+            Cv2.GaussianBlur(image2_2, squreAvg2, new OpenCvSharp.Size(11, 11), 1.5);
+
+            imageConvariance = gausBlur12 - gausBlur1.Mul(gausBlur2);// 计算协方差
+            imageVariance1 = squreAvg1 - gausBlur1.Mul(gausBlur1); //计算方差
+            imageVariance2 = squreAvg2 - gausBlur2.Mul(gausBlur2);
+
+            var member = ((2 * gausBlur1.Mul(gausBlur2) + C1).Mul(2 * imageConvariance + C2));
+            var denominator = ((u1Squre + u2Squre + C1).Mul(imageVariance1 + imageVariance2 + C2));
+
+            Mat ssim = new Mat();
+            Cv2.Divide(member, denominator, ssim);
+
+            var sclar = Cv2.Mean(ssim);
+
+            return sclar;  // 变化率，即差异
+
+        }
+
+        public static Scalar Compare_SSIM(Bitmap img1, Bitmap img2)
+        {
+            var image1 = BitmapConverter.ToMat(img1);
+            var image2Tmp = BitmapConverter.ToMat(img2);
             // 将两个图片处理成同样大小，否则会有错误： The operation is neither 'array op array' (where arrays have the same size and the same number of channels), nor 'array op scalar', nor 'scalar op array'
             var image2 = new Mat();
             Cv2.Resize(image2Tmp, image2, new OpenCvSharp.Size(image1.Size().Width, image1.Size().Height));

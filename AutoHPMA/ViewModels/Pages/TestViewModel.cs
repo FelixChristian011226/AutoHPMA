@@ -1,5 +1,6 @@
 ﻿using AutoHPMA.GameTask;
 using AutoHPMA.Helpers;
+using AutoHPMA.Views.Windows;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
@@ -46,6 +47,36 @@ namespace AutoHPMA.ViewModels.Pages
                 //MessageBox.Show($"相似度：{similarity}");
 
 
+            }
+        }
+
+        [RelayCommand]
+        public async void OnCaptureGather(object sender)
+        {
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
+            if (mumuHwnd != IntPtr.Zero)
+            {
+                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                Directory.CreateDirectory(folderPath);
+                Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
+                ImageProcessingHelper.SaveBitmapAs(croppedBmp, folderPath, "[Test]gather" + ".png", ImageFormat.Png);
+            }
+        }
+
+        [RelayCommand]
+        public async void OnCompareGather(object sender)
+        {
+            Bitmap gather = new Bitmap("Assets/Captures/gather.png");
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
+            if (mumuHwnd != IntPtr.Zero)
+            {
+                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
+
+                double similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(gather, croppedBmp));
+                LogWindow _logWindow = LogWindow.GetInstance();
+                _logWindow.AddLogMessage("INF","相似度：" + similarity);
             }
         }
 
