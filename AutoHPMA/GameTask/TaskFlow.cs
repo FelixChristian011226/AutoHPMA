@@ -109,7 +109,8 @@ namespace AutoHPMA.GameTask
                             await ClickAtPositionAsync(2100, 417);
                             await Task.Delay(1000);
                             await ClickAtPositionAsync(2100, 417);
-
+                            roundIndex++;
+                            _logWindow?.AddLogMessage("INF", "-----第" + roundIndex + "轮答题-----");
                             _currentState = TaskFlowState.Preparing;
                         }
                         break;
@@ -121,11 +122,10 @@ namespace AutoHPMA.GameTask
                         if (similarity > 0.9)
                         {
                             _logWindow?.AddLogMessage("INF", "定位到活动目标，准备答题！");
-                            roundIndex++;
                             await ClickAtPositionAsync(1997, 403);
                             await Task.Delay(1000);
                             await ClickAtPositionAsync(1997, 403);
-                            _logWindow?.AddLogMessage("INF", "-----第" + roundIndex + "轮答题-----");
+                            
                             _currentState = TaskFlowState.Answering;
                         }
                         if (FindTime(bmp))
