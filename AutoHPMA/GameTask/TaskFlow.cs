@@ -69,18 +69,6 @@ namespace AutoHPMA.GameTask
             time20 = new Bitmap("Assets/Captures/Time/20.png");
         }
 
-        //public void Work(nint hwnd, Bitmap bmp)
-        //{
-        //    Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
-        //    double similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(gather, croppedBmp));
-        //    if(similarity > 0.9)
-        //    {
-        //        _logWindow?.AddLogMessage("INF", "定位到社团集结，准备开始！");
-        //        ClickAtPosition(1550, 1420);
-
-        //    }
-        //}
-
         public async Task WorkAsync(nint hwnd, Bitmap bmp)
         {
             Bitmap croppedBmp;
@@ -190,19 +178,28 @@ namespace AutoHPMA.GameTask
                         // 执行间隔状态的逻辑...
                         questionIndex = 0;
                         _logWindow?.AddLogMessage("INF", "等待下一场答题...");
-                        for (int i = 60; i > 0; i--)
+                        for (int i = 15; i > 0; i--)
                         {
                             _logWindow?.AddLogMessage("INF", "还剩" + i + "秒...");
                             await Task.Delay(1000);
                             _logWindow?.DeleteLastLogMessage();
                         }
-
                         await ClickAtPositionAsync(1111, 1425);
                         await Task.Delay(1000);
                         await ClickAtPositionAsync(92, 166);
                         await Task.Delay(1000);
                         await ClickAtPositionAsync(92, 166);
-                        _currentState = TaskFlowState.Gathering;
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
+                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(gather, croppedBmp));
+                        if (similarity > 0.9)
+                        {
+                            _currentState = TaskFlowState.Gathering;
+                        }
+                        else
+                        {
+                            _logWindow?.DeleteLastLogMessage();
+                            _currentState = TaskFlowState.Gapping;
+                        }
                         break;
 
                 }
