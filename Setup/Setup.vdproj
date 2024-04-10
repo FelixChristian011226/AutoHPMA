@@ -346,12 +346,6 @@
         "Entry"
         {
         "MsmKey" = "8:_262669B0571CEBFDD9ED6BDD5832F56B"
-        "OwnerKey" = "8:_E18459CF95142393160C03D495BBFD25"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_262669B0571CEBFDD9ED6BDD5832F56B"
         "OwnerKey" = "8:_2000C1960CFE4480B51736F8D51DF524"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -1498,12 +1492,6 @@
         "Entry"
         {
         "MsmKey" = "8:_C09F9D75477524B9DDD5709215BD78AD"
-        "OwnerKey" = "8:_E18459CF95142393160C03D495BBFD25"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C09F9D75477524B9DDD5709215BD78AD"
         "OwnerKey" = "8:_2000C1960CFE4480B51736F8D51DF524"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -1715,12 +1703,6 @@
         {
         "MsmKey" = "8:_DCDB4BA62E2F4F2296779970CEC57252"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_E18459CF95142393160C03D495BBFD25"
-        "OwnerKey" = "8:_43C108278CFB45AE8E0AAA617FE73B5E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -2260,6 +2242,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -5480,37 +5470,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E18459CF95142393160C03D495BBFD25"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Vanara.PInvoke.DwmApi, Version=3.4.17.0, Culture=neutral, PublicKeyToken=c37e4080322237fa, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_E18459CF95142393160C03D495BBFD25"
-                    {
-                    "Name" = "8:Vanara.PInvoke.DwmApi.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:Vanara.PInvoke.DwmApi.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_719ECDB03E59446A88229A3A0383872F"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E1F161BC8971FA5E1205DBB0A85EC704"
             {
             "AssemblyRegister" = "3:1"
@@ -6257,15 +6216,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:AutoHPMA"
-        "ProductCode" = "8:{392C4C3C-B495-473A-867B-A38326D40D43}"
-        "PackageCode" = "8:{C54046B0-A4FC-4DE0-B712-0DD43A88F1C2}"
+        "ProductCode" = "8:{A674F146-DA24-41F8-BF41-F828CC7EFFB5}"
+        "PackageCode" = "8:{76CD2265-66C1-49E0-B4D7-381BD252A6E8}"
         "UpgradeCode" = "8:{7B905E9D-30FB-408D-9E18-0E70E7CFD4EE}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.1"
+        "ProductVersion" = "8:1.1.0"
         "Manufacturer" = "8:wangyuefei"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
