@@ -2,18 +2,25 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Vanara.PInvoke;
+using static Vanara.PInvoke.User32;
 
 namespace AutoHPMA.GameTask;
 
 public class SystemControl
 {
-    public static nint FindMumuSimulatorHandle()
-    {
-        return FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-    }
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool EnumChildWindows(IntPtr hwndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+    private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
 
     public static nint FindHandleByProcessName(params string[] names)
     {
@@ -29,43 +36,29 @@ public class SystemControl
         return 0;
     }
 
-    /// <summary>
-    /// 获取窗口位置
-    /// </summary>
-    /// <param name="hWnd"></param>
-    /// <returns></returns>
-    public static RECT GetWindowRect(nint hWnd)
+    public static nint FindMumuSimulatorHandle()
     {
-        // User32.GetWindowRect(hWnd, out var windowRect);
-        DwmApi.DwmGetWindowAttribute<RECT>(hWnd, DwmApi.DWMWINDOWATTRIBUTE.DWMWA_EXTENDED_FRAME_BOUNDS, out var windowRect);
-        return windowRect;
+        return FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
     }
 
-    /// <summary>
-    /// 游戏本身分辨率获取
-    /// </summary>
-    /// <param name="hWnd"></param>
-    /// <returns></returns>
-    public static RECT GetGameScreenRect(nint hWnd)
+    public static IntPtr FindChildWindowByTitle(IntPtr parentHandle, string targetTitle)
     {
-        User32.GetClientRect(hWnd, out var clientRect);
-        return clientRect;
+        IntPtr result = IntPtr.Zero;
+        EnumChildWindows(parentHandle, (hWnd, lParam) =>
+        {
+            StringBuilder windowText = new StringBuilder(255);
+            GetWindowText(hWnd, windowText, 255);
+            if (windowText.ToString() == targetTitle)
+            {
+                result = hWnd;
+                return false; // 返回 false 以停止窗口枚举
+            }
+            return true; // 返回 true 继续枚举
+        }, IntPtr.Zero);
+
+        return result;
     }
 
-    /// <summary>
-    /// GetWindowRect or GetGameScreenRect
-    /// </summary>
-    /// <param name="hWnd"></param>
-    /// <returns></returns>
-    public static RECT GetCaptureRect(nint hWnd)
-    {
-        var windowRect = GetWindowRect(hWnd);
-        var gameScreenRect = GetGameScreenRect(hWnd);
-        var left = windowRect.Left;
-        var top = windowRect.Top + windowRect.Height - gameScreenRect.Height;
-        var right = left + gameScreenRect.Width;
-        var bottom = top + gameScreenRect.Height;
-        return new RECT(left, top, right, bottom);
-    }
+
 
 }

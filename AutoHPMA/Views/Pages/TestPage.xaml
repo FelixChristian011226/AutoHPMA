@@ -17,6 +17,7 @@
     mc:Ignorable="d">
 
     <StackPanel Cursor="">
+        <!--  截屏测试  -->
         <ui:TextBlock FontTypography="Subtitle" Text="截屏测试" />
         <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
             <Grid Cursor="">
@@ -217,6 +218,7 @@
             </Grid>
         </StackPanel>
 
+        <!--  图像比对  -->
         <ui:TextBlock
             Margin="0,10,0,0"
             FontTypography="Subtitle"
@@ -253,6 +255,145 @@
                     Cursor="" />
             </Grid>
         </StackPanel>
+
+        <!--  模拟点击  -->
+        <ui:TextBlock
+            Margin="0,10,0,0"
+            FontTypography="Subtitle"
+            Text="模拟点击" />
+        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+            <Grid Cursor="">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    FontTypography="BodyStrong"
+                    Text="X-axis"
+                    TextWrapping="Wrap" />
+                <ui:TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                    Text="横坐标"
+                    TextWrapping="Wrap" />
+                <ui:TextBox
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Width="100"
+                    Margin="5,0,10,0"
+                    Text="{Binding ViewModel.ClickLeft, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </Grid>
+            <Grid Cursor="">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    FontTypography="BodyStrong"
+                    Text="Y-axis"
+                    TextWrapping="Wrap" />
+                <ui:TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                    Text="纵坐标"
+                    TextWrapping="Wrap" />
+                <ui:TextBox
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Width="100"
+                    Margin="5,0,10,0"
+                    Text="{Binding ViewModel.ClickTop, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </Grid>
+            <Grid Cursor="">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    FontTypography="BodyStrong"
+                    Text="Interval"
+                    TextWrapping="Wrap" />
+                <ui:TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                    Text="点击间隔"
+                    TextWrapping="Wrap" />
+                <ui:TextBox
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Width="100"
+                    Margin="5,0,10,0"
+                    Text="{Binding ViewModel.ClickInterval, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </Grid>
+            <Grid Cursor="">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    FontTypography="BodyStrong"
+                    Text="Times"
+                    TextWrapping="Wrap" />
+                <ui:TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                    Text="点击次数"
+                    TextWrapping="Wrap" />
+                <ui:TextBox
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Width="100"
+                    Margin="5,0,10,0"
+                    Text="{Binding ViewModel.ClickTimes, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </Grid>
+            <Grid>
+                <ui:Button
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Margin="10,0,36,0"
+                    Command="{Binding ViewModel.ClickTestCommand}"
+                    Content="点击"
+                    Cursor="" />
+            </Grid>
+        </StackPanel>
+
 
 
     </StackPanel>

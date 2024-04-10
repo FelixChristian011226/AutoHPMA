@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Vanara.PInvoke;
 
 namespace AutoHPMA.GameTask
 {
@@ -17,6 +18,12 @@ namespace AutoHPMA.GameTask
         Preparing,
         Answering,
         Gapping
+    }
+
+    public struct Point
+    {
+        public int x;
+        public int y;
     }
 
     public class TaskFlow
@@ -67,6 +74,7 @@ namespace AutoHPMA.GameTask
             time17 = new Bitmap("Assets/Captures/Time/17.png");
             time18 = new Bitmap("Assets/Captures/Time/18.png");
             time20 = new Bitmap("Assets/Captures/Time/20.png");
+
         }
 
         public async Task WorkAsync(nint hwnd, Bitmap bmp)
@@ -92,11 +100,14 @@ namespace AutoHPMA.GameTask
                         if (similarity > 0.9)
                         {
                             _logWindow?.AddLogMessage("INF", "定位到社团集结，准备开始！");
-                            await ClickAtPositionAsync(1550, 1420);
+                            //await ClickAtPositionAsync(1550, 1420);
+                            WindowInteractionHelper.SendMouseClick(hwnd, 1550, 1330);
                             await Task.Delay(2000);
-                            await ClickAtPositionAsync(2100, 417);
+                            //await ClickAtPositionAsync(2100, 417);
+                            WindowInteractionHelper.SendMouseClick(hwnd, 2100, 327);
                             await Task.Delay(1000);
-                            await ClickAtPositionAsync(2100, 417);
+                            //await ClickAtPositionAsync(2100, 417);
+                            WindowInteractionHelper.SendMouseClick(hwnd, 2100, 327);
                             roundIndex++;
                             _logWindow?.AddLogMessage("INF", "-----第" + roundIndex + "轮答题-----");
                             _currentState = TaskFlowState.Preparing;
@@ -110,9 +121,11 @@ namespace AutoHPMA.GameTask
                         if (similarity > 0.9)
                         {
                             _logWindow?.AddLogMessage("INF", "定位到活动目标，准备答题！");
-                            await ClickAtPositionAsync(1997, 403);
+                            //await ClickAtPositionAsync(1997, 403);
+                            WindowInteractionHelper.SendMouseClick(hwnd, 1997, 313);
                             await Task.Delay(1000);
-                            await ClickAtPositionAsync(1997, 403);
+                            //await ClickAtPositionAsync(1997, 403);
+                            WindowInteractionHelper.SendMouseClick(hwnd, 1997, 313);
                             
                             _currentState = TaskFlowState.Answering;
                         }
@@ -128,11 +141,14 @@ namespace AutoHPMA.GameTask
                         {
                             _logWindow?.AddLogMessage("INF", "-----答题结束-----");
                             await Task.Delay(1000);
-                            await ClickAtPositionAsync(1287, 1377);
+                            //await ClickAtPositionAsync(1287, 1377);
+                            WindowInteractionHelper.SendMouseClick(hwnd, 1287, 1287);
                             await Task.Delay(3000);
-                            await ClickAtPositionAsync(750, 900);
+                            //await ClickAtPositionAsync(750, 900);
+                            WindowInteractionHelper.SendMouseClick(hwnd, 750, 810);
                             await Task.Delay(1000);
-                            await ClickAtPositionAsync(750, 900);
+                            //await ClickAtPositionAsync(750, 900);
+                            WindowInteractionHelper.SendMouseClick(hwnd, 750, 810);
                             _currentState = TaskFlowState.Gapping;
                         }
 
@@ -152,19 +168,23 @@ namespace AutoHPMA.GameTask
                         switch (FindAnswer(bmp))
                         {
                             case 0:
-                                await ClickAtPositionAsync(1000, 1230);
+                                //await ClickAtPositionAsync(1000, 1230);
+                                WindowInteractionHelper.SendMouseClick(hwnd, 1000, 1140);
                                 option = 'A';
                                 break;
                             case 1:
-                                await ClickAtPositionAsync(2300, 1230);
+                                //await ClickAtPositionAsync(2300, 1230);
+                                WindowInteractionHelper.SendMouseClick(hwnd, 2300, 1140);
                                 option = 'B';
                                 break;
                             case 2:
-                                await ClickAtPositionAsync(1000, 1415);
+                                //await ClickAtPositionAsync(1000, 1415);
+                                WindowInteractionHelper.SendMouseClick(hwnd, 1000, 1325);
                                 option = 'C';
                                 break;
                             case 3:
-                                await ClickAtPositionAsync(2300, 1415);
+                                //await ClickAtPositionAsync(2300, 1415);
+                                WindowInteractionHelper.SendMouseClick(hwnd, 2300, 1325);
                                 option = 'D';
                                 break;
                             default:
@@ -178,28 +198,21 @@ namespace AutoHPMA.GameTask
                         // 执行间隔状态的逻辑...
                         questionIndex = 0;
                         _logWindow?.AddLogMessage("INF", "等待下一场答题...");
-                        for (int i = 15; i > 0; i--)
+                        for (int i = 60; i > 0; i--)
                         {
                             _logWindow?.AddLogMessage("INF", "还剩" + i + "秒...");
                             await Task.Delay(1000);
                             _logWindow?.DeleteLastLogMessage();
                         }
-                        await ClickAtPositionAsync(1111, 1425);
+                        //await ClickAtPositionAsync(1111, 1425);
+                        WindowInteractionHelper.SendMouseClick(hwnd, 1111, 1335);
                         await Task.Delay(1000);
-                        await ClickAtPositionAsync(92, 166);
+                        //await ClickAtPositionAsync(92, 166);
+                        WindowInteractionHelper.SendMouseClick(hwnd, 92, 76);
                         await Task.Delay(1000);
-                        await ClickAtPositionAsync(92, 166);
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
-                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(gather, croppedBmp));
-                        if (similarity > 0.9)
-                        {
-                            _currentState = TaskFlowState.Gathering;
-                        }
-                        else
-                        {
-                            _logWindow?.DeleteLastLogMessage();
-                            _currentState = TaskFlowState.Gapping;
-                        }
+                        //await ClickAtPositionAsync(92, 166);
+                        WindowInteractionHelper.SendMouseClick(hwnd, 92, 76);
+                        _currentState = TaskFlowState.Gathering;
                         break;
 
                 }

@@ -16,6 +16,7 @@ namespace AutoHPMA.ViewModels.Pages
 {
     public partial class TestViewModel : ObservableObject
     {
+        // 截屏测试
         [ObservableProperty]
         private int _screenshotLeft = 0;
         [ObservableProperty]
@@ -26,6 +27,17 @@ namespace AutoHPMA.ViewModels.Pages
         private int _screenshotHeight = 1550;
         [ObservableProperty]
         private string _screenshotFilename = "CaptureTest";
+
+        // 模拟点击
+        [ObservableProperty]
+        private int _clickLeft = 200;
+        [ObservableProperty]
+        private int _clickTop = 200;
+        [ObservableProperty]
+        private int _clickInterval = 500;
+        [ObservableProperty]
+        private int _clickTimes = 10;
+
 
         [RelayCommand]
         public async void OnScreenshotTest(object sender)
@@ -160,6 +172,22 @@ namespace AutoHPMA.ViewModels.Pages
                     }
                 }
                 //_logWindow.AddLogMessage("INF", "相似度：" + similarity[0]);
+            }
+        }
+
+        [RelayCommand]
+        public async void OnClickTest(object sender)
+        {
+            IntPtr hWnd = SystemControl.FindMumuSimulatorHandle();
+            IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
+            
+            if (hWndChild != IntPtr.Zero)
+            {
+                for (int i = 0; i < _clickTimes; i++)
+                {
+                    WindowInteractionHelper.SendMouseClick(hWndChild, (uint)_clickLeft, (uint)_clickTop);
+                    Thread.Sleep(_clickInterval);
+                }
             }
         }
 

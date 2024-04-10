@@ -75,13 +75,13 @@ public class WindowInteractionHelper
         var lParam = MakeLParam(x, y);
 
         // 发送鼠标左键按下消息
-        PostMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
+        SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
 
         // 添加延时
         Thread.Sleep(100); // 延时100毫秒
 
         // 发送鼠标左键释放消息
-        PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
+        SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
     }
     public static void SendMouseClickWithParentNotify(IntPtr hWnd, uint x, uint y)
     {
@@ -102,8 +102,11 @@ public class WindowInteractionHelper
 
     public static void TestClick(int x,int y)
     {
-        string hexHandle = "00030D50"; // 通过Spy++等工具获取到的窗口句柄
-        IntPtr hWnd = new IntPtr(Convert.ToInt32(hexHandle, 16));
+        //string hexHandle = "00030D50"; // 通过Spy++等工具获取到的窗口句柄
+        //IntPtr hWnd = new IntPtr(Convert.ToInt32(hexHandle, 16));
+        //IntPtr hWnd = FindWindow(null, "MuMuPlayer");
+        IntPtr hWnd = SystemControl.FindMumuSimulatorHandle();
+        IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
         //SetForegroundWindow(hWnd);
         SendMouseClickWithParentNotify(hWnd, (uint)x, (uint)y);
         //Click((uint)x, (uint)y);

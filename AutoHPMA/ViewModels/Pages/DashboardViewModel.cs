@@ -86,6 +86,7 @@ namespace AutoHPMA.ViewModels.Pages
         private void CaptureTimer_Tick(object sender, EventArgs e)
         {
             var mumuHwnd = SystemControl.FindMumuSimulatorHandle(); // 获取Mumu模拟器窗口句柄
+            var mumuChildHwnd = SystemControl.FindChildWindowByTitle(mumuHwnd, "MuMuPlayer");
             if (mumuHwnd != IntPtr.Zero)
             {
                 // 截取窗口图像
@@ -97,7 +98,7 @@ namespace AutoHPMA.ViewModels.Pages
                 // 保存图像文件
                 ImageProcessingHelper.SaveBitmapAs(bmp, folderPath,"capture.png", ImageFormat.Png);
 
-                _taskFlow.WorkAsync(mumuHwnd, bmp);
+                _taskFlow.WorkAsync(mumuChildHwnd, bmp);
 
             }
         }
@@ -123,32 +124,6 @@ namespace AutoHPMA.ViewModels.Pages
                 }
             }
         }
-
-        //public DashboardViewModel(IConfigService configService, TaskTriggerDispatcher taskTriggerDispatcher)
-        //{
-        //    _taskDispatcher = taskTriggerDispatcher;
-        //    Config = configService.Get();
-        //    ReadGameInstallPath();
-        //    WeakReferenceMessenger.Default.Register<PropertyChangedMessage<object>>(this, (sender, msg) =>
-        //    {
-        //        if (msg.PropertyName == "Close")
-        //        {
-        //            OnClosed();
-        //        }
-        //        else if (msg.PropertyName == "SwitchTriggerStatus")
-        //        {
-        //            if (_taskDispatcherEnabled)
-        //            {
-        //                OnStopTrigger();
-        //            }
-        //            else
-        //            {
-        //                _ = OnStartTriggerAsync();
-        //            }
-        //        }
-        //    });
-        //}
-
 
         private bool CanStartTrigger() => StartButtonEnabled;
 
