@@ -1,3 +1,5 @@
+**English | [中文](README_ZH.md)**
+
 # AutoHPMA - Harry Potter: Magic Awakened Auto Answer Script
 
 Welcome to the official release page of **AutoHPMA**, an innovative WPF-based tool designed for the enthusiastic players of Harry Potter: Magic Awakened (HPMA). This application simplifies your gameplay by automating the process of answering club quizzes, with a log window showing information during the process. Moreover, this application supports background running, which means you don't have to set the game window as foreground window. Get ready to level up your HPMA experience with unprecedented ease and efficiency.
