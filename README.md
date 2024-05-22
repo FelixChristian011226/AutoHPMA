@@ -10,7 +10,7 @@ Welcome to the official release page of **AutoHPMA**, an innovative WPF-based to
 - **Log Window**: The application provides a log window that displays information about the running process, such as the current stage and the options selected in the answer. 
 - **Background Operation**: Run AutoHPMA in the background, allowing you to multitask while the script handles quiz answering seamlessly.
 
-## Getting Started
+## Usage
 
 To embark on a smoother HPMA journey with AutoHPMA, follow these simple installation steps:
 
@@ -29,7 +29,7 @@ Download the latest version of AutoHPMA from the [Releases](https://github.com/Y
 - After installation, launch AutoHPMA from your Start menu or desktop shortcut.
 - Configure the application as per your preferences and let AutoHPMA take care of the rest.
 
-## Important Notice
+## Notice
 
 - **Compatibility**: AutoHPMA is currently compatible only with the MuMu emulator for Harry Potter: Magic Awakened and supports windowed fullscreen mode at a resolution of 2560*1600. Official launcher and other resolutions are not currently supported.
 - **Instructions**: During script execution, do not minimize the window or click the Show desktop button, this will cause the function to fail. Though the window occlusion is allowed.
