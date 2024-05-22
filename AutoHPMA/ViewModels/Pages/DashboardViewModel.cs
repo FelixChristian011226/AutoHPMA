@@ -51,8 +51,7 @@ namespace AutoHPMA.ViewModels.Pages
         [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
         private bool _stopButtonEnabled = true;
 
-        private LogWindow? _logWindow; // 添加一个 LogWindow 变量
-                                       //private readonly ILogger<HomePageViewModel> _logger = App.GetLogger<HomePageViewModel>();
+        private LogWindow? _logWindow; 
 
         private TaskFlow _taskFlow;
 
@@ -63,43 +62,40 @@ namespace AutoHPMA.ViewModels.Pages
             ScreenshotUpdated?.Invoke(bmp);
         }
 
-        //private readonly TaskTriggerDispatcher _taskDispatcher;
-        //private readonly MouseKeyMonitor _mouseKeyMonitor = new();
-
         public DashboardViewModel()
         {
             InitializeCaptureTimer();
             InitializeSyncWindowTimer();
+            _taskFlow = TaskFlow.Instance();
+            _taskFlow.Init(_logWindow);
         }
         private void InitializeCaptureTimer()
         {
             _captureTimer = new DispatcherTimer();
-            _captureTimer.Interval = TimeSpan.FromMilliseconds(500); // 每500毫秒截图一次
-            _captureTimer.Tick += CaptureTimer_Tick;
+            _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
+        }
+        private void UpdateCaptureTimer()
+        {
+            _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
         }
         public void InitializeSyncWindowTimer()
         {
             _syncWindowTimer = new DispatcherTimer();
-            _syncWindowTimer.Interval = TimeSpan.FromMilliseconds(50); // 每50毫秒检查一次
-            _syncWindowTimer.Tick += SyncWindowTimer_Tick;
+            _syncWindowTimer.Interval = TimeSpan.FromMilliseconds(50);
         }
-        private void CaptureTimer_Tick(object sender, EventArgs e)
+        private void CaptureTimer_Tick(object? sender, EventArgs e)
         {
-            var mumuHwnd = SystemControl.FindMumuSimulatorHandle(); // 获取Mumu模拟器窗口句柄
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
             var mumuChildHwnd = SystemControl.FindChildWindowByTitle(mumuHwnd, "MuMuPlayer");
             if (mumuHwnd != IntPtr.Zero)
             {
-                // 截取窗口图像
                 Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
                 OnScreenshotUpdated(bmp); // 发布截图更新事件
-                // 确保目标文件夹存在
                 string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                 Directory.CreateDirectory(folderPath);
-                // 保存图像文件
                 ImageProcessingHelper.SaveBitmapAs(bmp, folderPath,"capture.png", ImageFormat.Png);
 
                 _taskFlow.WorkAsync(mumuChildHwnd, bmp);
-
             }
         }
         private void SyncWindowTimer_Tick(object? sender, EventArgs e)
@@ -109,18 +105,15 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 if (NativeMethodsService.IsIconic(mumuHwnd)) // 如果Mumu模拟器最小化
                 {
-                    if (_logWindow.WindowState != WindowState.Minimized)
-                        _logWindow.WindowState = WindowState.Minimized;
+                    LogWindow.GetInstance().HideLogWindow();
                 }
                 else if (NativeMethodsService.GetForegroundWindow()!=mumuHwnd) // 如果Mumu模拟器不在顶层
                 {
-                    if (_logWindow.WindowState != WindowState.Minimized)
-                        _logWindow.WindowState = WindowState.Minimized;
+                    LogWindow.GetInstance().HideLogWindow();
                 }
                 else
                 {
-                    if (_logWindow.WindowState != WindowState.Normal)
-                        _logWindow.WindowState = WindowState.Normal; // 恢复日志窗口
+                    LogWindow.GetInstance().ShowLogWindow();
                 }
             }
         }
@@ -133,45 +126,39 @@ namespace AutoHPMA.ViewModels.Pages
             var hWnd = SystemControl.FindMumuSimulatorHandle();
             if (hWnd == IntPtr.Zero)
             {
-                if (hWnd == IntPtr.Zero)
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
-                    var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-                    {
-                        Title = "错误",
-                        Content = "未找到Mumu模拟器窗口。\n请先启动Mumu模拟器！",
-                    };
-                    var result = await uiMessageBox.ShowDialogAsync();
-                    return;
-                }
+                    Title = "错误",
+                    Content = "未找到Mumu模拟器窗口。\n请先启动Mumu模拟器！",
+                };
+                var result = await uiMessageBox.ShowDialogAsync();
+                return;
             }
             if (!_taskDispatcherEnabled)
             {
-                //_taskDispatcher.Start(hWnd, Config.CaptureMode.ToCaptureMode(), Config.TriggerInterval);
-                //_mouseKeyMonitor.Subscribe(hWnd);
                 _taskDispatcherEnabled = true;
                 StartButtonVisibility = Visibility.Collapsed;
                 StopButtonVisibility = Visibility.Visible;
 
-                // 根据窗口当前状态选择适当的SW命令
-                int showWindowCommand;
-                if (NativeMethodsService.IsZoomed(hWnd))
-                {
-                    // 如果窗口已经是最大化状态，则只需要将其置于前端
-                    showWindowCommand = NativeMethodsService.SW_SHOW;
-                }
-                else if (NativeMethodsService.IsIconic(hWnd))
-                {
-                    // 如果窗口是最小化的，则恢复
-                    showWindowCommand = NativeMethodsService.SW_RESTORE;
-                }
-                else
-                {
-                    // 如果窗口既不是最小化也不是最大化，则不做状态改变，只尝试置于前端
-                    showWindowCommand = NativeMethodsService.SW_SHOW;
-                }
-                // 从最小化状态恢复窗口并试图将其置于前端。
-                NativeMethodsService.ShowWindow(hWnd, showWindowCommand);
-                NativeMethodsService.SetForegroundWindow(hWnd);
+                //int showWindowCommand;
+                //if (NativeMethodsService.IsZoomed(hWnd))
+                //{
+                //    // 如果窗口已经是最大化状态，则只需要将其置于前端
+                //    showWindowCommand = NativeMethodsService.SW_SHOW;
+                //}
+                //else if (NativeMethodsService.IsIconic(hWnd))
+                //{
+                //    // 如果窗口是最小化的，则恢复
+                //    showWindowCommand = NativeMethodsService.SW_RESTORE;
+                //}
+                //else
+                //{
+                //    // 如果窗口既不是最小化也不是最大化，则不做状态改变，只尝试置于前端
+                //    showWindowCommand = NativeMethodsService.SW_SHOW;
+                //}
+                //// 从最小化状态恢复窗口并试图将其置于前端。
+                //NativeMethodsService.ShowWindow(hWnd, showWindowCommand);
+                //NativeMethodsService.SetForegroundWindow(hWnd);
 
                 // 隐藏WPF应用的主窗口。基于你的项目设置，可能需要调整获取主窗口的方式。
                 Application.Current.Dispatcher.Invoke(() =>
@@ -179,13 +166,14 @@ namespace AutoHPMA.ViewModels.Pages
                     Application.Current.MainWindow.Hide();
                 });
 
-                _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
+                UpdateCaptureTimer();
+                _captureTimer.Tick += CaptureTimer_Tick;
                 _captureTimer.Start();
-                _taskFlow = TaskFlow.Instance();
-                // 在启动触发器时显示日志窗口
+                
                 _taskDispatcherEnabled = true;
                 if (_logWindowEnabled)
                 {
+                    _syncWindowTimer.Tick += SyncWindowTimer_Tick;
                     _syncWindowTimer.Start();
                     _logWindow = LogWindow.Instance();
                     _logWindow.ShowInTaskbar = false;
@@ -194,8 +182,6 @@ namespace AutoHPMA.ViewModels.Pages
                     _logWindow.AddLogMessage("INF","---日志窗口已启动---"); // 添加日志消息
                     //for (int i = 0; i < 100; i++) { _logWindow.AddLogMessage("INF", "消息" + i); }
                 }
-                _taskFlow.Init(_logWindow);
-
 
             }
 
@@ -208,15 +194,18 @@ namespace AutoHPMA.ViewModels.Pages
         {
             if (_taskDispatcherEnabled)
             {
-                //_taskDispatcher.Stop();
                 _taskDispatcherEnabled = false;
-                //_mouseKeyMonitor.Unsubscribe();
                 StartButtonVisibility = Visibility.Visible;
                 StopButtonVisibility = Visibility.Collapsed;
-                // 在停止触发器时隐藏日志窗口
+
                 _logWindow?.Close();
+
                 _captureTimer.Stop();
+                _captureTimer.Tick -= CaptureTimer_Tick;
+
                 _syncWindowTimer.Stop();
+                _syncWindowTimer.Tick -= SyncWindowTimer_Tick;
+
                 _taskFlow.Reset();
             }
         }
@@ -224,7 +213,7 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public void OnGoToWikiUrl()
         {
-            Process.Start(new ProcessStartInfo("https://baidu.com") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo("https://github.com/FelixChristian011226/AutoHPMA") { UseShellExecute = true });
         }
 
         [RelayCommand]

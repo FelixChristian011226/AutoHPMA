@@ -69,18 +69,12 @@ public class WindowInteractionHelper
         return (IntPtr)((y << 16) | (x & 0xFFFF));
     }
 
-    // 向指定窗口发送模拟鼠标左键点击的消息
     public static void SendMouseClick(IntPtr hWnd, uint x, uint y)
     {
         var lParam = MakeLParam(x, y);
 
-        // 发送鼠标左键按下消息
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
-
-        // 添加延时
         Thread.Sleep(100); // 延时100毫秒
-
-        // 发送鼠标左键释放消息
         SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
     }
     public static void SendMouseClickWithParentNotify(IntPtr hWnd, uint x, uint y)

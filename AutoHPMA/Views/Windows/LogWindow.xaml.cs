@@ -104,6 +104,21 @@ namespace AutoHPMA.Views.Windows
             DragMove();
         }
 
+        public void HideLogWindow()
+        {
+            this.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowLogWindow()
+        {
+            this.Visibility = Visibility.Visible;
+        }
+
+        public void ToggleLogWindowVisibility(bool isVisible)
+        {
+            this.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

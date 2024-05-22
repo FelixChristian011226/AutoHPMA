@@ -277,16 +277,5 @@ namespace AutoHPMA.GameTask
             return _taskflow;
         }
 
-
-        private async Task ClickAtPositionAsync(int x, int y)
-        {
-            // 移动鼠标到指定位置
-            SetCursorPos(x, y);
-            // 模拟鼠标按下和释放
-            mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
-            await Task.Delay(100); // 添加一个小的延时确保鼠标按下和释放操作分开
-            mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
-        }
-
     }
 }
