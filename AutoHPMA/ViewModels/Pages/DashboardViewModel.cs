@@ -67,7 +67,7 @@ namespace AutoHPMA.ViewModels.Pages
             InitializeCaptureTimer();
             InitializeSyncWindowTimer();
             _taskFlow = TaskFlow.Instance();
-            _taskFlow.Init(_logWindow);
+            //_taskFlow.Init(_logWindow);
         }
         private void InitializeCaptureTimer()
         {
@@ -105,15 +105,18 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 if (NativeMethodsService.IsIconic(mumuHwnd)) // 如果Mumu模拟器最小化
                 {
-                    LogWindow.GetInstance().HideLogWindow();
+                    //LogWindow.GetInstance().HideLogWindow();
+                    _logWindow?.HideLogWindow();
                 }
                 else if (NativeMethodsService.GetForegroundWindow()!=mumuHwnd) // 如果Mumu模拟器不在顶层
                 {
-                    LogWindow.GetInstance().HideLogWindow();
+                    //LogWindow.GetInstance().HideLogWindow();
+                    _logWindow?.HideLogWindow();
                 }
                 else
                 {
-                    LogWindow.GetInstance().ShowLogWindow();
+                    //LogWindow.GetInstance().ShowLogWindow();
+                    _logWindow?.ShowLogWindow();
                 }
             }
         }
@@ -176,6 +179,7 @@ namespace AutoHPMA.ViewModels.Pages
                     _syncWindowTimer.Tick += SyncWindowTimer_Tick;
                     _syncWindowTimer.Start();
                     _logWindow = LogWindow.Instance();
+                    _taskFlow.Init(_logWindow);
                     _logWindow.ShowInTaskbar = false;
                     _logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
                     _logWindow.RefreshPosition(hWnd, _logWindowLeft, _logWindowTop);
