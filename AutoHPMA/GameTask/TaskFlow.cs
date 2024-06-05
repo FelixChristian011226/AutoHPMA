@@ -227,13 +227,13 @@ namespace AutoHPMA.GameTask
                         bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
 
                         // 判断社团聊天窗位置并点击展开
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 538, 787, 90, 45);
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 538, 790, 90, 45);
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(club1, croppedBmp));
                         if (similarity > 0.9)
                         {
                             WindowInteractionHelper.SendMouseClick(hwnd, 580, 814-80);
                         }
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 538, 1096, 90, 45);
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 538, 1099, 90, 45);
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(club2, croppedBmp));
                         if (similarity>0.9)
                         {
