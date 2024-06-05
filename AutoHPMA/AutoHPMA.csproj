@@ -37,6 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Captures\club1.png" />
+    <None Remove="Assets\Captures\club2.png" />
     <None Remove="Assets\Captures\gather.png" />
     <None Remove="Assets\Captures\Option\A.png" />
     <None Remove="Assets\Captures\Option\B.png" />
@@ -59,6 +61,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\Captures\club1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Captures\club2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Captures\gather.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

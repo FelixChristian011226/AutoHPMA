@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing.Imaging;
+using System.IO;
 using Vanara.PInvoke;
 
 namespace AutoHPMA.GameTask
@@ -29,7 +31,7 @@ namespace AutoHPMA.GameTask
     public class TaskFlow
     {
         private static LogWindow _logWindow;
-        private static Bitmap gather,tip,over;
+        private static Bitmap gather,tip,over,club1,club2;
         private static Bitmap[] options = new Bitmap[4];
         private static Bitmap time0,time6,time10,time15,time16,time17,time18,time20;
         private static TaskFlow _taskflow;
@@ -62,6 +64,8 @@ namespace AutoHPMA.GameTask
             gather = new Bitmap("Assets/Captures/gather.png");
             tip = new Bitmap("Assets/Captures/tip.png");
             over = new Bitmap("Assets/Captures/over.png");
+            club1 = new Bitmap("Assets/Captures/club1.png");
+            club2 = new Bitmap("Assets/Captures/club2.png");
             options[0] = new Bitmap("Assets/Captures/Option/A.png");
             options[1] = new Bitmap("Assets/Captures/Option/B.png");
             options[2] = new Bitmap("Assets/Captures/Option/C.png");
@@ -81,6 +85,7 @@ namespace AutoHPMA.GameTask
         {
             Bitmap croppedBmp;
             double similarity;
+            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
 
             await workAsyncLock.WaitAsync();
 
@@ -95,6 +100,12 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Gathering:
                         // 执行集结状态的逻辑...
+                        bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                        //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                        //Directory.CreateDirectory(folderPath);
+                        //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "gather1.png", ImageFormat.Png);
+
+
                         croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(gather, croppedBmp));
                         if (similarity > 0.9)
@@ -111,6 +122,10 @@ namespace AutoHPMA.GameTask
                             roundIndex++;
                             _logWindow?.AddLogMessage("INF", "-----第" + roundIndex + "轮答题-----");
                             _currentState = TaskFlowState.Preparing;
+                        }
+                        else
+                        {
+                            _currentState = TaskFlowState.Gapping;
                         }
                         break;
 
@@ -198,20 +213,36 @@ namespace AutoHPMA.GameTask
                         // 执行间隔状态的逻辑...
                         questionIndex = 0;
                         _logWindow?.AddLogMessage("INF", "等待下一场答题...");
-                        for (int i = 60; i > 0; i--)
+                        for (int i = 15; i > 0; i--)
                         {
                             _logWindow?.AddLogMessage("INF", "还剩" + i + "秒...");
                             await Task.Delay(1000);
                             _logWindow?.DeleteLastLogMessage();
                         }
-                        //await ClickAtPositionAsync(1111, 1425);
-                        WindowInteractionHelper.SendMouseClick(hwnd, 1111, 1335);
+                        WindowInteractionHelper.SendMouseClick(hwnd, 1111, 1335);   //打开聊天框
                         await Task.Delay(1000);
-                        //await ClickAtPositionAsync(92, 166);
-                        WindowInteractionHelper.SendMouseClick(hwnd, 92, 76);
+                        WindowInteractionHelper.SendMouseClick(hwnd, 1500, 800);    //关闭输入框
                         await Task.Delay(1000);
-                        //await ClickAtPositionAsync(92, 166);
-                        WindowInteractionHelper.SendMouseClick(hwnd, 92, 76);
+
+                        bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+
+                        // 判断社团聊天窗位置并点击展开
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 538, 787, 90, 45);
+                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(club1, croppedBmp));
+                        if (similarity > 0.9)
+                        {
+                            WindowInteractionHelper.SendMouseClick(hwnd, 580, 814-80);
+                        }
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 538, 1096, 90, 45);
+                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(club2, croppedBmp));
+                        if (similarity>0.9)
+                        {
+                            WindowInteractionHelper.SendMouseClick(hwnd, 580, 1123-80);
+                        }
+
+                        await Task.Delay(1000);
+                        WindowInteractionHelper.SendMouseClick(hwnd, 92, 76);       //关闭聊天框
+                        await Task.Delay(1000);
                         _currentState = TaskFlowState.Gathering;
                         break;
 

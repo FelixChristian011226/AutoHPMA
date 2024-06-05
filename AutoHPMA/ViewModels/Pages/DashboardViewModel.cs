@@ -91,9 +91,9 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
                 OnScreenshotUpdated(bmp); // 发布截图更新事件
-                string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
-                Directory.CreateDirectory(folderPath);
-                ImageProcessingHelper.SaveBitmapAs(bmp, folderPath,"capture.png", ImageFormat.Png);
+                //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                //Directory.CreateDirectory(folderPath);
+                //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath,"capture.png", ImageFormat.Png);
 
                 _taskFlow.WorkAsync(mumuChildHwnd, bmp);
             }
