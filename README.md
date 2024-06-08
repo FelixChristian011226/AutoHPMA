@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/build-passing-green)
+![Static Badge](https://img.shields.io/badge/build-passing-brightgreen)
 ![GitHub Release Date](https://img.shields.io/github/release-date/FelixChristian011226/AutoHPMA)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total)
 
