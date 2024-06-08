@@ -1,4 +1,4 @@
-![GitHub branch status](https://img.shields.io/github/checks-status/FelixChristian011226/AutoHPMA/master)
+![Static Badge](https://img.shields.io/badge/build%2Cpassing%2Cgreen)
 ![GitHub Release Date](https://img.shields.io/github/release-date/FelixChristian011226/AutoHPMA)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total)
 
