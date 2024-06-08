@@ -1,4 +1,4 @@
-![GitHub branch status](https://img.shields.io/github/checks-status/FelixChristian011226/AutoHPMA/main)
+![GitHub branch status](https://img.shields.io/github/checks-status/FelixChristian011226/AutoHPMA/master)
 ![GitHub Release Date](https://img.shields.io/github/release-date/FelixChristian011226/AutoHPMA)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total)
 
