@@ -1,3 +1,4 @@
+![GitHub Release Date](https://img.shields.io/github/release-date/FelixChristian011226/AutoHPMA)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/t/FelixChristian011226/AutoHPMA)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total)
 
