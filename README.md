@@ -1,6 +1,9 @@
 ![Static Badge](https://img.shields.io/badge/build-passing-brightgreen)
-![GitHub Release Date](https://img.shields.io/github/release-date/FelixChristian011226/AutoHPMA)
+![GitHub top language](https://img.shields.io/github/languages/top/FelixChristian011226/AutoHPMA)
+![GitHub Release](https://img.shields.io/github/v/release/FelixChristian011226/AutoHPMA)
+![GitHub License](https://img.shields.io/github/license/FelixChristian011226/AutoHPMA)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total)
+![GitHub Repo stars](https://img.shields.io/github/stars/FelixChristian011226/AutoHPMA)
 
 **English | [中文](README_ZH.md)**
 
