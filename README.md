@@ -1,4 +1,4 @@
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/:Felix011226/:AutoHPMA/total)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/:FelixChristian/:AutoHPMA/total)
 
 **English | [中文](README_ZH.md)**
 
