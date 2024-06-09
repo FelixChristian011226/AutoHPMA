@@ -48,4 +48,4 @@
 
 ## 许可证
 
-本项目根据 [MIT 许可证](https://github.com/YourGitHubUsername/AutoHPMA/blob/main/LICENSE) 授权发布 - 有关详情，请参阅 LICENSE 文件。
+本项目根据 [MIT 许可证](https://github.com/FelixChristian011226/AutoHPMA/blob/master/LICENSE) 授权发布 - 有关详情，请参阅 LICENSE 文件。
