@@ -48,4 +48,4 @@ Feedback and contributions are welcome! If you have suggestions for improving Au
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/YourGitHubUsername/AutoHPMA/blob/main/LICENSE) - for details, please refer to the LICENSE file.
+This project is licensed under the [MIT License](https://github.com/YourGitHubUsername/AutoHPMA/blob/master/LICENSE) - for details, please refer to the LICENSE file.
