@@ -1,3 +1,10 @@
+![Static Badge](https://img.shields.io/badge/build-passing-brightgreen)
+![GitHub top language](https://img.shields.io/github/languages/top/FelixChristian011226/AutoHPMA)
+![GitHub Release](https://img.shields.io/github/v/release/FelixChristian011226/AutoHPMA)
+![GitHub License](https://img.shields.io/github/license/FelixChristian011226/AutoHPMA)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total)
+![GitHub Repo stars](https://img.shields.io/github/stars/FelixChristian011226/AutoHPMA)
+
 **[English](README.md) | 中文**
 
 # AutoHPMA - 哈利波特：魔法觉醒自动答题脚本
