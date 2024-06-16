@@ -13,7 +13,6 @@
 
 <div align=center>
   <img src="https://img.shields.io/badge/build-passing-brightgreen">
-  <img src="https://img.shields.io/github/languages/top/FelixChristian011226/AutoHPMA">
   <img src="https://img.shields.io/github/v/release/FelixChristian011226/AutoHPMA">
   <img src="https://img.shields.io/github/license/FelixChristian011226/AutoHPMA">
   <img src="https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total">
