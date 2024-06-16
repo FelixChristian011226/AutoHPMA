@@ -1,7 +1,7 @@
 
 **[English](README.md) | 中文**
 
-# AutoHPMA - 哈利波特：魔法觉醒自动答题脚本
+# AutoHPMA - 哈利波特：魔法觉醒自动社团答题脚本
 
 <div align=center>
   <h1 align="center">
@@ -13,7 +13,6 @@
 
 <div align=center>
   <img src="https://img.shields.io/badge/build-passing-brightgreen">
-  <img src="https://img.shields.io/github/languages/top/FelixChristian011226/AutoHPMA">
   <img src="https://img.shields.io/github/v/release/FelixChristian011226/AutoHPMA">
   <img src="https://img.shields.io/github/license/FelixChristian011226/AutoHPMA">
   <img src="https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total">
