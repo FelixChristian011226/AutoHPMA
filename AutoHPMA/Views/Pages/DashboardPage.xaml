@@ -16,24 +16,6 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <!--<Grid VerticalAlignment="Top">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
-
-        <ui:Button
-            Grid.Column="0"
-            Command="{Binding ViewModel.CounterIncrementCommand, Mode=OneWay}"
-            Content="Click me!"
-            Icon="Fluent24" />
-        <TextBlock
-            Grid.Column="1"
-            Margin="12,0,0,0"
-            VerticalAlignment="Center"
-            Text="{Binding ViewModel.Counter, Mode=OneWay}" />
-    </Grid>-->
-
     <StackPanel Margin="42,16,42,12">
 
         <Border Height="200" CornerRadius="8">
@@ -148,7 +130,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="默认50ms，普通用户不建议调整这个值，具体调整方式见文档"
+                        Text="默认500ms，普通用户不建议调整这个值，具体调整方式见文档"
                         TextWrapping="Wrap" />
                     <ui:TextBox
                         Grid.Row="0"
@@ -172,21 +154,51 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="测试图像捕获"
+                        Text="启动方式"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="测试功能，测试截图模式的效果"
+                        Text="选择您的启动方式，如官方启动器或Mumu模拟器"
                         TextWrapping="Wrap" />
-                    <ui:Button
+                    <ComboBox
                         Grid.Row="0"
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         Margin="0,0,36,0"
-                        Command="{Binding ViewModel.GoToScreenshotPageCommand}"
-                        Content="测试图像捕获" />
+                        DisplayMemberPath="DisplayName"
+                        ItemsSource="{Binding ViewModel.StartupOptions}"
+                        SelectedItem="{Binding ViewModel.SelectedStartupOption, Mode=TwoWay}" />
+                </Grid>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        FontTypography="Body"
+                        Text="实时截屏"
+                        TextWrapping="Wrap" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                        Text="开启后，在截图页面显示实时截屏，便于测试"
+                        TextWrapping="Wrap" />
+                    <ui:ToggleSwitch
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        Margin="0,0,24,0"
+                        IsChecked="{Binding ViewModel.RealTimeScreenshotEnabled, Mode=TwoWay}" />
                 </Grid>
             </StackPanel>
         </ui:CardExpander>
@@ -235,6 +247,8 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <ui:TextBlock
                         Grid.Row="0"
@@ -252,39 +266,29 @@
                         Grid.Row="0"
                         Grid.RowSpan="2"
                         Grid.Column="1"
-                        MinWidth="300"
-                        MaxWidth="800"
+                        MinWidth="100"
+                        MaxWidth="200"
                         Margin="0,0,36,0"
                         Text="{Binding ViewModel.LogWindowLeft, Mode=TwoWay}"
                         TextWrapping="Wrap" />
-                </Grid>
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
                     <ui:TextBlock
                         Grid.Row="0"
-                        Grid.Column="0"
+                        Grid.Column="2"
                         FontTypography="Body"
                         Text="Top"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
-                        Grid.Column="0"
+                        Grid.Column="2"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                         Text="遮罩窗口上偏移量。"
                         TextWrapping="Wrap" />
                     <ui:TextBox
                         Grid.Row="0"
                         Grid.RowSpan="2"
-                        Grid.Column="1"
-                        MinWidth="300"
-                        MaxWidth="800"
+                        Grid.Column="3"
+                        MinWidth="100"
+                        MaxWidth="200"
                         Margin="0,0,36,0"
                         Text="{Binding ViewModel.LogWindowTop, Mode=TwoWay}"
                         TextWrapping="Wrap" />

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OpenCvSharp4" Version="4.9.0.20240103" />
     <PackageReference Include="OpenCvSharp4.Extensions" Version="4.9.0.20240103" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.9.0.20240103" />
@@ -40,76 +41,80 @@
     <None Remove="Assets\Captures\club1.png" />
     <None Remove="Assets\Captures\club2.png" />
     <None Remove="Assets\Captures\gather.png" />
-    <None Remove="Assets\Captures\Option\A.png" />
-    <None Remove="Assets\Captures\Option\B.png" />
-    <None Remove="Assets\Captures\Option\C.png" />
-    <None Remove="Assets\Captures\Option\D.png" />
+    <None Remove="Assets\Captures\Mumu\Option\A.png" />
+    <None Remove="Assets\Captures\Mumu\Option\B.png" />
+    <None Remove="Assets\Captures\Mumu\Option\C.png" />
+    <None Remove="Assets\Captures\Mumu\Option\D.png" />
     <None Remove="Assets\Captures\Over.png" />
-    <None Remove="Assets\Captures\Time\0.png" />
-    <None Remove="Assets\Captures\Time\10.png" />
-    <None Remove="Assets\Captures\Time\15.png" />
-    <None Remove="Assets\Captures\Time\16.png" />
-    <None Remove="Assets\Captures\Time\17.png" />
-    <None Remove="Assets\Captures\Time\18.png" />
-    <None Remove="Assets\Captures\Time\20.png" />
-    <None Remove="Assets\Captures\Time\6.png" />
+    <None Remove="Assets\Captures\Mumu\Time\0.png" />
+    <None Remove="Assets\Captures\Mumu\Time\10.png" />
+    <None Remove="Assets\Captures\Mumu\Time\15.png" />
+    <None Remove="Assets\Captures\Mumu\Time\16.png" />
+    <None Remove="Assets\Captures\Mumu\Time\17.png" />
+    <None Remove="Assets\Captures\Mumu\Time\18.png" />
+    <None Remove="Assets\Captures\Mumu\Time\20.png" />
+    <None Remove="Assets\Captures\Mumu\Time\6.png" />
     <None Remove="Assets\Captures\tip.png" />
     <None Remove="Assets\hpma.png" />
     <None Remove="Assets\Logo.ico" />
     <None Remove="Assets\wpfui-icon-256.png" />
     <None Remove="Assets\wpfui-icon-1024.png" />
+    <None Remove="Config\mumu_config.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\Captures\club1.png">
+    <Content Include="Assets\Captures\Mumu\club1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\club2.png">
+    <Content Include="Assets\Captures\Mumu\club2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\gather.png">
+    <Content Include="Assets\Captures\Mumu\gather.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Option\A.png">
+    <Content Include="Assets\Captures\Mumu\Option\A.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Option\B.png">
+    <Content Include="Assets\Captures\Mumu\Option\B.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Option\C.png">
+    <Content Include="Assets\Captures\Mumu\Option\C.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Option\D.png">
+    <Content Include="Assets\Captures\Mumu\Option\D.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Time\0.png">
+    <Content Include="Assets\Captures\Mumu\Time\0.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Time\10.png">
+    <Content Include="Assets\Captures\Mumu\Time\10.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Time\15.png">
+    <Content Include="Assets\Captures\Mumu\Time\15.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Time\16.png">
+    <Content Include="Assets\Captures\Mumu\Time\16.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Time\17.png">
+    <Content Include="Assets\Captures\Mumu\Time\17.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Time\18.png">
+    <Content Include="Assets\Captures\Mumu\Time\18.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Time\20.png">
+    <Content Include="Assets\Captures\Mumu\Time\20.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\Time\6.png">
+    <Content Include="Assets\Captures\Mumu\Time\6.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\tip.png">
+    <Content Include="Assets\Captures\Mumu\tip.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Captures\over.png">
+    <Content Include="Assets\Captures\Mumu\over.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Config\mumu_config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Assets\hpma.png" />
@@ -119,8 +124,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Assets\Captures\Official\" />
     <Folder Include="Views\Controls\Style\" />
-    <Folder Include="Config\" />
   </ItemGroup>
 
 </Project>

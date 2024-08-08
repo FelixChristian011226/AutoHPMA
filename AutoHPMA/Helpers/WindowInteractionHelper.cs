@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Vanara.PInvoke;
 using static Vanara.PInvoke.User32;
 
 namespace AutoHPMA.Helpers;
@@ -92,18 +93,6 @@ public class WindowInteractionHelper
 
         PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
 
-    }
-
-    public static void TestClick(int x,int y)
-    {
-        //string hexHandle = "00030D50"; // 通过Spy++等工具获取到的窗口句柄
-        //IntPtr hWnd = new IntPtr(Convert.ToInt32(hexHandle, 16));
-        //IntPtr hWnd = FindWindow(null, "MuMuPlayer");
-        IntPtr hWnd = SystemControl.FindMumuSimulatorHandle();
-        IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
-        //SetForegroundWindow(hWnd);
-        SendMouseClickWithParentNotify(hWnd, (uint)x, (uint)y);
-        //Click((uint)x, (uint)y);
     }
 
 }

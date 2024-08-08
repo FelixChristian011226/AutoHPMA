@@ -21,15 +21,39 @@ using System.Windows.Threading;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Collections.ObjectModel;
 
 namespace AutoHPMA.ViewModels.Pages
 {
+    public enum StartupOption
+    {
+        MumuSimulator,
+        OfficialLauncher
+    }
+
+    public class StartupOptionItem
+    {
+        public StartupOption Option { get; set; }
+        public string DisplayName { get; set; }
+    }
+
     public partial class DashboardViewModel : ObservableObject, INavigationAware
     {
+        public ObservableCollection<StartupOptionItem> StartupOptions { get; } = new ObservableCollection<StartupOptionItem>
+        {
+            new StartupOptionItem { Option = StartupOption.MumuSimulator, DisplayName = "Mumu模拟器" },
+            new StartupOptionItem { Option = StartupOption.OfficialLauncher, DisplayName = "官方启动器" }
+        };
+
+        [ObservableProperty]
+        private StartupOptionItem _selectedStartupOption;
 
         private bool _taskDispatcherEnabled = false;
         private DispatcherTimer _syncWindowTimer;
         private DispatcherTimer _captureTimer;
+
+        [ObservableProperty]
+        private bool _realTimeScreenshotEnabled = true;
 
         [ObservableProperty]
         private bool _logWindowEnabled = true;
@@ -55,6 +79,8 @@ namespace AutoHPMA.ViewModels.Pages
 
         private TaskFlow _taskFlow;
 
+        private IntPtr _targetHwnd;
+
         public static event Action<Bitmap> ScreenshotUpdated;
 
         private static void OnScreenshotUpdated(Bitmap bmp)
@@ -64,10 +90,10 @@ namespace AutoHPMA.ViewModels.Pages
 
         public DashboardViewModel()
         {
+            _selectedStartupOption = StartupOptions[0];
             InitializeCaptureTimer();
             InitializeSyncWindowTimer();
             _taskFlow = TaskFlow.Instance();
-            //_taskFlow.Init(_logWindow);
         }
         private void InitializeCaptureTimer()
         {
@@ -85,30 +111,36 @@ namespace AutoHPMA.ViewModels.Pages
         }
         private void CaptureTimer_Tick(object? sender, EventArgs e)
         {
-            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
-            var mumuChildHwnd = SystemControl.FindChildWindowByTitle(mumuHwnd, "MuMuPlayer");
-            if (mumuHwnd != IntPtr.Zero)
+            IntPtr _taskHwnd = IntPtr.Zero;
+            if (SelectedStartupOption.Option == StartupOption.OfficialLauncher)
+                _taskHwnd = _targetHwnd;
+            else
+                _taskHwnd = SystemControl.FindChildWindowByTitle(_targetHwnd, "MuMuPlayer");
+            if (_targetHwnd != IntPtr.Zero)
             {
-                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
-                OnScreenshotUpdated(bmp); // 发布截图更新事件
+                if(_realTimeScreenshotEnabled)
+                {
+                    Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                    OnScreenshotUpdated(bmp); // 发布截图更新事件
+                }
+                // 保存截图到本地
                 //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                 //Directory.CreateDirectory(folderPath);
-                //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath,"capture.png", ImageFormat.Png);
+                //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "capture.png", ImageFormat.Png);
 
-                _taskFlow.WorkAsync(mumuChildHwnd, bmp);
+                _taskFlow.WorkAsync(_taskHwnd, _targetHwnd);
             }
         }
         private void SyncWindowTimer_Tick(object? sender, EventArgs e)
         {
-            var mumuHwnd = SystemControl.FindMumuSimulatorHandle(); // 获取Mumu模拟器的句柄
-            if (mumuHwnd != IntPtr.Zero)
+            if (_targetHwnd != IntPtr.Zero)
             {
-                if (NativeMethodsService.IsIconic(mumuHwnd)) // 如果Mumu模拟器最小化
+                if (NativeMethodsService.IsIconic(_targetHwnd)) // 最小化
                 {
                     //LogWindow.GetInstance().HideLogWindow();
                     _logWindow?.HideLogWindow();
                 }
-                else if (NativeMethodsService.GetForegroundWindow()!=mumuHwnd) // 如果Mumu模拟器不在顶层
+                else if (NativeMethodsService.GetForegroundWindow()!= _targetHwnd) // 不在顶层
                 {
                     //LogWindow.GetInstance().HideLogWindow();
                     _logWindow?.HideLogWindow();
@@ -126,13 +158,17 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanStartTrigger))]
         private async Task OnStartTriggerAsync()
         {
-            var hWnd = SystemControl.FindMumuSimulatorHandle();
-            if (hWnd == IntPtr.Zero)
+            if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
+                _targetHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            else
+                _targetHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+
+            if (_targetHwnd == IntPtr.Zero)
             {
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
                     Title = "错误",
-                    Content = "未找到Mumu模拟器窗口。\n请先启动Mumu模拟器！",
+                    Content = "未找到游戏窗口。\n请先启动游戏！",
                 };
                 var result = await uiMessageBox.ShowDialogAsync();
                 return;
@@ -143,13 +179,19 @@ namespace AutoHPMA.ViewModels.Pages
                 StartButtonVisibility = Visibility.Collapsed;
                 StopButtonVisibility = Visibility.Visible;
 
+                // 当官方启动器时，将游戏窗口置于前端
+                if(SelectedStartupOption.Option == StartupOption.OfficialLauncher)
+                {
+                    NativeMethodsService.ShowWindow(_targetHwnd, NativeMethodsService.SW_SHOW);
+                    NativeMethodsService.SetForegroundWindow(_targetHwnd);
+                }
                 //int showWindowCommand;
-                //if (NativeMethodsService.IsZoomed(hWnd))
+                //if (NativeMethodsService.IsZoomed(_targetHwnd))
                 //{
                 //    // 如果窗口已经是最大化状态，则只需要将其置于前端
                 //    showWindowCommand = NativeMethodsService.SW_SHOW;
                 //}
-                //else if (NativeMethodsService.IsIconic(hWnd))
+                //else if (NativeMethodsService.IsIconic(_targetHwnd))
                 //{
                 //    // 如果窗口是最小化的，则恢复
                 //    showWindowCommand = NativeMethodsService.SW_RESTORE;
@@ -160,10 +202,10 @@ namespace AutoHPMA.ViewModels.Pages
                 //    showWindowCommand = NativeMethodsService.SW_SHOW;
                 //}
                 //// 从最小化状态恢复窗口并试图将其置于前端。
-                //NativeMethodsService.ShowWindow(hWnd, showWindowCommand);
-                //NativeMethodsService.SetForegroundWindow(hWnd);
+                //NativeMethodsService.ShowWindow(_targetHwnd, showWindowCommand);
+                //NativeMethodsService.SetForegroundWindow(_targetHwnd);
 
-                // 隐藏WPF应用的主窗口。基于你的项目设置，可能需要调整获取主窗口的方式。
+                // 隐藏WPF应用的主窗口。
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     Application.Current.MainWindow.Hide();
@@ -181,10 +223,14 @@ namespace AutoHPMA.ViewModels.Pages
                     _logWindow = LogWindow.Instance();
                     _taskFlow.Init(_logWindow);
                     _logWindow.ShowInTaskbar = false;
-                    _logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
-                    _logWindow.RefreshPosition(hWnd, _logWindowLeft, _logWindowTop);
-                    _logWindow.AddLogMessage("INF","---日志窗口已启动---"); // 添加日志消息
-                    //for (int i = 0; i < 100; i++) { _logWindow.AddLogMessage("INF", "消息" + i); }
+                    //_logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
+                    _logWindow.Owner = GetGameWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
+                    _logWindow.RefreshPosition(_targetHwnd, _logWindowLeft, _logWindowTop);
+                    _logWindow.AddLogMessage("INF","---日志窗口已启动---");
+                    if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
+                        _logWindow.AddLogMessage("INF", "MumuSimulator");
+                    else
+                        _logWindow.AddLogMessage("INF", "Official Launcher");
                 }
 
             }
@@ -221,11 +267,11 @@ namespace AutoHPMA.ViewModels.Pages
         }
 
         [RelayCommand]
-        public async void OnGoToScreenshotPage(object sender)
+        public async void OnRealTimeScreenshot(object sender)
         {
             var uiMessageBox = new Wpf.Ui.Controls.MessageBox
             {
-                Title = "提示",
+                Title = "⚠ 提示",
                 Content = "请进入截屏页面",
             };
             var result = await uiMessageBox.ShowDialogAsync();
@@ -241,9 +287,10 @@ namespace AutoHPMA.ViewModels.Pages
             //throw new NotImplementedException();
         }
 
-        private Window GetMumuSimulatorWindow()
+        private Window GetGameWindow()
         {
-            var hWnd = SystemControl.FindMumuSimulatorHandle();
+            //var hWnd = SystemControl.FindMumuSimulatorHandle();
+            var hWnd = _targetHwnd;
             if (hWnd != IntPtr.Zero)
             {
                 var hwndSource = HwndSource.FromHwnd(hWnd);

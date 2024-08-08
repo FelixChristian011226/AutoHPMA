@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Drawing.Imaging;
 using System.IO;
 using Vanara.PInvoke;
+using Newtonsoft.Json.Linq;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace AutoHPMA.GameTask
 {
@@ -31,6 +33,7 @@ namespace AutoHPMA.GameTask
     public class TaskFlow
     {
         private static LogWindow _logWindow;
+        private static JObject config;
         private static Bitmap gather,tip,over,club1,club2;
         private static Bitmap[] options = new Bitmap[4];
         private static Bitmap time0,time6,time10,time15,time16,time17,time18,time20;
@@ -61,31 +64,35 @@ namespace AutoHPMA.GameTask
         public void Init(LogWindow logWindow)
         {
             _logWindow = logWindow;
-            gather = new Bitmap("Assets/Captures/gather.png");
-            tip = new Bitmap("Assets/Captures/tip.png");
-            over = new Bitmap("Assets/Captures/over.png");
-            club1 = new Bitmap("Assets/Captures/club1.png");
-            club2 = new Bitmap("Assets/Captures/club2.png");
-            options[0] = new Bitmap("Assets/Captures/Option/A.png");
-            options[1] = new Bitmap("Assets/Captures/Option/B.png");
-            options[2] = new Bitmap("Assets/Captures/Option/C.png");
-            options[3] = new Bitmap("Assets/Captures/Option/D.png");
-            time0 = new Bitmap("Assets/Captures/Time/0.png");
-            time6 = new Bitmap("Assets/Captures/Time/6.png");
-            time10 = new Bitmap("Assets/Captures/Time/10.png");
-            time15 = new Bitmap("Assets/Captures/Time/15.png");
-            time16 = new Bitmap("Assets/Captures/Time/16.png");
-            time17 = new Bitmap("Assets/Captures/Time/17.png");
-            time18 = new Bitmap("Assets/Captures/Time/18.png");
-            time20 = new Bitmap("Assets/Captures/Time/20.png");
+            gather = new Bitmap("Assets/Captures/Mumu/gather.png");
+            tip = new Bitmap("Assets/Captures/Mumu/tip.png");
+            over = new Bitmap("Assets/Captures/Mumu/over.png");
+            club1 = new Bitmap("Assets/Captures/Mumu/club1.png");
+            club2 = new Bitmap("Assets/Captures/Mumu/club2.png");
+            options[0] = new Bitmap("Assets/Captures/Mumu/Option/A.png");
+            options[1] = new Bitmap("Assets/Captures/Mumu/Option/B.png");
+            options[2] = new Bitmap("Assets/Captures/Mumu/Option/C.png");
+            options[3] = new Bitmap("Assets/Captures/Mumu/Option/D.png");
+            time0 = new Bitmap("Assets/Captures/Mumu/Time/0.png");
+            time6 = new Bitmap("Assets/Captures/Mumu/Time/6.png");
+            time10 = new Bitmap("Assets/Captures/Mumu/Time/10.png");
+            time15 = new Bitmap("Assets/Captures/Mumu/Time/15.png");
+            time16 = new Bitmap("Assets/Captures/Mumu/Time/16.png");
+            time17 = new Bitmap("Assets/Captures/Mumu/Time/17.png");
+            time18 = new Bitmap("Assets/Captures/Mumu/Time/18.png");
+            time20 = new Bitmap("Assets/Captures/Mumu/Time/20.png");
+
+            var json = File.ReadAllText("Config/mumu_config.json");
+            config = JObject.Parse(json);
 
         }
 
-        public async Task WorkAsync(nint hwnd, Bitmap bmp)
+        public async Task WorkAsync(nint hwnd, nint _targetHwnd)
         {
-            Bitmap croppedBmp;
+            Bitmap bmp,croppedBmp;
             double similarity;
-            var mumuHwnd = SystemControl.FindMumuSimulatorHandle();
+            int x, y, w, h;
+            uint clickX, clickY;
 
             await workAsyncLock.WaitAsync();
 
@@ -100,25 +107,32 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Gathering:
                         // 执行集结状态的逻辑...
-                        bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                        bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
                         //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                         //Directory.CreateDirectory(folderPath);
                         //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "gather1.png", ImageFormat.Png);
 
-
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1505, 1388, 1598 - 1505, 1474 - 1388);
+                        x = (int)config["Gathering"]["gather_pic"]["x"];
+                        y = (int)config["Gathering"]["gather_pic"]["y"];
+                        w = (int)config["Gathering"]["gather_pic"]["w"];
+                        h = (int)config["Gathering"]["gather_pic"]["h"];
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(gather, croppedBmp));
                         if (similarity > 0.9)
                         {
                             _logWindow?.AddLogMessage("INF", "定位到社团集结，准备开始！");
+                            clickX = (uint)config["Gathering"]["gather_click1"]["x"];
+                            clickY = (uint)config["Gathering"]["gather_click1"]["y"];
                             //await ClickAtPositionAsync(1550, 1420);
-                            WindowInteractionHelper.SendMouseClick(hwnd, 1550, 1330);
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                             await Task.Delay(2000);
+                            clickX = (uint)config["Gathering"]["gather_click2"]["x"];
+                            clickY = (uint)config["Gathering"]["gather_click2"]["y"];
                             //await ClickAtPositionAsync(2100, 417);
-                            WindowInteractionHelper.SendMouseClick(hwnd, 2100, 327);
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                             await Task.Delay(1000);
                             //await ClickAtPositionAsync(2100, 417);
-                            WindowInteractionHelper.SendMouseClick(hwnd, 2100, 327);
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                             roundIndex++;
                             _logWindow?.AddLogMessage("INF", "-----第" + roundIndex + "轮答题-----");
                             _currentState = TaskFlowState.Preparing;
@@ -131,16 +145,23 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Preparing:
                         // 执行准备状态的逻辑...
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1951, 373, 2042 - 1951, 442 - 373);
+                        bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                        x = (int)config["Preparing"]["tip_pic"]["x"];
+                        y = (int)config["Preparing"]["tip_pic"]["y"];
+                        w = (int)config["Preparing"]["tip_pic"]["w"];
+                        h = (int)config["Preparing"]["tip_pic"]["h"];
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(tip, croppedBmp));
                         if (similarity > 0.9)
                         {
                             _logWindow?.AddLogMessage("INF", "定位到活动目标，准备答题！");
+                            clickX = (uint)config["Preparing"]["tip_click1"]["x"];
+                            clickY = (uint)config["Preparing"]["tip_click1"]["y"];
                             //await ClickAtPositionAsync(1997, 403);
-                            WindowInteractionHelper.SendMouseClick(hwnd, 1997, 313);
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                             await Task.Delay(1000);
                             //await ClickAtPositionAsync(1997, 403);
-                            WindowInteractionHelper.SendMouseClick(hwnd, 1997, 313);
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                             
                             _currentState = TaskFlowState.Answering;
                         }
@@ -150,24 +171,36 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Answering:
                         // 执行答题状态的逻辑...
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1106, 1452, 1473 - 1106, 1492 - 1452);   //答题结束检验
+                        bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                        x = (int)config["Answering"]["over_pic"]["x"];
+                        y = (int)config["Answering"]["over_pic"]["y"];
+                        w = (int)config["Answering"]["over_pic"]["w"];
+                        h = (int)config["Answering"]["over_pic"]["h"];
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);   //答题结束检验
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(over, croppedBmp));
                         if (similarity > 0.9)
                         {
                             _logWindow?.AddLogMessage("INF", "-----答题结束-----");
                             await Task.Delay(1000);
+                            clickX = (uint)config["Answering"]["over_click1"]["x"];
+                            clickY = (uint)config["Answering"]["over_click1"]["y"];
                             //await ClickAtPositionAsync(1287, 1377);
-                            WindowInteractionHelper.SendMouseClick(hwnd, 1287, 1287);
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                             await Task.Delay(3000);
+                            clickX = (uint)config["Answering"]["over_click2"]["x"];
+                            clickY = (uint)config["Answering"]["over_click2"]["y"];
                             //await ClickAtPositionAsync(750, 900);
-                            WindowInteractionHelper.SendMouseClick(hwnd, 750, 810);
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                             await Task.Delay(1000);
                             //await ClickAtPositionAsync(750, 900);
-                            WindowInteractionHelper.SendMouseClick(hwnd, 750, 810);
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                             _currentState = TaskFlowState.Gapping;
                         }
-
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1227, 125, 1328 - 1227, 187 - 125);
+                        x = (int)config["Answering"]["time0_pic"]["x"];
+                        y = (int)config["Answering"]["time0_pic"]["y"];
+                        w = (int)config["Answering"]["time0_pic"]["w"];
+                        h = (int)config["Answering"]["time0_pic"]["h"];
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(time0, croppedBmp));
                         if (_nextQuestion && similarity > 0.9)
                         {
@@ -183,23 +216,31 @@ namespace AutoHPMA.GameTask
                         switch (FindAnswer(bmp))
                         {
                             case 0:
+                                clickX = (uint)config["Answering"]["option_A"]["x"];
+                                clickY = (uint)config["Answering"]["option_A"]["y"];
                                 //await ClickAtPositionAsync(1000, 1230);
-                                WindowInteractionHelper.SendMouseClick(hwnd, 1000, 1140);
+                                WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                                 option = 'A';
                                 break;
                             case 1:
+                                clickX = (uint)config["Answering"]["option_B"]["x"];
+                                clickY = (uint)config["Answering"]["option_B"]["y"];
                                 //await ClickAtPositionAsync(2300, 1230);
-                                WindowInteractionHelper.SendMouseClick(hwnd, 2300, 1140);
+                                WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                                 option = 'B';
                                 break;
                             case 2:
+                                clickX = (uint)config["Answering"]["option_C"]["x"];
+                                clickY = (uint)config["Answering"]["option_C"]["y"];
                                 //await ClickAtPositionAsync(1000, 1415);
-                                WindowInteractionHelper.SendMouseClick(hwnd, 1000, 1325);
+                                WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                                 option = 'C';
                                 break;
                             case 3:
+                                clickX = (uint)config["Answering"]["option_D"]["x"];
+                                clickY = (uint)config["Answering"]["option_D"]["y"];
                                 //await ClickAtPositionAsync(2300, 1415);
-                                WindowInteractionHelper.SendMouseClick(hwnd, 2300, 1325);
+                                WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                                 option = 'D';
                                 break;
                             default:
@@ -219,29 +260,47 @@ namespace AutoHPMA.GameTask
                             await Task.Delay(1000);
                             _logWindow?.DeleteLastLogMessage();
                         }
+                        clickX = (uint)config["Gapping"]["gap_click1"]["x"];
+                        clickY = (uint)config["Gapping"]["gap_click1"]["y"];
                         WindowInteractionHelper.SendMouseClick(hwnd, 1111, 1335);   //打开聊天框
                         await Task.Delay(1000);
+                        clickX = (uint)config["Gapping"]["gap_click2"]["x"];
+                        clickY = (uint)config["Gapping"]["gap_click2"]["y"];
                         WindowInteractionHelper.SendMouseClick(hwnd, 1500, 800);    //关闭输入框
                         await Task.Delay(1000);
 
-                        bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                        bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
 
                         // 判断社团聊天窗位置并点击展开
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 538, 790, 90, 45);
+                        x = (int)config["Gapping"]["club1_pic"]["x"];
+                        y = (int)config["Gapping"]["club1_pic"]["y"];
+                        w = (int)config["Gapping"]["club1_pic"]["w"];
+                        h = (int)config["Gapping"]["club1_pic"]["h"];
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(club1, croppedBmp));
                         if (similarity > 0.9)
                         {
-                            WindowInteractionHelper.SendMouseClick(hwnd, 580, 814-80);
+                            clickX = (uint)config["Gapping"]["club1_click"]["x"];
+                            clickY = (uint)config["Gapping"]["club1_click"]["y"];
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                         }
-                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 538, 1099, 90, 45);
+                        x = (int)config["Gapping"]["club2_pic"]["x"];
+                        y = (int)config["Gapping"]["club2_pic"]["y"];
+                        w = (int)config["Gapping"]["club2_pic"]["w"];
+                        h = (int)config["Gapping"]["club2_pic"]["h"];
+                        croppedBmp = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
                         similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(club2, croppedBmp));
                         if (similarity>0.9)
                         {
-                            WindowInteractionHelper.SendMouseClick(hwnd, 580, 1123-80);
+                            clickX = (uint)config["Gapping"]["club2_click"]["x"];
+                            clickY = (uint)config["Gapping"]["club2_click"]["y"];
+                            WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);
                         }
 
                         await Task.Delay(1000);
-                        WindowInteractionHelper.SendMouseClick(hwnd, 92, 76);       //关闭聊天框
+                        clickX = (uint)config["Gapping"]["close_click"]["x"];
+                        clickY = (uint)config["Gapping"]["close_click"]["y"];
+                        WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);       //关闭聊天框
                         await Task.Delay(1000);
                         _currentState = TaskFlowState.Gathering;
                         break;

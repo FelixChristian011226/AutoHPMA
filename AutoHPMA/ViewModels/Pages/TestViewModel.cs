@@ -179,8 +179,11 @@ namespace AutoHPMA.ViewModels.Pages
         public async void OnClickTest(object sender)
         {
             IntPtr hWnd = SystemControl.FindMumuSimulatorHandle();
-            IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
-            
+            //IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
+            IntPtr hWndChild = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+            //IntPtr hWndChild = new IntPtr(Convert.ToInt32("004D078E", 16));
+            WindowInteractionHelper.SetForegroundWindow(hWndChild);
+
             if (hWndChild != IntPtr.Zero)
             {
                 for (int i = 0; i < _clickTimes; i++)
