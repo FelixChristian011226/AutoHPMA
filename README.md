@@ -7,7 +7,7 @@
   <h1 align="center">
   <img src="https://github.com/FelixChristian011226/AutoHPMA/blob/master/AutoHPMA/Assets/hpma.png" width=50%>
   <br/>
-  <a href="https://github.com/FelixChristian011226/AutoHPMA/blob/master/AutoHPMA">AutoHPMA</a>
+  <a href="https://felixchristian011226.github.io/AutoHPMA-Web">AutoHPMA</a>
   </h1>
 </div>
 
