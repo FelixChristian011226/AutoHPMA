@@ -81,6 +81,7 @@
     <None Remove="Assets\Logo.ico" />
     <None Remove="Assets\wpfui-icon-256.png" />
     <None Remove="Assets\wpfui-icon-1024.png" />
+    <None Remove="Config\mumu1080_config.json" />
     <None Remove="Config\mumu_config.json" />
   </ItemGroup>
 
@@ -185,6 +186,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Captures\Mumu\over.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Config\mumu1080_config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Config\mumu_config.json">
