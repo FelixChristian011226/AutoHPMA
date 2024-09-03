@@ -120,13 +120,15 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 if(_realTimeScreenshotEnabled)
                 {
-                    Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                    //_targetHwnd = new IntPtr(Convert.ToInt32("008F00D0", 16));
+                    //Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                    Bitmap bmp = BitBltCaptureHelper.Capture(_targetHwnd);
                     OnScreenshotUpdated(bmp); // 发布截图更新事件
+                    // 保存截图到本地
+                    string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                    Directory.CreateDirectory(folderPath);
+                    ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "capture.png", ImageFormat.Png);
                 }
-                // 保存截图到本地
-                //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
-                //Directory.CreateDirectory(folderPath);
-                //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "capture.png", ImageFormat.Png);
 
                 _taskFlow.WorkAsync(_taskHwnd, _targetHwnd);
             }

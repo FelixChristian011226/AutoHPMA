@@ -4,6 +4,7 @@ using AutoHPMA.Views.Windows;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -16,15 +17,25 @@ namespace AutoHPMA.ViewModels.Pages
 {
     public partial class TestViewModel : ObservableObject
     {
+        // 启动方式
+        public ObservableCollection<StartupOptionItem> StartupOptions { get; } = new ObservableCollection<StartupOptionItem>
+        {
+            new StartupOptionItem { Option = StartupOption.MumuSimulator, DisplayName = "Mumu模拟器" },
+            new StartupOptionItem { Option = StartupOption.OfficialLauncher, DisplayName = "官方启动器" }
+        };
+
+        [ObservableProperty]
+        private StartupOptionItem _selectedStartupOption;
+
         // 截屏测试
         [ObservableProperty]
         private int _screenshotLeft = 0;
         [ObservableProperty]
         private int _screenshotTop = 0;
         [ObservableProperty]
-        private int _screenshotWidth = 2582;
+        private int _screenshotWidth = 1680;
         [ObservableProperty]
-        private int _screenshotHeight = 1550;
+        private int _screenshotHeight = 1050;
         [ObservableProperty]
         private string _screenshotFilename = "CaptureTest";
 
@@ -42,11 +53,16 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public async void OnScreenshotTest(object sender)
         {
-            var mumuHwnd = SystemControl.FindMumuSimulatorHandle(); // 获取Mumu模拟器窗口句柄
-            if (mumuHwnd != IntPtr.Zero)
+            IntPtr _targetHwnd = IntPtr.Zero;
+            if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
+                _targetHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            else
+                _targetHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+
+            if (_targetHwnd != IntPtr.Zero)
             {
                 // 截取窗口图像
-                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(mumuHwnd);
+                Bitmap bmp = BitBltCaptureHelper.Capture(_targetHwnd);
                 // 确保目标文件夹存在
                 string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                 Directory.CreateDirectory(folderPath);
@@ -54,11 +70,6 @@ namespace AutoHPMA.ViewModels.Pages
                 Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, _screenshotLeft, _screenshotTop, _screenshotWidth, _screenshotHeight);
                 // 保存图像文件
                 ImageProcessingHelper.SaveBitmapAs(croppedBmp, folderPath, _screenshotFilename + ".png", ImageFormat.Png);
-
-                //Scalar similarity = ImageProcessingHelper.Compare_SSIM("D:\\Learning\\VisualStudio\\source\\repo\\AutoHPMA\\AutoHPMA\\bin\\Debug\\net8.0-windows\\Captures\\CaptureTest1.bmp", "D:\\Learning\\VisualStudio\\source\\repo\\AutoHPMA\\AutoHPMA\\bin\\Debug\\net8.0-windows\\Captures\\CaptureTest2.bmp");
-                //MessageBox.Show($"相似度：{similarity}");
-
-
             }
         }
 

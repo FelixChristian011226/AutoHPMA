@@ -319,18 +319,36 @@ namespace AutoHPMA.GameTask
         {
             Bitmap[] croppedBmp = new Bitmap[4];
             double[] similarity = new double[4];
-            //A 1032 1148 1250 1232     218 84
-            croppedBmp[0] = ImageProcessingHelper.CropBitmap(bmp, 1032, 1148, 1250 - 1032, 1232 - 1148);
+            int x, y, w, h;
+            
+            x = (int)config["Answering"]["A_pic"]["x"];
+            y = (int)config["Answering"]["A_pic"]["y"];
+            w = (int)config["Answering"]["A_pic"]["w"];
+            h = (int)config["Answering"]["A_pic"]["h"];
+            croppedBmp[0] = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[0] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(options[0], croppedBmp[0]));
-            //B 2282 1148 2500 1232     218 84
-            croppedBmp[1] = ImageProcessingHelper.CropBitmap(bmp, 2282, 1148, 2500 - 2282, 1232 - 1148);
+            
+            x = (int)config["Answering"]["B_pic"]["x"];
+            y = (int)config["Answering"]["B_pic"]["y"];
+            w = (int)config["Answering"]["B_pic"]["w"];
+            h = (int)config["Answering"]["B_pic"]["h"];
+            croppedBmp[1] = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[1] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(options[1], croppedBmp[1]));
-            //C 1032 1326 1250 1410     218 84
-            croppedBmp[2] = ImageProcessingHelper.CropBitmap(bmp, 1032, 1326, 1250 - 1032, 1410 - 1326);
+            
+            x = (int)config["Answering"]["C_pic"]["x"];
+            y = (int)config["Answering"]["C_pic"]["y"];
+            w = (int)config["Answering"]["C_pic"]["w"];
+            h = (int)config["Answering"]["C_pic"]["h"];
+            croppedBmp[2] = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[2] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(options[2], croppedBmp[2]));
-            //D 2282 1326 2500 1410     218 84
-            croppedBmp[3] = ImageProcessingHelper.CropBitmap(bmp, 2282, 1326, 2500 - 2282, 1410 - 1326);
+
+            x = (int)config["Answering"]["D_pic"]["x"];
+            y = (int)config["Answering"]["D_pic"]["y"];
+            w = (int)config["Answering"]["D_pic"]["w"];
+            h = (int)config["Answering"]["D_pic"]["h"];
+            croppedBmp[3] = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[3] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(options[3], croppedBmp[3]));
+            
             //找到最小相似度下标
             int index = Array.IndexOf(similarity, similarity.Min());
             return index;
@@ -339,8 +357,12 @@ namespace AutoHPMA.GameTask
         public static Boolean FindTime(Bitmap bmp)
         {
             double[] similarity = new double[7];
-            Bitmap croppedBmp;
-            croppedBmp = ImageProcessingHelper.CropBitmap(bmp, 1227, 125, 1328 - 1227, 187 - 125);
+            int x, y, w, h;
+            x = (int)config["Answering"]["time0_pic"]["x"];
+            y = (int)config["Answering"]["time0_pic"]["y"];
+            w = (int)config["Answering"]["time0_pic"]["w"];
+            h = (int)config["Answering"]["time0_pic"]["h"];
+            Bitmap croppedBmp = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[0] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(time6, croppedBmp));
             similarity[1] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(time10, croppedBmp));
             similarity[2] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(time15, croppedBmp));

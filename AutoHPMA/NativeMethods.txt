@@ -1,0 +1,9 @@
+GetWindowRect
+GetWindowDC
+CreateCompatibleDC
+CreateCompatibleBitmap
+BitBlt
+SelectObject
+DeleteDC
+ReleaseDC
+DeleteObject
