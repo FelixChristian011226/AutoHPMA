@@ -62,7 +62,8 @@ namespace AutoHPMA.ViewModels.Pages
             if (_targetHwnd != IntPtr.Zero)
             {
                 // 截取窗口图像
-                Bitmap bmp = BitBltCaptureHelper.Capture(_targetHwnd);
+                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                //Bitmap bmp = BitBltCaptureHelper.Capture(_targetHwnd);
                 // 确保目标文件夹存在
                 string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                 Directory.CreateDirectory(folderPath);

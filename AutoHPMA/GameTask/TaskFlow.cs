@@ -42,6 +42,8 @@ namespace AutoHPMA.GameTask
         private TaskFlowState _currentState = TaskFlowState.Waiting;
         private readonly SemaphoreSlim workAsyncLock = new SemaphoreSlim(1, 1);
 
+        int launch_option;
+
         int questionIndex = 0;
         int roundIndex = 0;
         char option = 'X';
@@ -66,8 +68,9 @@ namespace AutoHPMA.GameTask
             String address = "";
             string json;
             _logWindow = logWindow;
+            launch_option = op;
 
-            switch(op)
+            switch (op)
             {
                 case 0:
                     address = "Assets/Captures/Official/";
@@ -126,7 +129,7 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Gathering:
                         // 执行集结状态的逻辑...
-                        bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                        bmp = Capture(_targetHwnd, launch_option);
                         //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                         //Directory.CreateDirectory(folderPath);
                         //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "gather1.png", ImageFormat.Png);
@@ -164,7 +167,7 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Preparing:
                         // 执行准备状态的逻辑...
-                        bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                        bmp = Capture(_targetHwnd, launch_option);
                         x = (int)config["Preparing"]["tip_pic"]["x"];
                         y = (int)config["Preparing"]["tip_pic"]["y"];
                         w = (int)config["Preparing"]["tip_pic"]["w"];
@@ -190,7 +193,7 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Answering:
                         // 执行答题状态的逻辑...
-                        bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                        bmp = Capture(_targetHwnd, launch_option);
                         x = (int)config["Answering"]["over_pic"]["x"];
                         y = (int)config["Answering"]["over_pic"]["y"];
                         w = (int)config["Answering"]["over_pic"]["w"];
@@ -286,9 +289,9 @@ namespace AutoHPMA.GameTask
                         clickX = (uint)config["Gapping"]["gap_click2"]["x"];
                         clickY = (uint)config["Gapping"]["gap_click2"]["y"];
                         WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);    //关闭输入框
-                        await Task.Delay(1000);
+                        await Task.Delay(2000);
 
-                        bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
+                        bmp = Capture(_targetHwnd, launch_option);
 
                         // 判断社团聊天窗位置并点击展开
                         x = (int)config["Gapping"]["club1_pic"]["x"];
@@ -296,7 +299,7 @@ namespace AutoHPMA.GameTask
                         w = (int)config["Gapping"]["club1_pic"]["w"];
                         h = (int)config["Gapping"]["club1_pic"]["h"];
                         croppedBmp = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
-                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(club1, croppedBmp));
+                        similarity = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(club1, croppedBmp));  
                         if (similarity > 0.9)
                         {
                             clickX = (uint)config["Gapping"]["club1_click"]["x"];
@@ -397,6 +400,21 @@ namespace AutoHPMA.GameTask
                 }
             }
             return false;
+        }
+
+        public static Bitmap Capture(nint hwnd, int op)
+        {
+            switch (op)
+            {
+                case 0:
+                    return BitBltCaptureHelper.Capture(hwnd);
+                case 1:
+                    return ScreenCaptureHelper.CaptureWindow(hwnd);
+                case 2:
+                    return BitBltCaptureHelper.Capture(hwnd);
+            }
+            return ScreenCaptureHelper.CaptureWindow(hwnd);
+
         }
 
         public static TaskFlow Instance()
