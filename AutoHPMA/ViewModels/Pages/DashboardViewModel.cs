@@ -28,6 +28,7 @@ namespace AutoHPMA.ViewModels.Pages
     public enum StartupOption
     {
         MumuSimulator,
+        MumuSimulator1080,
         OfficialLauncher
     }
 
@@ -42,6 +43,7 @@ namespace AutoHPMA.ViewModels.Pages
         public ObservableCollection<StartupOptionItem> StartupOptions { get; } = new ObservableCollection<StartupOptionItem>
         {
             new StartupOptionItem { Option = StartupOption.MumuSimulator, DisplayName = "Mumu模拟器" },
+            new StartupOptionItem { Option = StartupOption.MumuSimulator1080, DisplayName = "Mumu1920*1080" },
             new StartupOptionItem { Option = StartupOption.OfficialLauncher, DisplayName = "官方启动器" }
         };
 
@@ -120,14 +122,9 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 if(_realTimeScreenshotEnabled)
                 {
-                    //_targetHwnd = new IntPtr(Convert.ToInt32("008F00D0", 16));
                     //Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
                     Bitmap bmp = BitBltCaptureHelper.Capture(_targetHwnd);
                     OnScreenshotUpdated(bmp); // 发布截图更新事件
-                    // 保存截图到本地
-                    string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
-                    Directory.CreateDirectory(folderPath);
-                    ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "capture.png", ImageFormat.Png);
                 }
 
                 _taskFlow.WorkAsync(_taskHwnd, _targetHwnd);
@@ -160,10 +157,10 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanStartTrigger))]
         private async Task OnStartTriggerAsync()
         {
-            if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
-                _targetHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-            else
+            if (SelectedStartupOption.Option == StartupOption.OfficialLauncher)
                 _targetHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+            else
+                _targetHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
 
             if (_targetHwnd == IntPtr.Zero)
             {
@@ -223,16 +220,24 @@ namespace AutoHPMA.ViewModels.Pages
                     _syncWindowTimer.Tick += SyncWindowTimer_Tick;
                     _syncWindowTimer.Start();
                     _logWindow = LogWindow.Instance();
-                    _taskFlow.Init(_logWindow);
+                    int op = 0;
+                    if (SelectedStartupOption.Option == StartupOption.OfficialLauncher)
+                        op = 0;
+                    else if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
+                        op = 1;
+                    else if (SelectedStartupOption.Option == StartupOption.MumuSimulator1080)
+                        op = 2;
+                    _taskFlow.Init(_logWindow, op);
+
                     _logWindow.ShowInTaskbar = false;
                     //_logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
                     _logWindow.Owner = GetGameWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
                     _logWindow.RefreshPosition(_targetHwnd, _logWindowLeft, _logWindowTop);
                     _logWindow.AddLogMessage("INF","---日志窗口已启动---");
-                    if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
-                        _logWindow.AddLogMessage("INF", "MumuSimulator");
-                    else
-                        _logWindow.AddLogMessage("INF", "Official Launcher");
+                    //if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
+                    //    _logWindow.AddLogMessage("INF", "MumuSimulator");
+                    //else
+                    //    _logWindow.AddLogMessage("INF", "Official Launcher");
                 }
 
             }

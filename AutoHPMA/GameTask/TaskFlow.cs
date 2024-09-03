@@ -61,29 +61,48 @@ namespace AutoHPMA.GameTask
             _currentState = TaskFlowState.Waiting;
         }
 
-        public void Init(LogWindow logWindow)
+        public void Init(LogWindow logWindow, int op)
         {
+            String address = "";
+            string json;
             _logWindow = logWindow;
-            gather = new Bitmap("Assets/Captures/Mumu/gather.png");
-            tip = new Bitmap("Assets/Captures/Mumu/tip.png");
-            over = new Bitmap("Assets/Captures/Mumu/over.png");
-            club1 = new Bitmap("Assets/Captures/Mumu/club1.png");
-            club2 = new Bitmap("Assets/Captures/Mumu/club2.png");
-            options[0] = new Bitmap("Assets/Captures/Mumu/Option/A.png");
-            options[1] = new Bitmap("Assets/Captures/Mumu/Option/B.png");
-            options[2] = new Bitmap("Assets/Captures/Mumu/Option/C.png");
-            options[3] = new Bitmap("Assets/Captures/Mumu/Option/D.png");
-            time0 = new Bitmap("Assets/Captures/Mumu/Time/0.png");
-            time6 = new Bitmap("Assets/Captures/Mumu/Time/6.png");
-            time10 = new Bitmap("Assets/Captures/Mumu/Time/10.png");
-            time15 = new Bitmap("Assets/Captures/Mumu/Time/15.png");
-            time16 = new Bitmap("Assets/Captures/Mumu/Time/16.png");
-            time17 = new Bitmap("Assets/Captures/Mumu/Time/17.png");
-            time18 = new Bitmap("Assets/Captures/Mumu/Time/18.png");
-            time20 = new Bitmap("Assets/Captures/Mumu/Time/20.png");
 
-            var json = File.ReadAllText("Config/mumu_config.json");
-            config = JObject.Parse(json);
+            switch(op)
+            {
+                case 0:
+                    address = "Assets/Captures/Official/";
+                    json = File.ReadAllText("Config/official_config.json");
+                    config = JObject.Parse(json);
+                    break;
+                case 1:
+                    address = "Assets/Captures/Mumu/";
+                    json = File.ReadAllText("Config/mumu_config.json");
+                    config = JObject.Parse(json);
+                    break;
+                case 2:
+                    address = "Assets/Captures/Mumu1080/";
+                    json = File.ReadAllText("Config/mumu1080_config.json");
+                    config = JObject.Parse(json);
+                    break;
+            }
+
+            gather = new Bitmap(address+"gather.png");
+            tip = new Bitmap(address+"tip.png");
+            over = new Bitmap(address+"over.png");
+            club1 = new Bitmap(address+"club1.png");
+            club2 = new Bitmap(address+"club2.png");
+            options[0] = new Bitmap(address+"Option/A.png");
+            options[1] = new Bitmap(address+"Option/B.png");
+            options[2] = new Bitmap(address+"Option/C.png");
+            options[3] = new Bitmap(address+"Option/D.png");
+            time0 = new Bitmap(address+"Time/0.png");
+            time6 = new Bitmap(address+"Time/6.png");
+            time10 = new Bitmap(address+"Time/10.png");
+            time15 = new Bitmap(address+"Time/15.png");
+            time16 = new Bitmap(address+"Time/16.png");
+            time17 = new Bitmap(address+"Time/17.png");
+            time18 = new Bitmap(address+"Time/18.png");
+            time20 = new Bitmap(address+"Time/20.png");
 
         }
 
@@ -262,11 +281,11 @@ namespace AutoHPMA.GameTask
                         }
                         clickX = (uint)config["Gapping"]["gap_click1"]["x"];
                         clickY = (uint)config["Gapping"]["gap_click1"]["y"];
-                        WindowInteractionHelper.SendMouseClick(hwnd, 1111, 1335);   //打开聊天框
+                        WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);   //打开聊天框
                         await Task.Delay(1000);
                         clickX = (uint)config["Gapping"]["gap_click2"]["x"];
                         clickY = (uint)config["Gapping"]["gap_click2"]["y"];
-                        WindowInteractionHelper.SendMouseClick(hwnd, 1500, 800);    //关闭输入框
+                        WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);    //关闭输入框
                         await Task.Delay(1000);
 
                         bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
