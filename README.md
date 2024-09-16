@@ -48,14 +48,16 @@ Download the latest version of AutoHPMA from the [Releases](https://github.com/Y
 ### Launch
 
 - After installation, launch AutoHPMA from your Start menu or desktop shortcut.
-- Configure the application as per your preferences and let AutoHPMA take care of the rest.
+- Launch the game. If using Mumu emulator, go full screen.
+- Configure the application as per your preferences.
+- Select the launch method,then click the start button when ready.
 
 <br>
 
 ## Notice
 
-- **Compatibility**: AutoHPMA is currently compatible only with the MuMu emulator for Harry Potter: Magic Awakened and supports windowed fullscreen mode at a resolution of 2560*1600. Official launcher and other resolutions are not currently supported.
-- **Instructions**: During script execution, do not minimize the window or click the Show desktop button, this will cause the function to fail. Though the window occlusion is allowed.
+- **Compatibility**: AutoHPMA is currently compatible only with the MuMu emulator for Harry Potter: Magic Awakened and supports windowed fullscreen mode at a resolution of 2560*1600 or 1920*1080. Official launcher and other resolutions are not currently supported.
+- **Instructions**: During script execution, do not minimize the window or click the Show desktop button, this might cause the function to fail. However, the window occlusion is allowed.
 - **Legal Disclaimer**: AutoHPMA is developed solely for educational and entertainment purposes. Please review and comply with the Terms of Service of Harry Potter: Magic Awakened. The developer bears no responsibility for any adverse consequences resulting from the misuse of this application.
 
 <br>
