@@ -21,7 +21,8 @@ namespace AutoHPMA.GameTask
         Gathering,
         Preparing,
         Answering,
-        Gapping
+        Gapping,
+        Stopping
     }
 
     public struct Point
@@ -61,6 +62,11 @@ namespace AutoHPMA.GameTask
         public void Reset()
         {
             _currentState = TaskFlowState.Waiting;
+        }
+
+        public void Stop()
+        {
+            _currentState = TaskFlowState.Stopping;
         }
 
         public void Init(LogWindow logWindow, int op)
@@ -325,6 +331,11 @@ namespace AutoHPMA.GameTask
                         WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);       //关闭聊天框
                         await Task.Delay(1000);
                         _currentState = TaskFlowState.Gathering;
+                        break;
+
+                    case TaskFlowState.Stopping:
+                        // 执行停止状态的逻辑...
+                        //_logWindow?.AddLogMessage("INF", "任务已停止！");
                         break;
 
                 }

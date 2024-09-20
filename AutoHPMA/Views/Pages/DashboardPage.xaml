@@ -40,17 +40,17 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Bottom"
                         Background="Transparent">
-                        <ui:TextBlock FontTypography="Title" Text="Auto HPMA" />
+                        <ui:TextBlock FontTypography="Title" Text="AutoHPMA" />
                         <ui:TextBlock
                             FontTypography="Subtitle"
                             Opacity="0.8"
-                            Text="哈利波特魔法觉醒 · 自动社团答题" />
+                            Text="哈利波特魔法觉醒 · 辅助" />
                         <ui:TextBlock FontTypography="BodyStrong" Opacity="0.6">
                             <Hyperlink
                                 Command="{Binding ViewModel.GoToWikiUrlCommand}"
                                 Foreground="#B7FFFFFF"
                                 TextDecorations="None">
-                                <Run>点击查看文档与教程</Run>
+                                <Run>点击查看教程文档</Run>
                                 <Run FontFamily="{StaticResource FluentSystemIcons}" FontWeight="Light">&#xEE7A;</Run>
                             </Hyperlink>
 
@@ -79,17 +79,17 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="Auto HPMA · 哈利波特魔法觉醒，启动！"
+                        Text="AutoHPMA · 自动社团答题，启动！"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                         TextWrapping="Wrap">
-                        启动后才能使用各项功能，<Run FontWeight="Bold" TextDecorations="Underline">
+                        <Run FontWeight="Bold" TextDecorations="Underline">
                             点击展开启动相关配置
                         </Run>
-                        。</ui:TextBlock>
+                    </ui:TextBlock>
                     <StackPanel
                         Grid.Row="0"
                         Grid.RowSpan="2"
@@ -130,7 +130,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="默认500ms，普通用户不建议调整这个值，具体调整方式见文档"
+                        Text="默认500ms，可根据需要自行调整"
                         TextWrapping="Wrap" />
                     <ui:TextBox
                         Grid.Row="0"
@@ -191,7 +191,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="开启后，在截图页面显示实时截屏，便于测试"
+                        Text="开启后，在截屏页面显示实时截屏，便于测试"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"

@@ -263,14 +263,14 @@ namespace AutoHPMA.ViewModels.Pages
                 _syncWindowTimer.Stop();
                 _syncWindowTimer.Tick -= SyncWindowTimer_Tick;
 
-                _taskFlow.Reset();
+                _taskFlow.Stop();
             }
         }
 
         [RelayCommand]
         public void OnGoToWikiUrl()
         {
-            Process.Start(new ProcessStartInfo("https://github.com/FelixChristian011226/AutoHPMA") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo("https://felixchristian011226.github.io/AutoHPMA-Web/") { UseShellExecute = true });
         }
 
         [RelayCommand]
