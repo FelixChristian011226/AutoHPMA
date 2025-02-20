@@ -109,7 +109,7 @@ namespace AutoHPMA.ViewModels.Pages
         public void InitializeSyncWindowTimer()
         {
             _syncWindowTimer = new DispatcherTimer();
-            _syncWindowTimer.Interval = TimeSpan.FromMilliseconds(50);
+            _syncWindowTimer.Interval = TimeSpan.FromMilliseconds(100);
         }
         private void CaptureTimer_Tick(object? sender, EventArgs e)
         {
@@ -257,11 +257,11 @@ namespace AutoHPMA.ViewModels.Pages
 
                 _logWindow?.Close();
 
-                _captureTimer.Stop();
                 _captureTimer.Tick -= CaptureTimer_Tick;
+                _captureTimer.Stop();
 
-                _syncWindowTimer.Stop();
                 _syncWindowTimer.Tick -= SyncWindowTimer_Tick;
+                _syncWindowTimer.Stop();
 
                 _taskFlow.Stop();
             }

@@ -18,6 +18,8 @@ namespace AutoHPMA.Helpers
                     return Brushes.Red;
                 case "INF":
                     return Brushes.DarkCyan;
+                case "DBG":
+                    return Brushes.Magenta;
                 default:
                     return Brushes.Gray;
             }

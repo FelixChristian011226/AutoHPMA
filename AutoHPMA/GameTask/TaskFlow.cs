@@ -169,6 +169,8 @@ namespace AutoHPMA.GameTask
                         {
                             _currentState = TaskFlowState.Gapping;
                         }
+                        bmp.Dispose();
+                        croppedBmp.Dispose();
                         break;
 
                     case TaskFlowState.Preparing:
@@ -195,6 +197,8 @@ namespace AutoHPMA.GameTask
                         }
                         if (FindTime(bmp))
                             _currentState = TaskFlowState.Answering;
+                        bmp.Dispose();
+                        croppedBmp.Dispose();
                         break;
 
                     case TaskFlowState.Answering:
@@ -276,6 +280,8 @@ namespace AutoHPMA.GameTask
                                 break;
                         }
                         _currentState = TaskFlowState.Answering;
+                        bmp.Dispose();
+                        croppedBmp.Dispose();
                         break;
 
                     case TaskFlowState.Gapping:
@@ -331,11 +337,13 @@ namespace AutoHPMA.GameTask
                         WindowInteractionHelper.SendMouseClick(hwnd, clickX, clickY);       //关闭聊天框
                         await Task.Delay(1000);
                         _currentState = TaskFlowState.Gathering;
+                        bmp.Dispose();
+                        croppedBmp.Dispose();
                         break;
 
                     case TaskFlowState.Stopping:
                         // 执行停止状态的逻辑...
-                        //_logWindow?.AddLogMessage("INF", "任务已停止！");
+                        _logWindow?.AddLogMessage("INF", "任务已停止！");
                         break;
 
                 }
@@ -360,6 +368,7 @@ namespace AutoHPMA.GameTask
             h = (int)config["Answering"]["A_pic"]["h"];
             croppedBmp[0] = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[0] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(options[0], croppedBmp[0]));
+            croppedBmp[0].Dispose();
             
             x = (int)config["Answering"]["B_pic"]["x"];
             y = (int)config["Answering"]["B_pic"]["y"];
@@ -367,13 +376,15 @@ namespace AutoHPMA.GameTask
             h = (int)config["Answering"]["B_pic"]["h"];
             croppedBmp[1] = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[1] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(options[1], croppedBmp[1]));
-            
+            croppedBmp[1].Dispose();
+
             x = (int)config["Answering"]["C_pic"]["x"];
             y = (int)config["Answering"]["C_pic"]["y"];
             w = (int)config["Answering"]["C_pic"]["w"];
             h = (int)config["Answering"]["C_pic"]["h"];
             croppedBmp[2] = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[2] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(options[2], croppedBmp[2]));
+            croppedBmp[2].Dispose();
 
             x = (int)config["Answering"]["D_pic"]["x"];
             y = (int)config["Answering"]["D_pic"]["y"];
@@ -381,7 +392,8 @@ namespace AutoHPMA.GameTask
             h = (int)config["Answering"]["D_pic"]["h"];
             croppedBmp[3] = ImageProcessingHelper.CropBitmap(bmp, x, y, w, h);
             similarity[3] = ImageProcessingHelper.AverageScalarValue(ImageProcessingHelper.Compare_SSIM(options[3], croppedBmp[3]));
-            
+            croppedBmp[3].Dispose();
+
             //找到最小相似度下标
             int index = Array.IndexOf(similarity, similarity.Min());
             return index;
@@ -410,6 +422,7 @@ namespace AutoHPMA.GameTask
                     return true;
                 }
             }
+            croppedBmp.Dispose();
             return false;
         }
 
