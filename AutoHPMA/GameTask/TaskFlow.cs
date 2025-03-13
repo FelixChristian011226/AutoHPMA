@@ -12,6 +12,8 @@ using System.IO;
 using Vanara.PInvoke;
 using Newtonsoft.Json.Linq;
 using System.Runtime.InteropServices.Marshalling;
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
 
 namespace AutoHPMA.GameTask
 {
@@ -123,7 +125,7 @@ namespace AutoHPMA.GameTask
             uint clickX, clickY;
 
             await workAsyncLock.WaitAsync();
-
+            GC.Collect();
             try
             {
                 switch (_currentState)
@@ -135,6 +137,17 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Gathering:
                         // 执行集结状态的逻辑...
+                        
+                        //bmp = Capture(_targetHwnd, launch_option);
+                        //var gray = new Mat();
+                        //Cv2.CvtColor(bmp.ToMat(), gray, ColorConversionCodes.BGR2GRAY);
+
+                        //var gatherGray = new Mat();
+                        //Cv2.CvtColor(gather.ToMat(), gatherGray, ColorConversionCodes.BGR2GRAY);
+                        //var matchpoint = MatchTemplateHelper.MatchTemplate(gray, gatherGray, TemplateMatchModes.CCoeffNormed);
+                        //_logWindow?.AddLogMessage("DBG", "Location: "+ matchpoint.X + "," + matchpoint.Y);
+                        //break;
+
                         bmp = Capture(_targetHwnd, launch_option);
                         //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                         //Directory.CreateDirectory(folderPath);
