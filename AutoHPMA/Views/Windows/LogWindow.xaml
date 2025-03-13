@@ -13,19 +13,7 @@
     <Window.Resources>
         <helpers:CategoryToColorConverter x:Key="CategoryToColorConverter" />
     </Window.Resources>
-    <Border
-        BorderBrush="#A0C0C0C0"
-        BorderThickness="2"
-        CornerRadius="5">
-        <Grid Background="#60D4D4D4">
-            <!--  这里可以放置显示日志信息的控件，比如 TextBlock、ListBox 或者 DataGrid  -->
-            <!--<TextBlock
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            FontSize="16"
-            Foreground="White"
-            Text="这里是日志信息" />-->
-            <ListBox
+    <ListBox
                 x:Name="LogListBox"
                 Width="380"
                 Height="280"
@@ -34,16 +22,16 @@
                 VerticalAlignment="Top"
                 FontSize="6"
                 ScrollViewer.VerticalScrollBarVisibility="Auto">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="Height" Value="20" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <!--  将时间和类别括在一起显示，格式化时间为时分秒  -->
-                            <TextBlock>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Height" Value="20" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <!--  将时间和类别括在一起显示，格式化时间为时分秒  -->
+                        <TextBlock>
                                 <Run Text="[" />
                                 <Run Foreground="DarkSlateGray" Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" />
                                 <Run Text=" " />
@@ -52,14 +40,12 @@
                                     Foreground="{Binding Category, Converter={StaticResource CategoryToColorConverter}}"
                                     Text="{Binding Category}" />
                                 <Run Text="] " />
-                            </TextBlock>
-                            <TextBlock Foreground="Black" Text="{Binding Content}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </Grid>
-    </Border>
+                        </TextBlock>
+                        <TextBlock Foreground="Black" Text="{Binding Content}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
 
 </Window>
