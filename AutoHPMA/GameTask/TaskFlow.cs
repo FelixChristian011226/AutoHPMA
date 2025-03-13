@@ -64,6 +64,7 @@ namespace AutoHPMA.GameTask
         public void Reset()
         {
             _currentState = TaskFlowState.Waiting;
+            roundIndex = 0;
         }
 
         public void Stop()
@@ -356,7 +357,7 @@ namespace AutoHPMA.GameTask
 
                     case TaskFlowState.Stopping:
                         // 执行停止状态的逻辑...
-                        _logWindow?.AddLogMessage("INF", "任务已停止！");
+                        //_logWindow?.AddLogMessage("INF", "任务已停止！");
                         break;
 
                 }

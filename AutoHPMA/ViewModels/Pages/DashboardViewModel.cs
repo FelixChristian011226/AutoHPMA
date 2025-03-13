@@ -228,6 +228,7 @@ namespace AutoHPMA.ViewModels.Pages
                     else if (SelectedStartupOption.Option == StartupOption.MumuSimulator1080)
                         op = 2;
                     _taskFlow.Init(_logWindow, op);
+                    _taskFlow.Reset();
 
                     _logWindow.ShowInTaskbar = false;
                     //_logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
