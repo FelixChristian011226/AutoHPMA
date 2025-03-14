@@ -21,16 +21,27 @@ namespace AutoHPMA.Views.Windows
     public partial class LogWindow : Window
     {
         private static LogWindow _instance;
-        private const int WS_EX_TRANSPARENT = 0x00000020;
         private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_TRANSPARENT = 0x00000020;
+        private const int WS_EX_LAYERED = 0x00080000;
+
         private ObservableCollection<LogMessage> _logMessages = new ObservableCollection<LogMessage>();
 
         public LogWindow()
         {
             InitializeComponent();
-            SetWindowStyle();
             // 绑定日志消息集合到TextBlock
             LogListBox.ItemsSource = _logMessages;
+            Loaded += LogWindow_Loaded;
+        }
+
+        private void LogWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            Background = Brushes.Transparent;
+            Topmost = true;
         }
 
         // 添加日志消息
@@ -88,15 +99,6 @@ namespace AutoHPMA.Views.Windows
                 //Width = rect.Right - rect.Left;
                 //Height = rect.Bottom - rect.Top;
             }
-        }
-
-        private void SetWindowStyle()
-        {
-            var hwnd = new WindowInteropHelper(this).Handle;
-            var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT);
-            Background = Brushes.Transparent;
-            Topmost = true;
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
