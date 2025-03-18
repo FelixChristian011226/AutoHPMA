@@ -8,6 +8,9 @@ using System.Runtime.InteropServices;
 
 namespace AutoHPMA.Helpers
 {
+    /// <summary>
+    /// DirectX截屏
+    /// </summary>
     public class DirectXScreenCaptureHelper
     {
         public static Bitmap CaptureScreen()

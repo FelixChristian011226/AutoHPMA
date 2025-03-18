@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace AutoHPMA.Helpers
 {
+    /// <summary>
+    /// 模板匹配
+    /// </summary>
     public class MatchTemplateHelper
     {
         public static OpenCvSharp.Point MatchTemplate(Mat srcMat, Mat dstMat, TemplateMatchModes matchMode, Mat? maskMat = null, double threshold = 0.8)

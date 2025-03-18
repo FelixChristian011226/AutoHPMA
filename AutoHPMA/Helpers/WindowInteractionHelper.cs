@@ -10,6 +10,9 @@ using static Vanara.PInvoke.User32;
 
 namespace AutoHPMA.Helpers;
 
+/// <summary>
+/// 窗口交互类
+/// </summary>
 public class WindowInteractionHelper
 {
     [DllImport("user32.dll", CharSet = CharSet.Auto)]

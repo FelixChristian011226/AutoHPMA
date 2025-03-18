@@ -8,6 +8,9 @@ using Vanara.PInvoke;
 
 namespace AutoHPMA.Helpers
 {
+    /// <summary>
+    /// BitBlt截图
+    /// </summary>
     public class BitBltCaptureHelper
     {
 

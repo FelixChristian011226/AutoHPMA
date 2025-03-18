@@ -9,6 +9,10 @@ using Wpf.Ui.Appearance;
 
 namespace AutoHPMA.Helpers
 {
+    /// <summary>
+    /// Enum转换为布尔值
+    /// 用于将枚举值转换为布尔值，以便在XAML中使用
+    /// </summary>
     internal class EnumToBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

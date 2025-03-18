@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace AutoHPMA.Helpers
 {
+    /// <summary>
+    /// 截屏
+    /// </summary>
     public static class ScreenCaptureHelper
     {
         public const int PW_CLIENTONLY = 0x00000001;

@@ -6,6 +6,9 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 namespace AutoHPMA.Helpers
 {
+    /// <summary>
+    /// 图像处理
+    /// </summary>
     public class ImageProcessingHelper
     {
         // 截取 Bitmap 图像

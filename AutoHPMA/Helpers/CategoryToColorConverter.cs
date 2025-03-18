@@ -5,6 +5,10 @@ using System.Windows.Media;
 
 namespace AutoHPMA.Helpers
 {
+    /// <summary>
+    /// 颜色转换器
+    /// 用于将日志消息的类别转换为不同颜色
+    /// </summary>
     public class CategoryToColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -13,13 +17,13 @@ namespace AutoHPMA.Helpers
             switch (category)
             {
                 case "WRN":
-                    return Brushes.Orange;
+                    return Brushes.Yellow;
                 case "ERR":
                     return Brushes.Red;
                 case "INF":
-                    return Brushes.DarkCyan;
+                    return Brushes.Cyan;
                 case "DBG":
-                    return Brushes.Magenta;
+                    return Brushes.OrangeRed;
                 default:
                     return Brushes.Gray;
             }
