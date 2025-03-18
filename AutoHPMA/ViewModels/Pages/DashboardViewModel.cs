@@ -149,6 +149,7 @@ namespace AutoHPMA.ViewModels.Pages
                     //LogWindow.GetInstance().ShowLogWindow();
                     _logWindow?.ShowLogWindow();
                 }
+                _logWindow?.RefreshPosition(_targetHwnd, _logWindowLeft, _logWindowTop);
             }
         }
 

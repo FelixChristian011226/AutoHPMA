@@ -36,16 +36,17 @@
                     <StackPanel Orientation="Horizontal">
                         <!--  将时间和类别括在一起显示，格式化时间为时分秒  -->
                         <TextBlock>
-                                <Run Text="[" />
-                                <Run Foreground="DarkSlateGray" Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" />
+                                <Run Foreground="White" Text="[" />
+                                <Run Foreground="LightGray" Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" />
                                 <Run Text=" " />
                                 <Run
                                     FontWeight="Bold"
                                     Foreground="{Binding Category, Converter={StaticResource CategoryToColorConverter}}"
                                     Text="{Binding Category}" />
-                                <Run Text="] " />
+                                <Run Foreground="White" Text="] " />
                         </TextBlock>
-                        <TextBlock Foreground="White" Text="{Binding Content}" />
+                        <TextBlock Foreground="FloralWhite" 
+                                   helpers:InlineBindingHelper.FormattedText="{Binding Content}"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
