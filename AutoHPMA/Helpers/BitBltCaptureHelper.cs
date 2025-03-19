@@ -25,8 +25,8 @@ namespace AutoHPMA.Helpers
             try
             {
                 GetWindowRect(_hWnd, out var windowRect);
-                var width = windowRect.Width - windowRect.X;
-                var height = windowRect.Height - windowRect.Y;
+                var width = windowRect.Width;
+                var height = windowRect.Height;
 
                 var hdcSrc = GetWindowDC(_hWnd);
                 var hdcDest = CreateCompatibleDC(hdcSrc);
