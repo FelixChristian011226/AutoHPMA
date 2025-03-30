@@ -15,6 +15,17 @@ namespace AutoHPMA.Helpers;
 /// </summary>
 public class WindowInteractionHelper
 {
+    // 定义模拟鼠标点击所需的消息常量
+    private const uint WM_PARENTNOTIFY = 0x0210;
+    private const uint WM_LBUTTONDOWN = 0x201;
+    private const uint WM_LBUTTONUP = 0x202;
+    private const uint WM_CLOSE = 0x010;
+
+    private const uint INPUT_MOUSE = 0;
+    private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+    private const uint MOUSEEVENTF_LEFTUP = 0x0004;
+
+
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
@@ -26,6 +37,9 @@ public class WindowInteractionHelper
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -55,17 +69,14 @@ public class WindowInteractionHelper
         [FieldOffset(0)] public MOUSEINPUT mi;
     }
 
-
-    // 定义模拟鼠标点击所需的消息常量
-    private const uint WM_PARENTNOTIFY = 0x0210;
-    private const uint WM_LBUTTONDOWN = 0x201;  
-    private const uint WM_LBUTTONUP = 0x202;
-    private const uint WM_CLOSE = 0x010;
-
-    private const uint INPUT_MOUSE = 0;
-    private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
-    private const uint MOUSEEVENTF_LEFTUP = 0x0004;
-
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
 
     // 计算lParam所需的坐标点
     private static IntPtr MakeLParam(uint x, uint y)
@@ -97,5 +108,25 @@ public class WindowInteractionHelper
         PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
 
     }
+
+
+
+    public static void GetWindowPositionAndSize(IntPtr hWnd, out int left, out int top, out int width, out int height)
+    {
+        RECT rect;
+        if (GetWindowRect(hWnd, out rect))
+        {
+            left = rect.Left;
+            top = rect.Top;
+            width = rect.Right - rect.Left;
+            height = rect.Bottom - rect.Top;
+        }
+        else
+        {
+            int error = Marshal.GetLastWin32Error();
+            throw new System.ComponentModel.Win32Exception(error);
+        }
+    }
+
 
 }

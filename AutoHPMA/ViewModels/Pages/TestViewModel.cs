@@ -1,7 +1,9 @@
 ﻿using AutoHPMA.GameTask;
 using AutoHPMA.Helpers;
 using AutoHPMA.Views.Windows;
+using Fischless.GameCapture.Graphics;
 using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,20 +14,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Vanara.PInvoke;
 
 namespace AutoHPMA.ViewModels.Pages
 {
     public partial class TestViewModel : ObservableObject
     {
-        // 启动方式
-        public ObservableCollection<StartupOptionItem> StartupOptions { get; } = new ObservableCollection<StartupOptionItem>
-        {
-            new StartupOptionItem { Option = StartupOption.MumuSimulator, DisplayName = "Mumu模拟器" },
-            new StartupOptionItem { Option = StartupOption.OfficialLauncher, DisplayName = "官方启动器" }
-        };
-
-        [ObservableProperty]
-        private StartupOptionItem _selectedStartupOption;
 
         // 截屏测试
         [ObservableProperty]
@@ -53,16 +47,28 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public async void OnScreenshotTest(object sender)
         {
-            IntPtr _targetHwnd = IntPtr.Zero;
-            if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
-                _targetHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-            else
-                _targetHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
-
-            if (_targetHwnd != IntPtr.Zero)
+            var _gameHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            if (_gameHwnd != IntPtr.Zero)
             {
-                Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
-                //Bitmap bmp = BitBltCaptureHelper.Capture(_targetHwnd);
+                //_gameHwnd = SystemControl.FindChildWindowByTitle(_gameHwnd, "MuMuPlayer");
+            }
+            else
+            {
+                _gameHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+            }
+
+            if (_gameHwnd != IntPtr.Zero)
+            {
+                //Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_gameHwnd);
+                //Bitmap bmp = BitBltCaptureHelper.Capture(_gameHwnd);
+
+                var capture = new GraphicsCapture();
+                capture.Start(_gameHwnd);
+                await Task.Delay(100);
+                Mat frame = capture.Capture();
+                capture.Stop();
+                Bitmap bmp = frame.ToBitmap();
+
                 string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
                 Directory.CreateDirectory(folderPath);
                 Bitmap croppedBmp;
@@ -79,7 +85,7 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public async void OnClickTest(object sender)
         {
-            IntPtr hWnd = SystemControl.FindMumuSimulatorHandle();
+            IntPtr hWnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
             IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
             //IntPtr hWndChild = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
             //IntPtr hWndChild = new IntPtr(Convert.ToInt32("004D078E", 16));

@@ -20,7 +20,7 @@ namespace AutoHPMA.Views.Windows
 
     public partial class LogWindow : Window
     {
-        private static LogWindow _instance;
+        private static LogWindow? _instance;
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TRANSPARENT = 0x00000020;
         private const int WS_EX_LAYERED = 0x00080000;
@@ -71,10 +71,10 @@ namespace AutoHPMA.Views.Windows
 
         public static LogWindow GetInstance()
         {
-            if (_instance == null || !_instance.IsLoaded)
-            {
-                _instance = new LogWindow();
-            }
+            //if (_instance == null || !_instance.IsLoaded)
+            //{
+            //    _instance = new LogWindow();
+            //}
             return _instance;
         }
 
@@ -82,7 +82,7 @@ namespace AutoHPMA.Views.Windows
         {
             var instance = new LogWindow();
             instance.Show();
-            // 设置窗口位置为左下角
+            // 设置窗口位置为左上角
             instance.Left = 0;
             instance.Top = 0;
             _instance = instance;

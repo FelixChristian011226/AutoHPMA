@@ -36,11 +36,6 @@ public class SystemControl
         return 0;
     }
 
-    public static nint FindMumuSimulatorHandle()
-    {
-        return FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-    }
-
     public static IntPtr FindChildWindowByTitle(IntPtr parentHandle, string targetTitle)
     {
         IntPtr result = IntPtr.Zero;
