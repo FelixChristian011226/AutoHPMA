@@ -27,6 +27,17 @@ namespace AutoHPMA.Views.Windows
 
         private ObservableCollection<LogMessage> _logMessages = new ObservableCollection<LogMessage>();
 
+        private bool _showDebugLogs = false;
+        public bool ShowDebugLogs
+        {
+            get => _showDebugLogs;
+            set
+            {
+                _showDebugLogs = value;
+                FilterLogMessages(); // 当属性修改时，更新日志列表
+            }
+        }
+
         public LogWindow()
         {
             InitializeComponent();
@@ -47,14 +58,19 @@ namespace AutoHPMA.Views.Windows
         // 添加日志消息
         public void AddLogMessage(string category, string content)
         {
+            if (category == "DBG" && !_showDebugLogs)
+                return;
+
             var message = new LogMessage
             {
                 Timestamp = DateTime.Now,
                 Category = category,
                 Content = content
             };
+
             _logMessages.Add(message);
-            //自动滚动
+
+            // 自动滚动
             if (LogListBox.Items.Count > 0)
             {
                 LogListBox.ScrollIntoView(LogListBox.Items[LogListBox.Items.Count - 1]);
@@ -119,6 +135,24 @@ namespace AutoHPMA.Views.Windows
         public void ToggleLogWindowVisibility(bool isVisible)
         {
             this.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void FilterLogMessages()
+        {
+            var filteredMessages = new ObservableCollection<LogMessage>();
+            foreach (var log in _logMessages)
+            {
+                if (log.Category == "DBG" && !_showDebugLogs)
+                    continue;
+
+                filteredMessages.Add(log);
+            }
+
+            _logMessages.Clear();
+            foreach (var msg in filteredMessages)
+            {
+                _logMessages.Add(msg);
+            }
         }
 
 
