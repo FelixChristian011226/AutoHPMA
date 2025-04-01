@@ -79,7 +79,7 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="AutoHPMA · 自动社团答题，启动！"
+                        Text="AutoHPMA，截图器启动！"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
@@ -154,37 +154,6 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="启动方式"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="选择您的启动方式，如官方启动器或Mumu模拟器"
-                        TextWrapping="Wrap" />
-                    <ComboBox
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        Margin="0,0,36,0"
-                        DisplayMemberPath="DisplayName"
-                        ItemsSource="{Binding ViewModel.StartupOptions}"
-                        SelectedItem="{Binding ViewModel.SelectedStartupOption, Mode=TwoWay}" />
-                </Grid>
-                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        FontTypography="Body"
                         Text="实时截屏"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
@@ -222,7 +191,7 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="启用遮罩窗口"
+                        Text="启用日志窗口"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
@@ -247,51 +216,25 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <ui:TextBlock
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="Left"
+                        Text="显示调试信息"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="遮罩窗口左偏移量。"
+                        Text="显示调试信息日志"
                         TextWrapping="Wrap" />
-                    <ui:TextBox
+                    <ui:ToggleSwitch
                         Grid.Row="0"
                         Grid.RowSpan="2"
                         Grid.Column="1"
-                        MinWidth="100"
-                        MaxWidth="200"
-                        Margin="0,0,36,0"
-                        Text="{Binding ViewModel.LogWindowLeft, Mode=TwoWay}"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="2"
-                        FontTypography="Body"
-                        Text="Top"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="2"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="遮罩窗口上偏移量。"
-                        TextWrapping="Wrap" />
-                    <ui:TextBox
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Grid.Column="3"
-                        MinWidth="100"
-                        MaxWidth="200"
-                        Margin="0,0,36,0"
-                        Text="{Binding ViewModel.LogWindowTop, Mode=TwoWay}"
-                        TextWrapping="Wrap" />
+                        Margin="0,0,24,0"
+                        IsChecked="{Binding ViewModel.DebugLogEnabled, Mode=TwoWay}" />
                 </Grid>
             </StackPanel>
         </ui:CardExpander>

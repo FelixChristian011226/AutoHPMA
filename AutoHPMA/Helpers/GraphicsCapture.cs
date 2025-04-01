@@ -10,10 +10,9 @@ using OpenCvSharp;
 using SharpDX.DXGI;
 using Device = SharpDX.Direct3D11.Device;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
-using AutoHPMA.Helpers;
 using System.Windows.Input;
 
-namespace Fischless.GameCapture.Graphics;
+namespace AutoHPMA.Helpers;
 
 public class GraphicsCapture
 {

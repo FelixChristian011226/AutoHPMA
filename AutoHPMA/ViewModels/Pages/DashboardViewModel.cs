@@ -22,35 +22,15 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Collections.ObjectModel;
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
 
 namespace AutoHPMA.ViewModels.Pages
 {
-    public enum StartupOption
-    {
-        MumuSimulator,
-        MumuSimulator1080,
-        OfficialLauncher
-    }
-
-    public class StartupOptionItem
-    {
-        public StartupOption Option { get; set; }
-        public string DisplayName { get; set; }
-    }
 
     public partial class DashboardViewModel : ObservableObject, INavigationAware
     {
-        public ObservableCollection<StartupOptionItem> StartupOptions { get; } = new ObservableCollection<StartupOptionItem>
-        {
-            new StartupOptionItem { Option = StartupOption.MumuSimulator, DisplayName = "Mumu模拟器" },
-            new StartupOptionItem { Option = StartupOption.MumuSimulator1080, DisplayName = "Mumu1920*1080" },
-            new StartupOptionItem { Option = StartupOption.OfficialLauncher, DisplayName = "官方启动器" }
-        };
 
-        [ObservableProperty]
-        private StartupOptionItem _selectedStartupOption;
-
-        private bool _taskDispatcherEnabled = false;
         private DispatcherTimer _syncWindowTimer;
         private DispatcherTimer _captureTimer;
 
@@ -59,10 +39,9 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private bool _logWindowEnabled = true;
+
         [ObservableProperty]
-        private int _logWindowLeft = 150;
-        [ObservableProperty]
-        private int _logWindowTop = 100;
+        private bool _debugLogEnabled = false;
 
         [ObservableProperty]
         private int _captureInterval = 500;
@@ -77,11 +56,22 @@ namespace AutoHPMA.ViewModels.Pages
         [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
         private bool _stopButtonEnabled = true;
 
-        private LogWindow? _logWindow; 
+        private LogWindow? _logWindow;
+        private int _logWindowLeft = 0;
+        private int _logWindowTop = 0;
 
-        private TaskFlow _taskFlow;
+        private GraphicsCapture capture;
 
-        private IntPtr _targetHwnd;
+        private IntPtr _displayHwnd,_gameHwnd;
+
+        private enum StartupOption
+        {
+            OfficialLauncher,
+            MumuSimulator,
+            None
+        }
+
+        private StartupOption _startupOption = StartupOption.None;
 
         public static event Action<Bitmap> ScreenshotUpdated;
 
@@ -92,10 +82,8 @@ namespace AutoHPMA.ViewModels.Pages
 
         public DashboardViewModel()
         {
-            _selectedStartupOption = StartupOptions[0];
             InitializeCaptureTimer();
             InitializeSyncWindowTimer();
-            _taskFlow = TaskFlow.Instance();
         }
         private void InitializeCaptureTimer()
         {
@@ -113,136 +101,110 @@ namespace AutoHPMA.ViewModels.Pages
         }
         private void CaptureTimer_Tick(object? sender, EventArgs e)
         {
-            IntPtr _taskHwnd = IntPtr.Zero;
-            if (SelectedStartupOption.Option == StartupOption.OfficialLauncher)
-                _taskHwnd = _targetHwnd;
-            else
-                _taskHwnd = SystemControl.FindChildWindowByTitle(_targetHwnd, "MuMuPlayer");
-            if (_targetHwnd != IntPtr.Zero)
+            if (_gameHwnd != IntPtr.Zero)
             {
                 if(_realTimeScreenshotEnabled)
                 {
                     //Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
-                    Bitmap bmp = BitBltCaptureHelper.Capture(_targetHwnd);
+                    Mat? frame = capture?.Capture();
+                    Bitmap? bmp = frame?.ToBitmap();
+
+                    //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                    //Directory.CreateDirectory(folderPath);
+                    //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "TEST" + ".png", ImageFormat.Png);
+
                     OnScreenshotUpdated(bmp); // 发布截图更新事件
                 }
-
-                _taskFlow.WorkAsync(_taskHwnd, _targetHwnd);
             }
         }
         private void SyncWindowTimer_Tick(object? sender, EventArgs e)
         {
-            if (_targetHwnd != IntPtr.Zero)
+            if (_gameHwnd != IntPtr.Zero)
             {
-                if (NativeMethodsService.IsIconic(_targetHwnd)) // 最小化
+                if (NativeMethodsService.IsIconic(_gameHwnd)) // 最小化
                 {
-                    //LogWindow.GetInstance().HideLogWindow();
                     _logWindow?.HideLogWindow();
                 }
-                else if (NativeMethodsService.GetForegroundWindow()!= _targetHwnd) // 不在顶层
+                else if (NativeMethodsService.GetForegroundWindow()!= _displayHwnd) // 不在顶层，由于Mumu模拟器有两个句柄，真正的游戏窗口句柄是子句柄，而且不在顶层，所以需要父句柄
                 {
-                    //LogWindow.GetInstance().HideLogWindow();
                     _logWindow?.HideLogWindow();
                 }
                 else
                 {
-                    //LogWindow.GetInstance().ShowLogWindow();
                     _logWindow?.ShowLogWindow();
                 }
-                _logWindow?.RefreshPosition(_targetHwnd, _logWindowLeft, _logWindowTop);
+                _logWindow?.RefreshPosition(_gameHwnd, _logWindowLeft, _logWindowTop);
             }
         }
 
         private bool CanStartTrigger() => StartButtonEnabled;
 
         [RelayCommand(CanExecute = nameof(CanStartTrigger))]
-        private async Task OnStartTriggerAsync()
+        private void OnStartTrigger()
         {
-            if (SelectedStartupOption.Option == StartupOption.OfficialLauncher)
-                _targetHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+            _displayHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            if (_displayHwnd != IntPtr.Zero)
+            {
+                _startupOption = StartupOption.MumuSimulator;
+                _gameHwnd = SystemControl.FindChildWindowByTitle(_displayHwnd, "MuMuPlayer");
+            }
             else
-                _targetHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            {
+                _gameHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+                if (_gameHwnd != IntPtr.Zero)
+                {
+                    _startupOption = StartupOption.OfficialLauncher;
+                }
+            }
 
-            if (_targetHwnd == IntPtr.Zero)
+            if (_gameHwnd == IntPtr.Zero)
             {
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
                     Title = "错误",
                     Content = "未找到游戏窗口。\n请先启动游戏！",
                 };
-                var result = await uiMessageBox.ShowDialogAsync();
+                var result = uiMessageBox.ShowDialogAsync();
                 return;
             }
-            if (!_taskDispatcherEnabled)
+
+            StartButtonVisibility = Visibility.Collapsed;
+            StopButtonVisibility = Visibility.Visible;
+
+            // 当官方启动器时，将游戏窗口置于前端
+            if(_startupOption == StartupOption.OfficialLauncher)
             {
-                _taskDispatcherEnabled = true;
-                StartButtonVisibility = Visibility.Collapsed;
-                StopButtonVisibility = Visibility.Visible;
-
-                // 当官方启动器时，将游戏窗口置于前端
-                if(SelectedStartupOption.Option == StartupOption.OfficialLauncher)
-                {
-                    NativeMethodsService.ShowWindow(_targetHwnd, NativeMethodsService.SW_SHOW);
-                    NativeMethodsService.SetForegroundWindow(_targetHwnd);
-                }
-                //int showWindowCommand;
-                //if (NativeMethodsService.IsZoomed(_targetHwnd))
-                //{
-                //    // 如果窗口已经是最大化状态，则只需要将其置于前端
-                //    showWindowCommand = NativeMethodsService.SW_SHOW;
-                //}
-                //else if (NativeMethodsService.IsIconic(_targetHwnd))
-                //{
-                //    // 如果窗口是最小化的，则恢复
-                //    showWindowCommand = NativeMethodsService.SW_RESTORE;
-                //}
-                //else
-                //{
-                //    // 如果窗口既不是最小化也不是最大化，则不做状态改变，只尝试置于前端
-                //    showWindowCommand = NativeMethodsService.SW_SHOW;
-                //}
-                //// 从最小化状态恢复窗口并试图将其置于前端。
-                //NativeMethodsService.ShowWindow(_targetHwnd, showWindowCommand);
-                //NativeMethodsService.SetForegroundWindow(_targetHwnd);
-
-                // 隐藏WPF应用的主窗口。
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    Application.Current.MainWindow.Hide();
-                });
-
-                UpdateCaptureTimer();
-                _captureTimer.Tick += CaptureTimer_Tick;
-                _captureTimer.Start();
-                
-                _taskDispatcherEnabled = true;
-                if (_logWindowEnabled)
-                {
-                    _syncWindowTimer.Tick += SyncWindowTimer_Tick;
-                    _syncWindowTimer.Start();
-                    _logWindow = LogWindow.Instance();
-                    int op = 0;
-                    if (SelectedStartupOption.Option == StartupOption.OfficialLauncher)
-                        op = 0;
-                    else if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
-                        op = 1;
-                    else if (SelectedStartupOption.Option == StartupOption.MumuSimulator1080)
-                        op = 2;
-                    _taskFlow.Init(_logWindow, op);
-                    _taskFlow.Reset();
-
-                    _logWindow.ShowInTaskbar = false;
-                    //_logWindow.Owner = GetMumuSimulatorWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
-                    _logWindow.Owner = GetGameWindow(); // 将Mumu模拟器窗口设置为LogWindow的Owner
-                    _logWindow.RefreshPosition(_targetHwnd, _logWindowLeft, _logWindowTop);
-                    _logWindow.AddLogMessage("INF","---日志窗口已启动---");
-                    //if (SelectedStartupOption.Option == StartupOption.MumuSimulator)
-                    //    _logWindow.AddLogMessage("INF", "MumuSimulator");
-                    //else
-                    //    _logWindow.AddLogMessage("INF", "Official Launcher");
-                }
-
+                NativeMethodsService.ShowWindow(_gameHwnd, NativeMethodsService.SW_SHOW);
+                NativeMethodsService.SetForegroundWindow(_gameHwnd);
             }
+
+            // 隐藏WPF应用的主窗口。
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Application.Current.MainWindow.Hide();
+            });
+
+            UpdateCaptureTimer();
+            _captureTimer.Tick += CaptureTimer_Tick;
+            _captureTimer.Start();
+
+            // 启动日志窗口
+            if (_logWindowEnabled)
+            {
+                _syncWindowTimer.Tick += SyncWindowTimer_Tick;
+                _syncWindowTimer.Start();
+                _logWindow = LogWindow.Instance();
+
+                _logWindow.ShowInTaskbar = false;   //在ALT+TAB中不显示
+                _logWindow.Owner = GetGameWindow(); // 将游戏窗口设置为LogWindow的Owner
+                _logWindow.RefreshPosition(_gameHwnd, _logWindowLeft, _logWindowTop);
+                _logWindow.ShowDebugLogs = DebugLogEnabled;
+                _logWindow.AddLogMessage("INF",_startupOption+": 已启动");
+                ShowGameWindowInfo();
+            }
+
+            capture = new GraphicsCapture();
+            capture.Start(_displayHwnd);
 
         }
 
@@ -251,22 +213,21 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanStopTrigger))]
         private void OnStopTrigger()
         {
-            if (_taskDispatcherEnabled)
-            {
-                _taskDispatcherEnabled = false;
-                StartButtonVisibility = Visibility.Visible;
-                StopButtonVisibility = Visibility.Collapsed;
+            StartButtonVisibility = Visibility.Visible;
+            StopButtonVisibility = Visibility.Collapsed;
 
-                _logWindow?.Close();
+            _logWindow?.Close();
 
-                _captureTimer.Tick -= CaptureTimer_Tick;
-                _captureTimer.Stop();
+            _captureTimer.Tick -= CaptureTimer_Tick;
+            _captureTimer.Stop();
 
-                _syncWindowTimer.Tick -= SyncWindowTimer_Tick;
-                _syncWindowTimer.Stop();
+            _syncWindowTimer.Tick -= SyncWindowTimer_Tick;
+            _syncWindowTimer.Stop();
 
-                _taskFlow.Stop();
-            }
+            capture.Stop();
+            capture = null;
+            GC.Collect();
+
         }
 
         [RelayCommand]
@@ -296,10 +257,9 @@ namespace AutoHPMA.ViewModels.Pages
             //throw new NotImplementedException();
         }
 
-        private Window GetGameWindow()
+        private System.Windows.Window GetGameWindow()
         {
-            //var hWnd = SystemControl.FindMumuSimulatorHandle();
-            var hWnd = _targetHwnd;
+            var hWnd = _gameHwnd;
             if (hWnd != IntPtr.Zero)
             {
                 var hwndSource = HwndSource.FromHwnd(hWnd);
@@ -309,7 +269,7 @@ namespace AutoHPMA.ViewModels.Pages
                     if (rootVisual != null)
                     {
                         var parent = VisualTreeHelper.GetParent(rootVisual);
-                        if (parent is Window window)
+                        if (parent is System.Windows.Window window)
                         {
                             return window;
                         }
@@ -317,6 +277,27 @@ namespace AutoHPMA.ViewModels.Pages
                 }
             }
             return null;
+        }
+
+        private void ShowGameWindowInfo()
+        {
+            try
+            {
+                int left, top, width, height;
+                int leftMumu, topMumu;
+                WindowInteractionHelper.GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
+                _logWindow.AddLogMessage("INF", "检测到游戏窗口分辨率"+width+"*"+height);
+                _logWindow.AddLogMessage("DBG", "游戏窗口位置：左上角(" + left + "," + top + ")");
+                WindowInteractionHelper.GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
+                _logWindow.AddLogMessage("DBG", "检测到模拟器窗口分辨率" + width + "*" + height);
+                _logWindow.AddLogMessage("DBG", "模拟器窗口位置：左上角(" + leftMumu + "," + topMumu + ")");
+
+                _logWindow.AddLogMessage("DBG", "坐标偏移量: (" + (left - leftMumu) + "," + (top - topMumu) + ")");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"获取窗口信息失败：{ex.Message}");
+            }
         }
 
     }

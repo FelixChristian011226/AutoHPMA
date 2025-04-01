@@ -1,7 +1,6 @@
 ﻿using AutoHPMA.GameTask;
 using AutoHPMA.Helpers;
 using AutoHPMA.Views.Windows;
-using Fischless.GameCapture.Graphics;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
