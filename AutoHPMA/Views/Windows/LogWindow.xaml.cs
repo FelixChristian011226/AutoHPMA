@@ -110,10 +110,22 @@ namespace AutoHPMA.Views.Windows
             var rect = new RECT();
             if (GetWindowRect(hWnd, out rect))
             {
-                Left = rect.Left+ Loffset;
-                Top = rect.Top+ Toffset;
-                //Width = rect.Right - rect.Left;
-                //Height = rect.Bottom - rect.Top;
+                // 获取当前窗口的DPI缩放比例
+                PresentationSource source = PresentationSource.FromVisual(this);
+                if (source?.CompositionTarget != null)
+                {
+                    double dpiX = source.CompositionTarget.TransformFromDevice.M11;
+                    double dpiY = source.CompositionTarget.TransformFromDevice.M22;
+
+                    Left = rect.Left * dpiX + Loffset;
+                    Top = rect.Top * dpiY + Toffset;
+                }
+                else
+                {
+                    Left = rect.Left + Loffset;
+                    Top = rect.Top + Toffset;
+                }
+
             }
         }
 
