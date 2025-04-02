@@ -41,13 +41,15 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _logWindowEnabled = true;
 
         [ObservableProperty]
-        private bool _debugLogEnabled = false;
+        private bool _debugLogEnabled = true;
 
         [ObservableProperty]
         private int _captureInterval = 500;
 
         [ObservableProperty] private Visibility _startButtonVisibility = Visibility.Visible;
         [ObservableProperty] private Visibility _stopButtonVisibility = Visibility.Collapsed;
+        [ObservableProperty] private Visibility _autoClubQuizStartButtonVisibility = Visibility.Visible;
+        [ObservableProperty] private Visibility _autoClubQuizStopButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartTriggerCommand))]
@@ -55,6 +57,13 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
         private bool _stopButtonEnabled = true;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStartTriggerCommand))]
+        private bool _autoClubQuizStartButtonEnabled = true;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStopTriggerCommand))]
+        private bool _autoClubQuizStopButtonEnabled = true;
+
 
         private LogWindow? _logWindow;
         private int _logWindowLeft = 0;
@@ -125,7 +134,7 @@ namespace AutoHPMA.ViewModels.Pages
                 {
                     _logWindow?.HideLogWindow();
                 }
-                else if (NativeMethodsService.GetForegroundWindow()!= _displayHwnd) // 不在顶层，由于Mumu模拟器有两个句柄，真正的游戏窗口句柄是子句柄，而且不在顶层，所以需要父句柄
+                else if (NativeMethodsService.GetForegroundWindow()!= _displayHwnd) // 由于Mumu模拟器有两个句柄，真正的游戏窗口句柄是子句柄，而且不在顶层，所以需要父句柄
                 {
                     _logWindow?.HideLogWindow();
                 }
@@ -229,6 +238,32 @@ namespace AutoHPMA.ViewModels.Pages
             GC.Collect();
 
         }
+
+
+        private bool CanAutoClubQuizStartTrigger() => AutoClubQuizStartButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoClubQuizStartTrigger))]
+        private void OnAutoClubQuizStartTrigger()
+        {
+            AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
+            AutoClubQuizStopButtonVisibility = Visibility.Visible;
+            _logWindow?.AddLogMessage("INF", "社团答题任务已启动");
+
+            AutoClubQuiz _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
+            _autoClubQuiz.Start();
+
+        }
+
+        private bool CanAutoClubQuizStopTrigger() => AutoClubQuizStopButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoClubQuizStopTrigger))]
+        private void OnAutoClubQuizStopTrigger()
+        {
+            AutoClubQuizStartButtonVisibility = Visibility.Visible;
+            AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
+            _logWindow?.AddLogMessage("INF", "社团答题任务已终止");   
+        }
+
 
         [RelayCommand]
         public void OnGoToWikiUrl()
