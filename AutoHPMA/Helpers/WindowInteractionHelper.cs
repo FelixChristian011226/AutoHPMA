@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.User32;
 
@@ -19,12 +20,17 @@ public class WindowInteractionHelper
     private const uint WM_PARENTNOTIFY = 0x0210;
     private const uint WM_LBUTTONDOWN = 0x201;
     private const uint WM_LBUTTONUP = 0x202;
+    private const int WM_KEYDOWN = 0x0100;
+    private const int WM_KEYUP = 0x0101;
+    private const int WM_CHAR = 0x0102;
     private const uint WM_CLOSE = 0x010;
 
     private const uint INPUT_MOUSE = 0;
     private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
     private const uint MOUSEEVENTF_LEFTUP = 0x0004;
 
+    private const int VK_RETURN = 0x0D;
+    private const int VK_ESCAPE = 0x1B;
 
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -109,7 +115,35 @@ public class WindowInteractionHelper
 
     }
 
+    public static void SendEnter(IntPtr hWnd)
+    {
+        SendKey(hWnd, VK_RETURN);
+    }
 
+    public static void SendESC(IntPtr hWnd)
+    {
+        SendKey(hWnd, VK_ESCAPE);
+    }
+
+    public static void SendKey(IntPtr hWnd, int virtualKey)
+    {
+        const uint MAPVK_VK_TO_VSC = 0x00;
+        uint scanCode = MapVirtualKey((uint)virtualKey, MAPVK_VK_TO_VSC);
+
+        IntPtr lParamDown = (IntPtr)(1 | (scanCode << 16));
+        IntPtr lParamUp = (IntPtr)(0xC0000001 | (scanCode << 16));
+
+        //SetForegroundWindow(hWnd);
+        //Thread.Sleep(20);
+
+        PostMessage(hWnd, WM_KEYDOWN, (IntPtr)virtualKey, lParamDown);
+        Thread.Sleep(50);
+        PostMessage(hWnd, WM_KEYUP, (IntPtr)virtualKey, lParamUp);
+    }
+
+    // 添加MapVirtualKey的声明
+    [DllImport("user32.dll")]
+    public static extern uint MapVirtualKey(uint uCode, uint uMapType);
 
     public static void GetWindowPositionAndSize(IntPtr hWnd, out int left, out int top, out int width, out int height)
     {
