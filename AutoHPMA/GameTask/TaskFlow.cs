@@ -27,12 +27,6 @@ namespace AutoHPMA.GameTask
         Stopping
     }
 
-    public struct Point
-    {
-        public int x;
-        public int y;
-    }
-
     public class TaskFlow
     {
         private static LogWindow _logWindow;

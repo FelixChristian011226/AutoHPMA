@@ -64,6 +64,7 @@ namespace AutoHPMA.ViewModels.Pages
         [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStopTriggerCommand))]
         private bool _autoClubQuizStopButtonEnabled = true;
 
+        private AutoClubQuiz? _autoClubQuiz;
 
         private LogWindow? _logWindow;
         private int _logWindowLeft = 0;
@@ -249,7 +250,7 @@ namespace AutoHPMA.ViewModels.Pages
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
             _logWindow?.AddLogMessage("INF", "社团答题任务已启动");
 
-            AutoClubQuiz _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
+            _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
             _autoClubQuiz.Start();
 
         }
@@ -261,7 +262,10 @@ namespace AutoHPMA.ViewModels.Pages
         {
             AutoClubQuizStartButtonVisibility = Visibility.Visible;
             AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
-            _logWindow?.AddLogMessage("INF", "社团答题任务已终止");   
+            _logWindow?.AddLogMessage("INF", "社团答题任务已终止");
+
+            _autoClubQuiz?.Stop();
+            _autoClubQuiz = null;
         }
 
 

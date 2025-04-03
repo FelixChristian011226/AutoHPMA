@@ -34,6 +34,7 @@
     <PackageReference Include="Serilog.Sinks.RichTextBox.Wpf" Version="1.1.0" />
     <PackageReference Include="SharpDX.Direct3D11" Version="3.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.7" />
+    <PackageReference Include="Tesseract" Version="4.1.1" />
     <PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.17" />
     <PackageReference Include="Vanara.PInvoke.Kernel32" Version="3.4.17" />
     <PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.17" />
@@ -84,6 +85,7 @@
     <None Remove="Assets\ClubQuiz\end.png" />
     <None Remove="Assets\ClubQuiz\join.png" />
     <None Remove="Assets\ClubQuiz\over.png" />
+    <None Remove="Assets\ClubQuiz\question.png" />
     <None Remove="Assets\hpma.png" />
     <None Remove="Assets\Logo.ico" />
     <None Remove="Assets\ClubQuiz\Gather.png" />
@@ -91,6 +93,7 @@
     <None Remove="Assets\wpfui-icon-1024.png" />
     <None Remove="Config\mumu1080_config.json" />
     <None Remove="Config\mumu_config.json" />
+    <None Remove="tessdata\chi_sim.traineddata" />
   </ItemGroup>
 
   <ItemGroup>
@@ -196,6 +199,21 @@
     <Content Include="Assets\Captures\Mumu\over.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\ClubQuiz\option_a.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\option_b.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\option_c.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\option_d.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\question.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\ClubQuiz\time18.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -224,6 +242,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Config\mumu_config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="tessdata\chi_sim.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Assets\hpma.png" />
