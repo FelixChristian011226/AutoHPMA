@@ -122,7 +122,7 @@ namespace AutoHPMA.ViewModels.Pages
                     Bitmap bitmap = new Bitmap(filePath);
                     // 可选择在后台线程中执行识别，防止阻塞 UI
                     string text = await Task.Run(() => PaddleOCRHelper.TextRecognition(bitmap));
-                    //string text = await Task.Run(() => TesseractOCRHelper.TesseractTextRecognition(bitmap));
+                    //string text = await Task.Run(() => TesseractOCRHelper.TesseractTextRecognition(TesseractOCRHelper.PreprocessImage(bitmap)));
                     OcrResult = text;
                 }
                 catch (Exception ex)
