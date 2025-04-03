@@ -17,40 +17,7 @@
     mc:Ignorable="d">
 
     <StackPanel Cursor="">
-        <!--  启动方式  -->
-        <ui:TextBlock FontTypography="Subtitle" Text="目标选项" />
-        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="[必选] 启动方式"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="请先选择您的启动方式"
-                    TextWrapping="Wrap" />
-                <ComboBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Margin="0,0,36,0"
-                    DisplayMemberPath="DisplayName"
-                    ItemsSource="{Binding ViewModel.StartupOptions}"
-                    SelectedItem="{Binding ViewModel.SelectedStartupOption, Mode=TwoWay}" />
-            </Grid>
-        </StackPanel>
+        <ui:TextBlock FontTypography="Title" Text="测试页面" Margin="10"/>
         <!--  截屏测试  -->
         <ui:TextBlock FontTypography="Subtitle" Text="截屏测试" />
         <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
@@ -356,6 +323,24 @@
                     Content="点击"
                     Cursor="" />
             </Grid>
+        </StackPanel>
+
+        <!-- 文字识别 -->
+        <ui:TextBlock Margin="0,10,0,0" FontTypography="Subtitle" Text="文字识别" />
+        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+            <ui:Button
+        Command="{Binding ViewModel.OCRTestCommand}"
+        Content="浏览文件并识别"
+        Margin="0,0,10,0" />
+        </StackPanel>
+        <StackPanel Margin="0,10,0,0">
+            <ui:TextBlock FontTypography="BodyStrong" Text="识别结果：" />
+            <ui:TextBox
+        Text="{Binding ViewModel.OcrResult, Mode=TwoWay}"
+        AcceptsReturn="True"
+        TextWrapping="Wrap"
+        Height="80"
+        IsReadOnly="True" Cursor="IBeam"/>
         </StackPanel>
 
 

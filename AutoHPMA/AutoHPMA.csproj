@@ -28,11 +28,12 @@
     <PackageReference Include="OpenCvSharp4" Version="4.9.0.20240103" />
     <PackageReference Include="OpenCvSharp4.Extensions" Version="4.9.0.20240103" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.9.0.20240103" />
+    <PackageReference Include="PaddleOCRSharp" Version="3.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.RichTextBox.Wpf" Version="1.1.0" />
     <PackageReference Include="SharpDX.Direct3D11" Version="3.0.0" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.2" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.7" />
     <PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.17" />
     <PackageReference Include="Vanara.PInvoke.Kernel32" Version="3.4.17" />
     <PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.17" />
@@ -78,8 +79,14 @@
     <None Remove="Assets\Captures\Mumu\Time\20.png" />
     <None Remove="Assets\Captures\Mumu\Time\6.png" />
     <None Remove="Assets\Captures\tip.png" />
+    <None Remove="Assets\ClubQuiz\channel.png" />
+    <None Remove="Assets\ClubQuiz\close.png" />
+    <None Remove="Assets\ClubQuiz\end.png" />
+    <None Remove="Assets\ClubQuiz\join.png" />
+    <None Remove="Assets\ClubQuiz\over.png" />
     <None Remove="Assets\hpma.png" />
     <None Remove="Assets\Logo.ico" />
+    <None Remove="Assets\ClubQuiz\Gather.png" />
     <None Remove="Assets\wpfui-icon-256.png" />
     <None Remove="Assets\wpfui-icon-1024.png" />
     <None Remove="Config\mumu1080_config.json" />
@@ -187,6 +194,30 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Captures\Mumu\over.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\time18.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\time20.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\channel.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\close.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\end.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\gather.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\join.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\over.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Config\mumu1080_config.json">

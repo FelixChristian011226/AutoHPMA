@@ -1,6 +1,7 @@
 ﻿using AutoHPMA.GameTask;
 using AutoHPMA.Helpers;
 using AutoHPMA.Views.Windows;
+using Microsoft.Win32;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
@@ -41,6 +42,10 @@ namespace AutoHPMA.ViewModels.Pages
         private int _clickInterval = 500;
         [ObservableProperty]
         private int _clickTimes = 10;
+
+        // 文字识别
+        [ObservableProperty]
+        private string _ocrResult = string.Empty;
 
 
         [RelayCommand]
@@ -96,6 +101,32 @@ namespace AutoHPMA.ViewModels.Pages
                 {
                     WindowInteractionHelper.SendMouseClick(hWndChild, (uint)_clickLeft, (uint)_clickTop);
                     Thread.Sleep(_clickInterval);
+                }
+            }
+        }
+
+
+        [RelayCommand]
+        public async void OnOCRTest(object sender)
+        {
+            // 弹出文件选择对话框
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Image Files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg";
+            bool? result = dlg.ShowDialog();
+            if (result == true)
+            {
+                string filePath = dlg.FileName;
+                try
+                {
+                    // 加载选中的图片
+                    Bitmap bitmap = new Bitmap(filePath);
+                    // 可选择在后台线程中执行识别，防止阻塞 UI
+                    string text = await Task.Run(() => OCRHelper.WordRecognition(bitmap));
+                    OcrResult = text;
+                }
+                catch (Exception ex)
+                {
+                    OcrResult = "识别出错：" + ex.Message;
                 }
             }
         }
