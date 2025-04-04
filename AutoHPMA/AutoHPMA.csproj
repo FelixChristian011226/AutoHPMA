@@ -48,40 +48,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\Captures\club1.png" />
-    <None Remove="Assets\Captures\club2.png" />
-    <None Remove="Assets\Captures\gather.png" />
-    <None Remove="Assets\Captures\Mumu1080\club1.png" />
-    <None Remove="Assets\Captures\Mumu1080\club2.png" />
-    <None Remove="Assets\Captures\Mumu1080\gather.png" />
-    <None Remove="Assets\Captures\Mumu1080\Option\A.png" />
-    <None Remove="Assets\Captures\Mumu1080\Option\B.png" />
-    <None Remove="Assets\Captures\Mumu1080\Option\C.png" />
-    <None Remove="Assets\Captures\Mumu1080\Option\D.png" />
-    <None Remove="Assets\Captures\Mumu1080\over.png" />
-    <None Remove="Assets\Captures\Mumu1080\Time\0.png" />
-    <None Remove="Assets\Captures\Mumu1080\Time\10.png" />
-    <None Remove="Assets\Captures\Mumu1080\Time\15.png" />
-    <None Remove="Assets\Captures\Mumu1080\Time\16.png" />
-    <None Remove="Assets\Captures\Mumu1080\Time\17.png" />
-    <None Remove="Assets\Captures\Mumu1080\Time\18.png" />
-    <None Remove="Assets\Captures\Mumu1080\Time\20.png" />
-    <None Remove="Assets\Captures\Mumu1080\Time\6.png" />
-    <None Remove="Assets\Captures\Mumu1080\tip.png" />
-    <None Remove="Assets\Captures\Mumu\Option\A.png" />
-    <None Remove="Assets\Captures\Mumu\Option\B.png" />
-    <None Remove="Assets\Captures\Mumu\Option\C.png" />
-    <None Remove="Assets\Captures\Mumu\Option\D.png" />
-    <None Remove="Assets\Captures\Over.png" />
-    <None Remove="Assets\Captures\Mumu\Time\0.png" />
-    <None Remove="Assets\Captures\Mumu\Time\10.png" />
-    <None Remove="Assets\Captures\Mumu\Time\15.png" />
-    <None Remove="Assets\Captures\Mumu\Time\16.png" />
-    <None Remove="Assets\Captures\Mumu\Time\17.png" />
-    <None Remove="Assets\Captures\Mumu\Time\18.png" />
-    <None Remove="Assets\Captures\Mumu\Time\20.png" />
-    <None Remove="Assets\Captures\Mumu\Time\6.png" />
-    <None Remove="Assets\Captures\tip.png" />
     <None Remove="Assets\ClubQuiz\channel.png" />
     <None Remove="Assets\ClubQuiz\close.png" />
     <None Remove="Assets\ClubQuiz\end.png" />
@@ -95,113 +61,9 @@
     <None Remove="Assets\ClubQuiz\Gather.png" />
     <None Remove="Assets\wpfui-icon-256.png" />
     <None Remove="Assets\wpfui-icon-1024.png" />
-    <None Remove="Config\mumu1080_config.json" />
-    <None Remove="Config\mumu_config.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\Captures\Mumu1080\club1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\club2.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\gather.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Option\A.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Option\B.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Option\C.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Option\D.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\over.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Time\0.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Time\10.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Time\15.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Time\16.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Time\17.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Time\18.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Time\20.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\Time\6.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu1080\tip.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\club1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\club2.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\gather.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Option\A.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Option\B.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Option\C.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Option\D.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Time\0.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Time\10.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Time\15.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Time\16.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Time\17.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Time\18.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Time\20.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\Time\6.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\tip.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Captures\Mumu\over.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\ClubQuiz\option_a.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -250,12 +112,6 @@
     <Content Include="Assets\club_question_bank.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Config\mumu1080_config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Config\mumu_config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="tessdata\chi_sim.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -266,7 +122,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\Captures\Official\" />
+    <Folder Include="Config\" />
     <Folder Include="Views\Controls\Style\" />
   </ItemGroup>
 
