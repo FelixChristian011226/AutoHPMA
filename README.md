@@ -1,4 +1,4 @@
-**[English](README.md) | 中文**
+**English | [中文](README_ZH.md)**
 
 # AutoHPMA - Harry Potter: Magic Awakened Automation Tool
 
