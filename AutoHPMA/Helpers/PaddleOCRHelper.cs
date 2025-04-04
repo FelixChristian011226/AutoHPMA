@@ -11,31 +11,29 @@ namespace AutoHPMA.Helpers;
 
 public class PaddleOCRHelper
 {
+    private static readonly OCRModelConfig config = null;
+    private static readonly OCRParameter oCRParameter = new OCRParameter
+    {
+        use_angle_cls = false,
+        use_gpu = true
+    };
+    private static readonly PaddleOCREngine engine = new PaddleOCREngine(config, oCRParameter);
+
     public static string TextRecognition(Bitmap bmp)
     {
-        string result="";
+        string result = "";
 
-        OCRModelConfig config = null;
-        OCRParameter oCRParameter = new OCRParameter {
-            use_angle_cls = false,
-            use_gpu = true
-        };
-        OCRResult ocrResult = new OCRResult();
+        if (bmp == null)
+            return result;
 
-
-        PaddleOCREngine engine = new PaddleOCREngine(config, oCRParameter);
-        {
-            ocrResult = engine.DetectText(bmp);
-        }
+        OCRResult ocrResult = engine.DetectText(bmp);
 
         foreach (var item in ocrResult.TextBlocks)
         {
-            //result += item.Text + "\n";
             result += item.Text;
         }
 
         return result;
-
     }
-
 }
+

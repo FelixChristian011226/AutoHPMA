@@ -1,0 +1,346 @@
+﻿using AutoHPMA.Helpers;
+using AutoHPMA.Views.Windows;
+using OpenCvSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Channels;
+using System.Threading.Tasks;
+using System.Windows.Media.Animation;
+using Vanara.PInvoke;
+using static AutoHPMA.Helpers.WindowInteractionHelper;
+using static AutoHPMA.Helpers.PaddleOCRHelper;
+using OpenCvSharp.Extensions;
+using System.Drawing;
+using System.IO;
+
+namespace AutoHPMA.GameTask;
+
+public enum AutoClubQuizState
+{
+    Gathering,
+    Preparing,
+    Answering,
+}
+
+public class AutoClubQuiz
+{
+    private static LogWindow _logWindow;
+    private static GraphicsCapture _capture;
+    private static ExcelHelper excelHelper;
+
+    private AutoClubQuizState _state = AutoClubQuizState.Gathering;
+
+    private static Mat gather, channel, join, close, time18, time20, over, end, gothmog, question_LT, question_RB, option_a, option_b, option_c, option_d;
+    private static Mat? captureMat;
+
+    private Bitmap question, answer_a, answer_b, answer_c, answer_d;
+    private Bitmap bmp;
+
+
+    private IntPtr _displayHwnd, _gameHwnd;
+    private int offsetX, offsetY;
+
+    private bool _textLocated = false;
+    private int question_x, question_y, question_w, question_h;
+    private int answer_a_x, answer_a_y;
+    private int answer_b_x, answer_b_y;
+    private int answer_c_x, answer_c_y;
+    private int answer_d_x, answer_d_y;
+    private int answer_w, answer_h;
+    private int answer_offset_x, answer_offset_y;
+    private string? q, a, b, c, d, answer;
+    private string? excelPath;
+    private char bestOption;
+
+
+
+    private CancellationTokenSource _cts;
+
+    int questionIndex = 0;
+    int roundIndex = 0;
+    char option = 'X';
+
+    public AutoClubQuiz(IntPtr _displayHwnd, IntPtr _gameHwnd)
+    {
+        this._displayHwnd = _displayHwnd;
+        this._gameHwnd = _gameHwnd;
+        _logWindow = LogWindow.GetInstance();
+        _capture = new GraphicsCapture();
+        _capture.Start(_displayHwnd);
+        _cts = new CancellationTokenSource();
+        excelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "club_question_bank.xlsx");
+        excelHelper = new ExcelHelper(excelPath);
+        LoadAssets();
+        CalOffset();
+    }
+
+
+    public void LoadAssets()
+    {
+        gather = Cv2.ImRead("Assets/ClubQuiz/gather.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(gather, gather, ColorConversionCodes.BGR2GRAY);
+        channel = Cv2.ImRead("Assets/ClubQuiz/channel.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(channel, channel, ColorConversionCodes.BGR2GRAY);
+        join = Cv2.ImRead("Assets/ClubQuiz/join.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(join, join, ColorConversionCodes.BGR2GRAY);
+        close = Cv2.ImRead("Assets/ClubQuiz/close.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(close, close, ColorConversionCodes.BGR2GRAY);
+        time18 = Cv2.ImRead("Assets/ClubQuiz/time18.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(time18, time18, ColorConversionCodes.BGR2GRAY);
+        time20 = Cv2.ImRead("Assets/ClubQuiz/time20.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(time20, time20, ColorConversionCodes.BGR2GRAY);
+        over = Cv2.ImRead("Assets/ClubQuiz/over.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(over, over, ColorConversionCodes.BGR2GRAY);
+        end = Cv2.ImRead("Assets/ClubQuiz/end.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(end, end, ColorConversionCodes.BGR2GRAY);
+        gothmog = Cv2.ImRead("Assets/ClubQuiz/gothmog.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(gothmog, gothmog, ColorConversionCodes.BGR2GRAY);
+        option_a = Cv2.ImRead("Assets/ClubQuiz/option_a.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(option_a, option_a, ColorConversionCodes.BGR2GRAY);
+        option_b = Cv2.ImRead("Assets/ClubQuiz/option_b.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(option_b, option_b, ColorConversionCodes.BGR2GRAY);
+        option_c = Cv2.ImRead("Assets/ClubQuiz/option_c.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(option_c, option_c, ColorConversionCodes.BGR2GRAY);
+        option_d = Cv2.ImRead("Assets/ClubQuiz/option_d.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(option_d, option_d, ColorConversionCodes.BGR2GRAY);
+        question_LT = Cv2.ImRead("Assets/ClubQuiz/question_LT.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(question_LT, question_LT, ColorConversionCodes.BGR2GRAY);
+        question_RB = Cv2.ImRead("Assets/ClubQuiz/question_RB.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(question_RB, question_RB, ColorConversionCodes.BGR2GRAY);
+
+    }
+
+    public void Stop()
+    {
+        _cts.Cancel(); 
+    }
+
+    public async void Start()
+    {
+        _state = AutoClubQuizState.Gathering;
+
+        while (!_cts.Token.IsCancellationRequested)
+        {
+            GC.Collect();
+            switch (_state)
+            {
+                case AutoClubQuizState.Gathering:
+                    await Task.Delay(1000);
+                    if ( !FindAndClick(ref gather))  //找不到集结图标，重复开关聊天框刷新状态
+                    {
+                        _logWindow?.AddLogMessage("INF", "等待下一场答题...");
+                        for (int i = 5; i > 0; i--)
+                        {
+                            _logWindow?.AddLogMessage("INF", "还剩" + i + "秒...");
+                            await Task.Delay(1000);
+                            _logWindow?.DeleteLastLogMessage();
+                        }
+                        _logWindow?.DeleteLastLogMessage();
+                        SendEnter(_gameHwnd);
+                        await Task.Delay(1500);
+                        FindAndClick(ref channel);
+                        await Task.Delay(1500);
+                        SendESC(_gameHwnd);
+                        continue;
+                    }
+
+                    await Task.Delay(1000);
+                    if (!FindAndClick(ref join))
+                    {
+                        SendESC(_gameHwnd);
+                        continue;
+                    }
+
+                    _state = AutoClubQuizState.Preparing;
+
+                    break;
+
+                case AutoClubQuizState.Preparing:
+                    await Task.Delay(1000);
+                    if (FindMatch(ref time20))
+                    {
+                        _state = AutoClubQuizState.Answering;
+                        continue;
+                    }
+
+                    if (!FindAndClick(ref close))
+                    {
+                        continue;
+                    }
+
+                    _state = AutoClubQuizState.Answering;
+                    
+                    break;
+
+                case AutoClubQuizState.Answering:
+                    await Task.Delay(500);
+
+                    if (_textLocated == false)
+                    {
+                        await Task.Delay(2000);
+                        LocateText();
+                        continue;
+                    }
+
+                    if (FindAndClick(ref over))
+                    {
+                        await Task.Delay(3000);
+                        SendESC(_gameHwnd);
+                        _state = AutoClubQuizState.Gathering;
+                    }
+
+                    if (FindMatch(ref time20))
+                    {
+                        await Task.Delay(100);
+                        await Task.Run(() => RecogniseText());
+                        //RecogniseText();
+                        q = TextMatchHelper.FilterChineseAndPunctuation(q);
+                        PrintText();
+                        answer = excelHelper.GetBestMatchingAnswer(q);
+                        _logWindow?.AddLogMessage("DBG", "最佳答案是：" + answer);
+                        bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
+                        _logWindow?.AddLogMessage("DBG", "最佳选项是：" + bestOption);
+                        ClickOption();
+
+                        continue;
+                    }
+                    break;
+
+            }
+
+        }
+    }
+
+    private bool FindMatch(ref Mat mat, double threshold = 0.9)
+    {
+        captureMat = _capture.Capture();
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
+        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
+        if (matchpoint == default)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    private bool FindAndClick(ref Mat mat, double threshold=0.9)
+    {
+        captureMat = _capture.Capture();
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
+        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
+        if(matchpoint == default)
+        {
+            return false;
+        }
+        SendMouseClick(_gameHwnd, (uint)(matchpoint.X - offsetX + mat.Width/2.0), (uint)(matchpoint.Y - offsetY + mat.Height/2.0));
+        return true;
+    }
+
+    private void LocateText()
+    {
+        OpenCvSharp.Point matchpoint;
+        captureMat = _capture.Capture();
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, gothmog, TemplateMatchModes.CCoeffNormed, null, 0.9);
+        if (matchpoint == default)
+        {
+            return;
+        }
+        question_x = (int)(matchpoint.X);
+        question_y = (int)(matchpoint.Y - gothmog.Height /2);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, option_a, TemplateMatchModes.CCoeffNormed, null, 0.9);
+        answer_a_x = (int)(matchpoint.X + option_a.Width);
+        answer_a_y = (int)(matchpoint.Y);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, option_b, TemplateMatchModes.CCoeffNormed, null, 0.9);
+        answer_b_x = (int)(matchpoint.X + option_b.Width);
+        answer_b_y = (int)(matchpoint.Y);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, option_c, TemplateMatchModes.CCoeffNormed, null, 0.9);
+        answer_c_x = (int)(matchpoint.X + option_c.Width);
+        answer_c_y = (int)(matchpoint.Y);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, option_d, TemplateMatchModes.CCoeffNormed, null, 0.9);
+        answer_d_x = (int)(matchpoint.X + option_d.Width);
+        answer_d_y = (int)(matchpoint.Y);
+
+        answer_w = answer_b_x - answer_a_x - option_b.Width*2;
+        answer_h = option_a.Height / 2;
+
+        question_w = answer_w*2;
+        question_h = gothmog.Height*2;
+
+        answer_offset_x = - option_a.Width / 2;
+        answer_offset_y = option_a.Height / 2;
+
+        _logWindow?.AddLogMessage("DBG", "答题框位置初始化完成！");
+        _logWindow?.AddLogMessage("DBG", "问题框坐标: (" + question_x + "," + question_y + ")");
+        _logWindow?.AddLogMessage("DBG", "问题框宽高: (" + question_w + "," + question_h + ")");
+        _logWindow?.AddLogMessage("DBG", "选项A坐标: (" + answer_a_x + "," + answer_a_y + ")");
+        _logWindow?.AddLogMessage("DBG", "选项B坐标: (" + answer_b_x + "," + answer_b_y + ")");
+        _logWindow?.AddLogMessage("DBG", "选项C坐标: (" + answer_c_x + "," + answer_c_y + ")");
+        _logWindow?.AddLogMessage("DBG", "选项D坐标: (" + answer_d_x + "," + answer_d_y + ")");
+        _logWindow?.AddLogMessage("DBG", "选项框宽高: (" + answer_w + "," + answer_h + ")");
+        _textLocated = true;
+    }
+
+    public void RecogniseText()
+    {
+        captureMat = _capture.Capture();
+        //Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        bmp = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(captureMat);
+        
+        question = ImageProcessingHelper.CropBitmap(bmp, question_x, question_y, question_w, question_h);
+        answer_a = ImageProcessingHelper.CropBitmap(bmp, answer_a_x, answer_a_y, answer_w, answer_h);
+        answer_b = ImageProcessingHelper.CropBitmap(bmp, answer_b_x, answer_b_y, answer_w, answer_h);
+        answer_c = ImageProcessingHelper.CropBitmap(bmp, answer_c_x, answer_c_y, answer_w, answer_h);
+        answer_d = ImageProcessingHelper.CropBitmap(bmp, answer_d_x, answer_d_y, answer_w, answer_h);
+
+        q = TextRecognition(question);
+        a = TextRecognition(answer_a);
+        b = TextRecognition(answer_b);
+        c = TextRecognition(answer_c);
+        d = TextRecognition(answer_d);
+
+    }
+
+    private void PrintText()
+    {
+        _logWindow?.AddLogMessage("DBG", "问题：" + q);
+        _logWindow?.AddLogMessage("DBG", "选项A：" + a);
+        _logWindow?.AddLogMessage("DBG", "选项B：" + b);
+        _logWindow?.AddLogMessage("DBG", "选项C：" + c);
+        _logWindow?.AddLogMessage("DBG", "选项D：" + d);
+    }
+
+    private void CalOffset()
+    {
+        int left, top, width, height;
+        int leftMumu, topMumu;
+        WindowInteractionHelper.GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
+        WindowInteractionHelper.GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
+        offsetX = left - leftMumu;
+        offsetY = top - topMumu;
+    }
+
+    private void ClickOption()
+    {
+        switch (bestOption)
+        {
+            case 'A':
+                SendMouseClick(_gameHwnd, (uint)(answer_a_x - offsetX + answer_offset_x), (uint)(answer_a_y - offsetY + answer_offset_y));
+                break;
+            case 'B':
+                SendMouseClick(_gameHwnd, (uint)(answer_b_x - offsetX + answer_offset_x), (uint)(answer_b_y - offsetY + answer_offset_y));
+                break;
+            case 'C':
+                SendMouseClick(_gameHwnd, (uint)(answer_c_x - offsetX + answer_offset_x), (uint)(answer_c_y - offsetY + answer_offset_y));
+                break;
+            case 'D':
+                SendMouseClick(_gameHwnd, (uint)(answer_d_x - offsetX + answer_offset_x), (uint)(answer_d_y - offsetY + answer_offset_y));
+                break;
+        }
+    }
+
+}
