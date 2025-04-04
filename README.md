@@ -24,6 +24,8 @@
 
 ## Features
 - **Automated Club Quiz**: Uses PaddleOCR for text recognition and compares it with a built-in question database to automate answering.
+
+<br>
   
 ## Highlights
 - **Log Window**: Displays runtime information such as current stage and answer options.
@@ -52,6 +54,8 @@ Download the latest version of AutoHPMA from the [Releases](https://github.com/Y
 - Start the game and set the correct game parameters.
 - Configure the tool according to your preferences.
 - Click the start button for the desired function on the main interface.
+
+For more detailed instructions, please follow this link: [AutoHPMA instructions](https://www.felixchristian.top/2025/04/04/16-AutoHPMA/#autohpma).
 
 <br>
 
