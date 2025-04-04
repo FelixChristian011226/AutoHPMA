@@ -21,7 +21,7 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 FontSize="6"
-                ScrollViewer.VerticalScrollBarVisibility="Auto">
+                ScrollViewer.VerticalScrollBarVisibility="Hidden">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Height" Value="20" />
@@ -45,9 +45,11 @@
                                     Text="{Binding Category}" />
                                 <Run Foreground="White" Text="] " />
                         </TextBlock>
-                        <TextBlock Foreground="FloralWhite" 
-                                   helpers:InlineBindingHelper.FormattedText="{Binding Content}"/>
-                    </StackPanel>
+                        <TextBlock Foreground="FloralWhite"
+                               TextWrapping="Wrap"
+                               Width="240"
+                               helpers:InlineBindingHelper.FormattedText="{Binding Content}" />
+                </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

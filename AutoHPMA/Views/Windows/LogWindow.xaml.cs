@@ -87,10 +87,6 @@ namespace AutoHPMA.Views.Windows
 
         public static LogWindow GetInstance()
         {
-            //if (_instance == null || !_instance.IsLoaded)
-            //{
-            //    _instance = new LogWindow();
-            //}
             return _instance;
         }
 
@@ -125,7 +121,10 @@ namespace AutoHPMA.Views.Windows
                     Left = rect.Left + Loffset;
                     Top = rect.Top + Toffset;
                 }
-
+                if (LogListBox.Items.Count > 0)
+                {
+                    LogListBox.ScrollIntoView(LogListBox.Items[LogListBox.Items.Count - 1]);
+                }
             }
         }
 
