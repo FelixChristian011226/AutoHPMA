@@ -1,39 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenCvSharp;
-using PaddleOCRSharp;
+using Sdcb.PaddleInference;
+using Sdcb.PaddleOCR;
+using Sdcb.PaddleOCR.Models;
+using System.IO;
+using Sdcb.PaddleOCR.Models.Local;
 
 namespace AutoHPMA.Helpers;
 
 public class PaddleOCRHelper
 {
-    private static readonly OCRModelConfig config = null;
-    private static readonly OCRParameter oCRParameter = new OCRParameter
+    private readonly PaddleOcrAll paddleOcrAll;
+    private readonly FullOcrModel model;
+
+    public PaddleOCRHelper()
     {
-        use_angle_cls = false,
-        use_gpu = true
-    };
-    private static readonly PaddleOCREngine engine = new PaddleOCREngine(config, oCRParameter);
+        model = LocalFullModels.ChineseV4;
 
-    public static string TextRecognition(Bitmap bmp)
-    {
-        string result = "";
-
-        if (bmp == null)
-            return result;
-
-        OCRResult ocrResult = engine.DetectText(bmp);
-
-        foreach (var item in ocrResult.TextBlocks)
+        paddleOcrAll = new PaddleOcrAll(model, PaddleDevice.Onnx())
         {
-            result += item.Text;
-        }
+            AllowRotateDetection = false,
+            Enable180Classification = false
+        };
+    }
 
+    public string Ocr(Mat mat)
+    {
+        return OcrResult(mat).Text;
+    }
+
+    public PaddleOcrResult OcrResult(Mat mat)
+    {
+        var result = paddleOcrAll.Run(mat);
         return result;
     }
+
 }
 

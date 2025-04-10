@@ -119,11 +119,19 @@ namespace AutoHPMA.ViewModels.Pages
                 try
                 {
                     // 加载选中的图片
-                    Bitmap bitmap = new Bitmap(filePath);
+                    //Bitmap bitmap = new Bitmap(filePath);
                     // 可选择在后台线程中执行识别，防止阻塞 UI
-                    string text = await Task.Run(() => PaddleOCRHelper.TextRecognition(bitmap));
+                    //string text = await Task.Run(() => PaddleOCRHelper.TextRecognition(bitmap));
                     //string text = await Task.Run(() => TesseractOCRHelper.TesseractTextRecognition(TesseractOCRHelper.PreprocessImage(bitmap)));
+                    //OcrResult = text;
+
+                    // 加载选中的图片
+                    Mat mat = Cv2.ImRead(filePath);
+                    // 进行 OCR 识别
+                    PaddleOCRHelper paddleOCRHelper = new PaddleOCRHelper();
+                    string text = await Task.Run(() => paddleOCRHelper.Ocr(mat));
                     OcrResult = text;
+
                 }
                 catch (Exception ex)
                 {

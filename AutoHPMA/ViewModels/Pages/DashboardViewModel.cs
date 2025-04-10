@@ -41,7 +41,7 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _logWindowEnabled = true;
 
         [ObservableProperty]
-        private bool _debugLogEnabled = true;
+        private bool _debugLogEnabled = false;
 
         [ObservableProperty]
         private int _captureInterval = 500;
@@ -209,7 +209,7 @@ namespace AutoHPMA.ViewModels.Pages
                 _logWindow.Owner = GetGameWindow(); // 将游戏窗口设置为LogWindow的Owner
                 _logWindow.RefreshPosition(_gameHwnd, _logWindowLeft, _logWindowTop);
                 _logWindow.ShowDebugLogs = DebugLogEnabled;
-                _logWindow.AddLogMessage("INF",_startupOption+": 已启动");
+                _logWindow.AddLogMessage("INF", "检测到[Yellow]" + _startupOption+ "[/Yellow]已启动");
                 ShowGameWindowInfo();
             }
 
@@ -248,7 +248,7 @@ namespace AutoHPMA.ViewModels.Pages
         {
             AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
-            _logWindow?.AddLogMessage("INF", "社团答题任务已启动");
+            _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
 
             _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
             _autoClubQuiz.Start();
@@ -262,7 +262,7 @@ namespace AutoHPMA.ViewModels.Pages
         {
             AutoClubQuizStartButtonVisibility = Visibility.Visible;
             AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
-            _logWindow?.AddLogMessage("INF", "社团答题任务已终止");
+            _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已终止---[/Aquamarine]");
 
             _autoClubQuiz?.Stop();
             _autoClubQuiz = null;
@@ -325,13 +325,11 @@ namespace AutoHPMA.ViewModels.Pages
                 int left, top, width, height;
                 int leftMumu, topMumu;
                 WindowInteractionHelper.GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
-                _logWindow.AddLogMessage("INF", "检测到游戏窗口分辨率"+width+"*"+height);
+                _logWindow.AddLogMessage("INF", "检测到游戏窗口分辨率 [Yellow]" + width+"*"+height+ "[/Yellow]");
                 _logWindow.AddLogMessage("DBG", "游戏窗口位置：左上角(" + left + "," + top + ")");
                 WindowInteractionHelper.GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
                 _logWindow.AddLogMessage("DBG", "检测到模拟器窗口分辨率" + width + "*" + height);
                 _logWindow.AddLogMessage("DBG", "模拟器窗口位置：左上角(" + leftMumu + "," + topMumu + ")");
-
-                _logWindow.AddLogMessage("DBG", "坐标偏移量: (" + (left - leftMumu) + "," + (top - topMumu) + ")");
             }
             catch (Exception ex)
             {

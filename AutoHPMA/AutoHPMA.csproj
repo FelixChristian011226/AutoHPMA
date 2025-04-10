@@ -26,10 +26,12 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OfficeOpenXml.Extension.AspNetCore" Version="1.0.0" />
-    <PackageReference Include="OpenCvSharp4" Version="4.9.0.20240103" />
-    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.9.0.20240103" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.9.0.20240103" />
-    <PackageReference Include="PaddleOCRSharp" Version="3.0.0" />
+	<PackageReference Include="OpenCvSharp4" Version="4.8.0.20230708" />
+	<PackageReference Include="OpenCvSharp4.Extensions" Version="4.8.0.20230708" />
+	<PackageReference Include="OpenCvSharp4.runtime.win" Version="4.8.0.20230708" />
+	<PackageReference Include="Sdcb.PaddleInference" Version="2.5.0.1" />
+    <PackageReference Include="Sdcb.PaddleInference.runtime.win64.openblas" Version="2.6.1" />
+    <PackageReference Include="Sdcb.PaddleOCR.Models.Local" Version="2.7.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.RichTextBox.Wpf" Version="1.1.0" />
@@ -64,52 +66,52 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\ClubQuiz\option_a.png">
+    <Content Include="Assets\ClubQuiz\Image\option_a.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\option_b.png">
+    <Content Include="Assets\ClubQuiz\Image\option_b.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\option_c.png">
+    <Content Include="Assets\ClubQuiz\Image\option_c.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\option_d.png">
+    <Content Include="Assets\ClubQuiz\Image\option_d.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\gothmog.png">
+    <Content Include="Assets\ClubQuiz\Image\gothmog.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\question_LT.png">
+    <Content Include="Assets\ClubQuiz\Image\question_LT.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\question_RB.png">
+    <Content Include="Assets\ClubQuiz\Image\question_RB.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\time18.png">
+    <Content Include="Assets\ClubQuiz\Image\time18.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\time20.png">
+    <Content Include="Assets\ClubQuiz\Image\time20.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\channel.png">
+    <Content Include="Assets\ClubQuiz\Image\channel.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\close.png">
+    <Content Include="Assets\ClubQuiz\Image\close.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\end.png">
+    <Content Include="Assets\ClubQuiz\Image\end.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\gather.png">
+    <Content Include="Assets\ClubQuiz\Image\gather.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\join.png">
+    <Content Include="Assets\ClubQuiz\Image\join.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\over.png">
+    <Content Include="Assets\ClubQuiz\Image\over.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\club_question_bank.xlsx">
+    <Content Include="Assets\ClubQuiz\club_question_bank.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="tessdata\chi_sim.traineddata">

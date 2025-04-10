@@ -9,11 +9,10 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Media.Animation;
 using Vanara.PInvoke;
-using static AutoHPMA.Helpers.WindowInteractionHelper;
-using static AutoHPMA.Helpers.PaddleOCRHelper;
 using OpenCvSharp.Extensions;
 using System.Drawing;
 using System.IO;
+using static AutoHPMA.Helpers.WindowInteractionHelper;
 
 namespace AutoHPMA.GameTask;
 
@@ -29,15 +28,12 @@ public class AutoClubQuiz
     private static LogWindow _logWindow;
     private static GraphicsCapture _capture;
     private static ExcelHelper excelHelper;
+    private static PaddleOCRHelper paddleOCRHelper;
 
     private AutoClubQuizState _state = AutoClubQuizState.Gathering;
 
     private static Mat gather, channel, join, close, time18, time20, over, end, gothmog, question_LT, question_RB, option_a, option_b, option_c, option_d;
     private static Mat? captureMat;
-
-    private Bitmap question, answer_a, answer_b, answer_c, answer_d;
-    private Bitmap bmp;
-
 
     private IntPtr _displayHwnd, _gameHwnd;
     private int offsetX, offsetY;
@@ -48,18 +44,17 @@ public class AutoClubQuiz
     private int answer_b_x, answer_b_y;
     private int answer_c_x, answer_c_y;
     private int answer_d_x, answer_d_y;
+    private OpenCvSharp.Rect answer_a, answer_b, answer_c, answer_d, question;
     private int answer_w, answer_h;
     private int answer_offset_x, answer_offset_y;
     private string? q, a, b, c, d, answer;
     private string? excelPath;
     private char bestOption;
 
-
+    private int questionIndex = 0, roundIndex = 0;
 
     private CancellationTokenSource _cts;
 
-    int questionIndex = 0;
-    int roundIndex = 0;
     char option = 'X';
 
     public AutoClubQuiz(IntPtr _displayHwnd, IntPtr _gameHwnd)
@@ -70,8 +65,9 @@ public class AutoClubQuiz
         _capture = new GraphicsCapture();
         _capture.Start(_displayHwnd);
         _cts = new CancellationTokenSource();
-        excelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "club_question_bank.xlsx");
+        excelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/ClubQuiz", "club_question_bank.xlsx");
         excelHelper = new ExcelHelper(excelPath);
+        paddleOCRHelper = new PaddleOCRHelper();
         LoadAssets();
         CalOffset();
     }
@@ -79,42 +75,43 @@ public class AutoClubQuiz
 
     public void LoadAssets()
     {
-        gather = Cv2.ImRead("Assets/ClubQuiz/gather.png", ImreadModes.Unchanged);
+        string image_folder = "Assets/ClubQuiz/Image/";
+        gather = Cv2.ImRead(image_folder+"gather.png", ImreadModes.Unchanged);
         Cv2.CvtColor(gather, gather, ColorConversionCodes.BGR2GRAY);
-        channel = Cv2.ImRead("Assets/ClubQuiz/channel.png", ImreadModes.Unchanged);
+        channel = Cv2.ImRead(image_folder+"channel.png", ImreadModes.Unchanged);
         Cv2.CvtColor(channel, channel, ColorConversionCodes.BGR2GRAY);
-        join = Cv2.ImRead("Assets/ClubQuiz/join.png", ImreadModes.Unchanged);
+        join = Cv2.ImRead(image_folder + "join.png", ImreadModes.Unchanged);
         Cv2.CvtColor(join, join, ColorConversionCodes.BGR2GRAY);
-        close = Cv2.ImRead("Assets/ClubQuiz/close.png", ImreadModes.Unchanged);
+        close = Cv2.ImRead(image_folder + "close.png", ImreadModes.Unchanged);
         Cv2.CvtColor(close, close, ColorConversionCodes.BGR2GRAY);
-        time18 = Cv2.ImRead("Assets/ClubQuiz/time18.png", ImreadModes.Unchanged);
+        time18 = Cv2.ImRead(image_folder + "time18.png", ImreadModes.Unchanged);
         Cv2.CvtColor(time18, time18, ColorConversionCodes.BGR2GRAY);
-        time20 = Cv2.ImRead("Assets/ClubQuiz/time20.png", ImreadModes.Unchanged);
+        time20 = Cv2.ImRead(image_folder + "time20.png", ImreadModes.Unchanged);
         Cv2.CvtColor(time20, time20, ColorConversionCodes.BGR2GRAY);
-        over = Cv2.ImRead("Assets/ClubQuiz/over.png", ImreadModes.Unchanged);
+        over = Cv2.ImRead(image_folder + "over.png", ImreadModes.Unchanged);
         Cv2.CvtColor(over, over, ColorConversionCodes.BGR2GRAY);
-        end = Cv2.ImRead("Assets/ClubQuiz/end.png", ImreadModes.Unchanged);
+        end = Cv2.ImRead(image_folder + "end.png", ImreadModes.Unchanged);
         Cv2.CvtColor(end, end, ColorConversionCodes.BGR2GRAY);
-        gothmog = Cv2.ImRead("Assets/ClubQuiz/gothmog.png", ImreadModes.Unchanged);
+        gothmog = Cv2.ImRead(image_folder + "gothmog.png", ImreadModes.Unchanged);
         Cv2.CvtColor(gothmog, gothmog, ColorConversionCodes.BGR2GRAY);
-        option_a = Cv2.ImRead("Assets/ClubQuiz/option_a.png", ImreadModes.Unchanged);
+        option_a = Cv2.ImRead(image_folder + "option_a.png", ImreadModes.Unchanged);
         Cv2.CvtColor(option_a, option_a, ColorConversionCodes.BGR2GRAY);
-        option_b = Cv2.ImRead("Assets/ClubQuiz/option_b.png", ImreadModes.Unchanged);
+        option_b = Cv2.ImRead(image_folder + "option_b.png", ImreadModes.Unchanged);
         Cv2.CvtColor(option_b, option_b, ColorConversionCodes.BGR2GRAY);
-        option_c = Cv2.ImRead("Assets/ClubQuiz/option_c.png", ImreadModes.Unchanged);
+        option_c = Cv2.ImRead(image_folder + "option_c.png", ImreadModes.Unchanged);
         Cv2.CvtColor(option_c, option_c, ColorConversionCodes.BGR2GRAY);
-        option_d = Cv2.ImRead("Assets/ClubQuiz/option_d.png", ImreadModes.Unchanged);
+        option_d = Cv2.ImRead(image_folder + "option_d.png", ImreadModes.Unchanged);
         Cv2.CvtColor(option_d, option_d, ColorConversionCodes.BGR2GRAY);
-        question_LT = Cv2.ImRead("Assets/ClubQuiz/question_LT.png", ImreadModes.Unchanged);
+        question_LT = Cv2.ImRead(image_folder + "question_LT.png", ImreadModes.Unchanged);
         Cv2.CvtColor(question_LT, question_LT, ColorConversionCodes.BGR2GRAY);
-        question_RB = Cv2.ImRead("Assets/ClubQuiz/question_RB.png", ImreadModes.Unchanged);
+        question_RB = Cv2.ImRead(image_folder + "question_RB.png", ImreadModes.Unchanged);
         Cv2.CvtColor(question_RB, question_RB, ColorConversionCodes.BGR2GRAY);
 
     }
 
     public void Stop()
     {
-        _cts.Cancel(); 
+        _cts.Cancel();
     }
 
     public async void Start()
@@ -128,12 +125,12 @@ public class AutoClubQuiz
             {
                 case AutoClubQuizState.Gathering:
                     await Task.Delay(1000);
-                    if ( !FindAndClick(ref gather))  //找不到集结图标，重复开关聊天框刷新状态
+                    if (!FindAndClick(ref gather))  //找不到集结图标，重复开关聊天框刷新状态
                     {
                         _logWindow?.AddLogMessage("INF", "等待下一场答题...");
-                        for (int i = 5; i > 0; i--)
+                        for (int i = 15; i > 0; i--)
                         {
-                            _logWindow?.AddLogMessage("INF", "还剩" + i + "秒...");
+                            _logWindow?.AddLogMessage("INF", "还剩[Yellow]" + i + "[/Yellow]秒...");
                             await Task.Delay(1000);
                             _logWindow?.DeleteLastLogMessage();
                         }
@@ -159,8 +156,11 @@ public class AutoClubQuiz
 
                 case AutoClubQuizState.Preparing:
                     await Task.Delay(1000);
+
                     if (FindMatch(ref time20))
                     {
+                        roundIndex++;
+                        _logWindow?.AddLogMessage("INF", "第[Yellow]" + roundIndex + "[/Yellow]轮答题开始");
                         _state = AutoClubQuizState.Answering;
                         continue;
                     }
@@ -169,9 +169,10 @@ public class AutoClubQuiz
                     {
                         continue;
                     }
-
+                    roundIndex++;
+                    _logWindow?.AddLogMessage("INF", "第[Yellow]" + roundIndex + "[/Yellow]轮答题开始");
                     _state = AutoClubQuizState.Answering;
-                    
+
                     break;
 
                 case AutoClubQuizState.Answering:
@@ -179,8 +180,21 @@ public class AutoClubQuiz
 
                     if (_textLocated == false)
                     {
+                        questionIndex++;
                         await Task.Delay(2000);
                         LocateText();
+                        await Task.Delay(100);
+                        if (_textLocated == true)       //初始化位置后不需要判断20秒，直接执行。
+                        {
+                            await Task.Run(() => RecogniseText());
+                            //RecogniseText();
+                            q = TextMatchHelper.FilterChineseAndPunctuation(q);
+                            PrintText();
+                            answer = excelHelper.GetBestMatchingAnswer(q);
+                            bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
+                            _logWindow?.AddLogMessage("INF", "第[Yellow]" + questionIndex + "[/Yellow]题，选：[Lime]" + bestOption + "[/Lime]。");
+                            ClickOption();
+                        }
                         continue;
                     }
 
@@ -189,19 +203,21 @@ public class AutoClubQuiz
                         await Task.Delay(3000);
                         SendESC(_gameHwnd);
                         _state = AutoClubQuizState.Gathering;
+                        questionIndex = 0;
                     }
 
                     if (FindMatch(ref time20))
                     {
+                        questionIndex++;
                         await Task.Delay(100);
                         await Task.Run(() => RecogniseText());
                         //RecogniseText();
                         q = TextMatchHelper.FilterChineseAndPunctuation(q);
                         PrintText();
                         answer = excelHelper.GetBestMatchingAnswer(q);
-                        _logWindow?.AddLogMessage("DBG", "最佳答案是：" + answer);
+                        //_logWindow?.AddLogMessage("DBG", "最佳答案是：" + answer);
                         bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
-                        _logWindow?.AddLogMessage("DBG", "最佳选项是：" + bestOption);
+                        _logWindow?.AddLogMessage("INF", "第[Yellow]" + questionIndex + "[/Yellow]题，选：[Lime]" + bestOption + "[/Lime]。");
                         ClickOption();
 
                         continue;
@@ -226,17 +242,17 @@ public class AutoClubQuiz
         return true;
     }
 
-    private bool FindAndClick(ref Mat mat, double threshold=0.9)
+    private bool FindAndClick(ref Mat mat, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
         //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if(matchpoint == default)
+        if (matchpoint == default)
         {
             return false;
         }
-        SendMouseClick(_gameHwnd, (uint)(matchpoint.X - offsetX + mat.Width/2.0), (uint)(matchpoint.Y - offsetY + mat.Height/2.0));
+        SendMouseClick(_gameHwnd, (uint)(matchpoint.X - offsetX + mat.Width / 2.0), (uint)(matchpoint.Y - offsetY + mat.Height / 2.0));
         return true;
     }
 
@@ -251,7 +267,7 @@ public class AutoClubQuiz
             return;
         }
         question_x = (int)(matchpoint.X);
-        question_y = (int)(matchpoint.Y - gothmog.Height /2);
+        question_y = (int)(matchpoint.Y - gothmog.Height / 2);
         matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, option_a, TemplateMatchModes.CCoeffNormed, null, 0.9);
         answer_a_x = (int)(matchpoint.X + option_a.Width);
         answer_a_y = (int)(matchpoint.Y);
@@ -265,14 +281,20 @@ public class AutoClubQuiz
         answer_d_x = (int)(matchpoint.X + option_d.Width);
         answer_d_y = (int)(matchpoint.Y);
 
-        answer_w = answer_b_x - answer_a_x - option_b.Width*2;
-        answer_h = option_a.Height / 2;
+        answer_w = answer_b_x - answer_a_x - option_b.Width * 2;
+        answer_h = option_a.Height;
 
-        question_w = answer_w*2;
-        question_h = gothmog.Height*2;
+        question_w = answer_w * 2;
+        question_h = gothmog.Height * 2;
 
-        answer_offset_x = - option_a.Width / 2;
+        answer_offset_x = -option_a.Width / 2;
         answer_offset_y = option_a.Height / 2;
+
+        question = new OpenCvSharp.Rect(question_x, question_y, question_w, question_h);
+        answer_a = new OpenCvSharp.Rect(answer_a_x, answer_a_y, answer_w, answer_h);
+        answer_b = new OpenCvSharp.Rect(answer_b_x, answer_b_y, answer_w, answer_h);
+        answer_c = new OpenCvSharp.Rect(answer_c_x, answer_c_y, answer_w, answer_h);
+        answer_d = new OpenCvSharp.Rect(answer_d_x, answer_d_y, answer_w, answer_h);
 
         _logWindow?.AddLogMessage("DBG", "答题框位置初始化完成！");
         _logWindow?.AddLogMessage("DBG", "问题框坐标: (" + question_x + "," + question_y + ")");
@@ -288,20 +310,19 @@ public class AutoClubQuiz
     public void RecogniseText()
     {
         captureMat = _capture.Capture();
-        //Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        bmp = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(captureMat);
-        
-        question = ImageProcessingHelper.CropBitmap(bmp, question_x, question_y, question_w, question_h);
-        answer_a = ImageProcessingHelper.CropBitmap(bmp, answer_a_x, answer_a_y, answer_w, answer_h);
-        answer_b = ImageProcessingHelper.CropBitmap(bmp, answer_b_x, answer_b_y, answer_w, answer_h);
-        answer_c = ImageProcessingHelper.CropBitmap(bmp, answer_c_x, answer_c_y, answer_w, answer_h);
-        answer_d = ImageProcessingHelper.CropBitmap(bmp, answer_d_x, answer_d_y, answer_w, answer_h);
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
 
-        q = TextRecognition(question);
-        a = TextRecognition(answer_a);
-        b = TextRecognition(answer_b);
-        c = TextRecognition(answer_c);
-        d = TextRecognition(answer_d);
+        Mat questionMat = new Mat(captureMat, question);
+        Mat answeraMat = new Mat(captureMat, answer_a);
+        Mat answerbMat = new Mat(captureMat, answer_b);
+        Mat answercMat = new Mat(captureMat, answer_c);
+        Mat answerdMat = new Mat(captureMat, answer_d);
+
+        q = paddleOCRHelper.Ocr(questionMat);
+        a = paddleOCRHelper.Ocr(answeraMat);
+        b = paddleOCRHelper.Ocr(answerbMat);
+        c = paddleOCRHelper.Ocr(answercMat);
+        d = paddleOCRHelper.Ocr(answerdMat);
 
     }
 
@@ -318,8 +339,8 @@ public class AutoClubQuiz
     {
         int left, top, width, height;
         int leftMumu, topMumu;
-        WindowInteractionHelper.GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
-        WindowInteractionHelper.GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
+        GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
+        GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
         offsetX = left - leftMumu;
         offsetY = top - topMumu;
     }
