@@ -28,7 +28,7 @@ using OpenCvSharp.Extensions;
 namespace AutoHPMA.ViewModels.Pages
 {
 
-    public partial class DashboardViewModel : ObservableObject, INavigationAware
+    public partial class DashboardViewModel : ObservableObject
     {
 
         private DispatcherTimer _syncWindowTimer;
@@ -272,18 +272,7 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public void OnGoToWikiUrl()
         {
-            Process.Start(new ProcessStartInfo("https://felixchristian011226.github.io/AutoHPMA-Web/") { UseShellExecute = true });
-        }
-
-        [RelayCommand]
-        public async void OnRealTimeScreenshot(object sender)
-        {
-            var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-            {
-                Title = "⚠ 提示",
-                Content = "请进入截屏页面",
-            };
-            var result = await uiMessageBox.ShowDialogAsync();
+            Process.Start(new ProcessStartInfo("https://www.felixchristian.top/2025/04/04/16-AutoHPMA/") { UseShellExecute = true });
         }
 
         public void OnNavigatedFrom()

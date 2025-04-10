@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Wpf.Ui.Controls;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -55,15 +55,20 @@ namespace AutoHPMA.ViewModels.Pages
             _logWindow = logWindow;
         }
 
-        public void OnNavigatedTo()
+        public Task OnNavigatedToAsync()
         {
             if (!_isInitialized)
                 InitializeViewModel();
             DashboardViewModel.ScreenshotUpdated += BitmapUpdated;
+
+            return Task.CompletedTask;
         }
 
-        public void OnNavigatedFrom() {
+        public Task OnNavigatedFromAsync() 
+        {
             DashboardViewModel.ScreenshotUpdated -= BitmapUpdated;
+
+            return Task.CompletedTask;
         }
 
         private void InitializeViewModel()

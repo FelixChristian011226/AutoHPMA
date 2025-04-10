@@ -44,7 +44,7 @@
                         <ui:TextBlock
                             FontTypography="Subtitle"
                             Opacity="0.8"
-                            Text="哈利波特魔法觉醒 · 辅助" />
+                            Text="哈利波特 · 魔法觉醒" />
                         <ui:TextBlock FontTypography="BodyStrong" Opacity="0.6">
                             <Hyperlink
                                 Command="{Binding ViewModel.GoToWikiUrlCommand}"

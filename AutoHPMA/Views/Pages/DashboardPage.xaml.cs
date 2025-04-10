@@ -4,7 +4,7 @@
 // All Rights Reserved.
 
 using AutoHPMA.ViewModels.Pages;
-using Wpf.Ui.Controls;
+using Wpf.Ui.Abstractions.Controls;
 
 namespace AutoHPMA.Views.Pages
 {

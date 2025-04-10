@@ -5,6 +5,7 @@
 
 using AutoHPMA.ViewModels.Windows;
 using Wpf.Ui;
+using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -16,7 +17,7 @@ namespace AutoHPMA.Views.Windows
 
         public MainWindow(
             MainWindowViewModel viewModel,
-            IPageService pageService,
+            INavigationViewPageProvider navigationViewPageProvider,
             INavigationService navigationService
         )
         {
@@ -26,7 +27,7 @@ namespace AutoHPMA.Views.Windows
             SystemThemeWatcher.Watch(this);
 
             InitializeComponent();
-            SetPageService(pageService);
+            SetPageService(navigationViewPageProvider);
 
             navigationService.SetNavigationControl(RootNavigation);
         }
@@ -37,7 +38,7 @@ namespace AutoHPMA.Views.Windows
 
         public bool Navigate(Type pageType) => RootNavigation.Navigate(pageType);
 
-        public void SetPageService(IPageService pageService) => RootNavigation.SetPageService(pageService);
+        public void SetPageService(INavigationViewPageProvider navigationViewPageProvider) => RootNavigation.SetPageProviderService(navigationViewPageProvider);
 
         public void ShowWindow() => Show();
 

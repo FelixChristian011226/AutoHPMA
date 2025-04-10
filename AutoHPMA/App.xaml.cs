@@ -19,6 +19,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Threading;
 using Wpf.Ui;
+using Wpf.Ui.DependencyInjection;
 
 namespace AutoHPMA
 {
@@ -45,13 +46,10 @@ namespace AutoHPMA
                 var logWindow = new LogWindow();
                 services.AddSingleton(logWindow);
 
-                //if (all.MaskWindowConfig.MaskEnabled)
-                //{
+                services.AddNavigationViewPageProvider();
+
                 services.AddLogging(c => c.AddSerilog());
                 services.AddHostedService<ApplicationHostService>();
-
-                // Page resolver service
-                services.AddSingleton<IPageService, PageService>();
 
                 // Theme manipulation
                 services.AddSingleton<IThemeService, ThemeService>();
@@ -83,23 +81,17 @@ namespace AutoHPMA
             return _host.Services.GetService<ILogger<T>>()!;
         }
 
-        /// <summary>
-        /// Gets registered service.
-        /// </summary>
-        /// <typeparam name="T">Type of the service to get.</typeparam>
-        /// <returns>Instance of the service or <see langword="null"/>.</returns>
-        public static T GetService<T>()
-            where T : class
+        public static IServiceProvider Services
         {
-            return _host.Services.GetService(typeof(T)) as T;
+            get { return _host.Services; }
         }
 
         /// <summary>
         /// Occurs when the application is loading.
         /// </summary>
-        private void OnStartup(object sender, StartupEventArgs e)
+        private async void OnStartup(object sender, StartupEventArgs e)
         {
-            _host.Start();
+            await _host.StartAsync();
         }
 
         /// <summary>
@@ -108,6 +100,7 @@ namespace AutoHPMA
         private async void OnExit(object sender, ExitEventArgs e)
         {
             await _host.StopAsync();
+
             _host.Dispose();
         }
 

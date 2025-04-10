@@ -3,6 +3,7 @@
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
+using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -18,13 +19,15 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
 
-        public void OnNavigatedTo()
+        public Task OnNavigatedToAsync()
         {
             if (!_isInitialized)
                 InitializeViewModel();
+
+            return Task.CompletedTask;
         }
 
-        public void OnNavigatedFrom() { }
+        public Task OnNavigatedFromAsync() => Task.CompletedTask;
 
         private void InitializeViewModel()
         {

@@ -7,12 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
-    Width="1100"
-    Height="650"
+    Width="900"
+    Height="600"
     d:DataContext="{d:DesignInstance local:MainWindow,
                                      IsDesignTimeCreatable=True}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     ExtendsContentIntoTitleBar="True"
@@ -22,6 +20,7 @@
     WindowCornerPreference="Round"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+    
     <ui:FluentWindow.InputBindings>
         <KeyBinding
             Key="F"
@@ -30,6 +29,11 @@
     </ui:FluentWindow.InputBindings>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
         <ui:TitleBar
             x:Name="TitleBar"
             Title="{Binding ViewModel.ApplicationTitle}"
@@ -42,28 +46,16 @@
 
         <ui:NavigationView
             x:Name="RootNavigation"
-            Padding="42,0,42,0"
+            Grid.Row="1"
             BreadcrumbBar="{Binding ElementName=BreadcrumbBar}"
             FooterMenuItemsSource="{Binding ViewModel.FooterMenuItems, Mode=OneWay}"
             FrameMargin="0"
-            IsBackButtonVisible="Visible"
+            IsBackButtonVisible="Collapsed"
             IsPaneToggleVisible="True"
             MenuItemsSource="{Binding ViewModel.MenuItems, Mode=OneWay}"
-            OpenPaneLength="200"
-            PaneDisplayMode="Left"
-            TitleBar="{Binding ElementName=TitleBar, Mode=OneWay}">
-            <ui:NavigationView.Header>
-                <ui:BreadcrumbBar x:Name="BreadcrumbBar" Margin="42,32,42,20" />
-            </ui:NavigationView.Header>
-            <ui:NavigationView.AutoSuggestBox>
-                <ui:AutoSuggestBox x:Name="AutoSuggestBox" PlaceholderText="Search">
-                    <ui:AutoSuggestBox.Icon>
-                        <ui:IconSourceElement>
-                            <ui:SymbolIconSource Symbol="Search24" />
-                        </ui:IconSourceElement>
-                    </ui:AutoSuggestBox.Icon>
-                </ui:AutoSuggestBox>
-            </ui:NavigationView.AutoSuggestBox>
+            OpenPaneLength="120"
+            PaneDisplayMode="Left">
+
             <ui:NavigationView.ContentOverlay>
                 <Grid>
                     <ui:SnackbarPresenter x:Name="SnackbarPresenter" />
