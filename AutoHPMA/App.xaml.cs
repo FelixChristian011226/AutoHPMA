@@ -28,6 +28,11 @@ namespace AutoHPMA
     /// </summary>
     public partial class App
     {
+
+        // Shared data
+        public static IntPtr _displayHwnd, _gameHwnd;
+
+
         // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
         // https://docs.microsoft.com/dotnet/core/extensions/generic-host
         // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
@@ -66,12 +71,12 @@ namespace AutoHPMA
 
                 services.AddSingleton<DashboardPage>();
                 services.AddSingleton<DashboardViewModel>();
+                services.AddSingleton<TaskPage>();
+                services.AddSingleton<TaskViewModel>();
                 services.AddSingleton<ScreenshotPage>();
                 services.AddSingleton<ScreenshotViewModel>();
                 services.AddSingleton<TestPage>();
                 services.AddSingleton<TestViewModel>();
-                services.AddSingleton<DataPage>();
-                services.AddSingleton<DataViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
             }).Build();

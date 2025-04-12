@@ -16,7 +16,7 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <StackPanel Cursor="">
+    <StackPanel Margin="40,30,40,10" Cursor="">
         <!--  截屏测试  -->
         <ui:TextBlock FontTypography="Subtitle" Text="截屏测试" />
         <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
@@ -307,7 +307,7 @@
                     Grid.Row="0"
                     Grid.RowSpan="2"
                     Grid.Column="1"
-                    Width="100"
+                    Width="50"
                     Margin="5,0,10,0"
                     Text="{Binding ViewModel.ClickTimes, Mode=TwoWay}"
                     TextWrapping="Wrap" />

@@ -48,8 +48,6 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty] private Visibility _startButtonVisibility = Visibility.Visible;
         [ObservableProperty] private Visibility _stopButtonVisibility = Visibility.Collapsed;
-        [ObservableProperty] private Visibility _autoClubQuizStartButtonVisibility = Visibility.Visible;
-        [ObservableProperty] private Visibility _autoClubQuizStopButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartTriggerCommand))]
@@ -57,14 +55,7 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
         private bool _stopButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStartTriggerCommand))]
-        private bool _autoClubQuizStartButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStopTriggerCommand))]
-        private bool _autoClubQuizStopButtonEnabled = true;
 
-        private AutoClubQuiz? _autoClubQuiz;
 
         private LogWindow? _logWindow;
         private int _logWindowLeft = 0;
@@ -178,6 +169,9 @@ namespace AutoHPMA.ViewModels.Pages
                 return;
             }
 
+            App._displayHwnd = _displayHwnd;
+            App._gameHwnd = _gameHwnd;
+
             StartButtonVisibility = Visibility.Collapsed;
             StopButtonVisibility = Visibility.Visible;
 
@@ -238,34 +232,6 @@ namespace AutoHPMA.ViewModels.Pages
             capture = null;
             GC.Collect();
 
-        }
-
-
-        private bool CanAutoClubQuizStartTrigger() => AutoClubQuizStartButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoClubQuizStartTrigger))]
-        private void OnAutoClubQuizStartTrigger()
-        {
-            AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
-            AutoClubQuizStopButtonVisibility = Visibility.Visible;
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
-
-            _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
-            _autoClubQuiz.Start();
-
-        }
-
-        private bool CanAutoClubQuizStopTrigger() => AutoClubQuizStopButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoClubQuizStopTrigger))]
-        private void OnAutoClubQuizStopTrigger()
-        {
-            AutoClubQuizStartButtonVisibility = Visibility.Visible;
-            AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已终止---[/Aquamarine]");
-
-            _autoClubQuiz?.Stop();
-            _autoClubQuiz = null;
         }
 
 

@@ -11,7 +11,7 @@ namespace AutoHPMA.ViewModels.Windows
     public partial class MainWindowViewModel : ObservableObject
     {
         [ObservableProperty]
-        private string _applicationTitle = "WPF UI - AutoHPMA";
+        private string _applicationTitle = "AutoHPMA";
 
         [ObservableProperty]
         private ObservableCollection<object> _menuItems = new()
@@ -21,6 +21,12 @@ namespace AutoHPMA.ViewModels.Windows
                 Content = "启动",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Play24 },
                 TargetPageType = typeof(Views.Pages.DashboardPage)
+            },
+            new NavigationViewItem()
+            {
+                Content = "任务",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.TaskListLtr24 },
+                TargetPageType = typeof(Views.Pages.TaskPage)
             },
             new NavigationViewItem()
             {
@@ -34,12 +40,6 @@ namespace AutoHPMA.ViewModels.Windows
                 Icon = new SymbolIcon { Symbol = SymbolRegular.DesktopEdit24 },
                 TargetPageType = typeof(Views.Pages.TestPage)
             },
-            new NavigationViewItem()
-            {
-                Content = "Data",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.DataHistogram24 },
-                TargetPageType = typeof(Views.Pages.DataPage)
-            }
         };
 
         [ObservableProperty]

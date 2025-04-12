@@ -1,0 +1,73 @@
+﻿<Page x:Class="AutoHPMA.Views.Pages.TaskPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:AutoHPMA.Views.Pages"
+      xmlns:pages="clr-namespace:AutoHPMA.ViewModels.Pages"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+      ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      d:DataContext="{d:DesignInstance Type=pages:TaskViewModel}"
+      d:DesignHeight="450"
+      d:DesignWidth="800"
+      mc:Ignorable="d" 
+      Title="TaskPage">
+    
+    <StackPanel Margin="40,30,40,30">
+        <Grid>
+            <!--  自动社团答题  -->
+            <ui:CardExpander
+               Margin="0,0,0,12"
+               ContentPadding="0"
+               Icon="{ui:SymbolIcon QuizNew24}">
+                <ui:CardExpander.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBlock
+                       Grid.Row="0"
+                       Grid.Column="0"
+                       FontTypography="Body"
+                       Text="自动社团答题"
+                       TextWrapping="Wrap" />
+                        <ui:TextBlock
+                       Grid.Row="1"
+                       Grid.Column="0"
+                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                       TextWrapping="Wrap">
+                            <Run FontWeight="Bold" TextDecorations="Underline">
+                                点击展开启动相关配置
+                            </Run>
+                        </ui:TextBlock>
+                        <StackPanel
+                       Grid.Row="0"
+                       Grid.RowSpan="2"
+                       Grid.Column="1"
+                       Margin="0,0,24,0"
+                       Orientation="Horizontal">
+                            <ui:Button
+                           Command="{Binding ViewModel.AutoClubQuizStartTriggerCommand}"
+                           Content="启动"
+                           Icon="{ui:SymbolIcon Play24}"
+                           Visibility="{Binding ViewModel.AutoClubQuizStartButtonVisibility}" />
+                            <ui:Button
+                           Command="{Binding ViewModel.AutoClubQuizStopTriggerCommand}"
+                           Content="停止"
+                           Icon="{ui:SymbolIcon Dismiss24}"
+                           Visibility="{Binding ViewModel.AutoClubQuizStopButtonVisibility}" />
+                        </StackPanel>
+                    </Grid>
+                </ui:CardExpander.Header>
+
+            </ui:CardExpander>
+        </Grid>
+    </StackPanel>
+</Page>
