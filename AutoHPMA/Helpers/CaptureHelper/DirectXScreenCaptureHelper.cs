@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Helpers.CaptureHelper
 {
     /// <summary>
     /// DirectX截屏
@@ -17,7 +17,7 @@ namespace AutoHPMA.Helpers
         {
             // 创建工厂和设备
             var factory = new Factory1();
-            var adapter = new SharpDX.DXGI.Factory1().GetAdapter1(0);
+            var adapter = new Factory1().GetAdapter1(0);
             var device = new SharpDX.Direct3D11.Device(adapter);
             var output = adapter.GetOutput(0);
             var output1 = output.QueryInterface<Output1>();
@@ -72,8 +72,8 @@ namespace AutoHPMA.Helpers
             {
                 // 拷贝每行的像素
                 Utilities.CopyMemory(destPtr, sourcePtr, width * 4);
-                sourcePtr = IntPtr.Add(sourcePtr, mapSource.RowPitch);
-                destPtr = IntPtr.Add(destPtr, mapDest.Stride);
+                sourcePtr = nint.Add(sourcePtr, mapSource.RowPitch);
+                destPtr = nint.Add(destPtr, mapDest.Stride);
             }
 
             bitmap.UnlockBits(mapDest);

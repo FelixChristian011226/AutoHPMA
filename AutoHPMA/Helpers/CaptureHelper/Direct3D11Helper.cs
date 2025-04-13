@@ -2,7 +2,7 @@
 using Windows.Graphics.DirectX.Direct3D11;
 using WinRT;
 
-namespace AutoHPMA.Helpers;
+namespace AutoHPMA.Helpers.CaptureHelper;
 
 public static class Direct3D11Helper
 {

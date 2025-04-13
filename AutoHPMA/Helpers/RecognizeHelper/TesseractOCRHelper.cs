@@ -5,7 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using Tesseract;
 
-namespace AutoHPMA.Helpers;
+namespace AutoHPMA.Helpers.RecognizeHelper;
 
 public class TesseractOCRHelper
 {

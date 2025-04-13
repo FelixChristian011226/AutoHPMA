@@ -1,5 +1,7 @@
 ﻿using AutoHPMA.GameTask;
 using AutoHPMA.Helpers;
+using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Views.Windows;
 using Microsoft.Win32;
 using OpenCvSharp;
@@ -66,7 +68,7 @@ namespace AutoHPMA.ViewModels.Pages
                 //Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_gameHwnd);
                 //Bitmap bmp = BitBltCaptureHelper.Capture(_gameHwnd);
 
-                var capture = new GraphicsCapture();
+                var capture = new WindowsGraphicsCapture();
                 capture.Start(_gameHwnd);
                 await Task.Delay(100);
                 Mat frame = capture.Capture();

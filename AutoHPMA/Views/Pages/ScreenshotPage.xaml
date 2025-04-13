@@ -12,8 +12,9 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
 
-    <Grid>
-        <StackPanel>
+    <StackPanel Margin="40,30,40,30">
+        <Grid>
+        
 
             <Viewbox Margin="10">
                 <Image
@@ -22,6 +23,6 @@
                     Stretch="None" />
 
             </Viewbox>
-        </StackPanel>
-    </Grid>
+        </Grid>
+    </StackPanel>
 </Page>

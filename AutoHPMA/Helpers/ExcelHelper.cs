@@ -16,7 +16,7 @@ public class ExcelHelper
 
     public ExcelHelper(string excelPath)
     {
-        ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial; // 允许非商业使用
+        ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
         LoadExcelData(excelPath);
     }
 

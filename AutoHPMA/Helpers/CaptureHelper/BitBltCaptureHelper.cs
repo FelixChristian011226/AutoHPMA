@@ -3,10 +3,9 @@ using System.Drawing;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using static Windows.Win32.PInvoke;
-using AutoHPMA.Helpers;
 using Vanara.PInvoke;
 
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Helpers.CaptureHelper.CaptureHelper
 {
     /// <summary>
     /// BitBlt截图
@@ -14,10 +13,10 @@ namespace AutoHPMA.Helpers
     public class BitBltCaptureHelper
     {
 
-        public static Bitmap? Capture(IntPtr hWnd)
+        public static Bitmap? Capture(nint hWnd)
         {
             Windows.Win32.Foundation.HWND _hWnd = new Windows.Win32.Foundation.HWND(hWnd);
-            if (_hWnd == IntPtr.Zero)
+            if (_hWnd == nint.Zero)
             {
                 return null;
             }
@@ -32,7 +31,7 @@ namespace AutoHPMA.Helpers
                 var hdcDest = CreateCompatibleDC(hdcSrc);
                 var hBitmap = CreateCompatibleBitmap(hdcSrc, width, height);
                 var hOld = SelectObject(hdcDest, hBitmap);
-                Windows.Win32.PInvoke.BitBlt(hdcDest, 0, 0, width, height, hdcSrc, 0, 0, ROP_CODE.SRCCOPY);
+                BitBlt(hdcDest, 0, 0, width, height, hdcSrc, 0, 0, ROP_CODE.SRCCOPY);
                 SelectObject(hdcDest, hOld);
                 DeleteDC(hdcDest);
                 ReleaseDC(_hWnd, hdcSrc);

@@ -4,6 +4,7 @@
 // All Rights Reserved.
 
 using AutoHPMA.GameTask;
+using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Services;
 using AutoHPMA.ViewModels.Pages;
 using AutoHPMA.ViewModels.Windows;
@@ -28,9 +29,6 @@ namespace AutoHPMA
     /// </summary>
     public partial class App
     {
-
-        // Shared data
-        public static IntPtr _displayHwnd, _gameHwnd;
 
 
         // The.NET Generic Host provides dependency injection, configuration, logging, and other services.

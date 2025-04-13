@@ -13,6 +13,9 @@ using OpenCvSharp.Extensions;
 using System.Drawing;
 using System.IO;
 using static AutoHPMA.Helpers.WindowInteractionHelper;
+using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Helpers.RecognizeHelper;
+using AutoHPMA.Services;
 
 namespace AutoHPMA.GameTask;
 
@@ -25,8 +28,8 @@ public enum AutoClubQuizState
 
 public class AutoClubQuiz
 {
-    private static LogWindow _logWindow;
-    private static GraphicsCapture _capture;
+    private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
+    private static WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
     private static ExcelHelper excelHelper;
     private static PaddleOCRHelper paddleOCRHelper;
 
@@ -61,9 +64,6 @@ public class AutoClubQuiz
     {
         this._displayHwnd = _displayHwnd;
         this._gameHwnd = _gameHwnd;
-        _logWindow = LogWindow.GetInstance();
-        _capture = new GraphicsCapture();
-        _capture.Start(_displayHwnd);
         _cts = new CancellationTokenSource();
         excelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/ClubQuiz", "club_question_bank.xlsx");
         excelHelper = new ExcelHelper(excelPath);

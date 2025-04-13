@@ -12,7 +12,7 @@ using Sdcb.PaddleOCR.Models;
 using System.IO;
 using Sdcb.PaddleOCR.Models.Local;
 
-namespace AutoHPMA.Helpers;
+namespace AutoHPMA.Helpers.RecognizeHelper;
 
 public class PaddleOCRHelper
 {

@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 using Windows.Graphics.Capture;
 using WinRT;
 
-namespace AutoHPMA.Helpers;
+namespace AutoHPMA.Helpers.CaptureHelper;
 
-public static class CaptureHelper
+public static class WindowsGraphicsCaptureInterop
 {
     static readonly Guid GraphicsCaptureItemGuid = new("79C3F95B-31F7-4EC2-A464-632EF5D30760");
 

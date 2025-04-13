@@ -24,6 +24,9 @@ using System.Drawing.Imaging;
 using System.Collections.ObjectModel;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Services;
+using System.ComponentModel;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -57,13 +60,47 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _stopButtonEnabled = true;
 
 
-        private LogWindow? _logWindow;
+        private LogWindow? _logWindow
+        {
+            get => AppContextService.Instance.LogWindow;
+            set
+            {
+                AppContextService.Instance.LogWindow = value;
+                OnPropertyChanged(nameof(_logWindow));
+            }
+        }
         private int _logWindowLeft = 0;
         private int _logWindowTop = 0;
 
-        private GraphicsCapture capture;
+        private WindowsGraphicsCapture _capture
+        {
+            get => AppContextService.Instance.Capture;
+            set
+            {
+                AppContextService.Instance.Capture = value;
+                OnPropertyChanged(nameof(_capture));
+            }
+        }
 
-        private IntPtr _displayHwnd,_gameHwnd;
+        private IntPtr _displayHwnd
+        {
+            get => AppContextService.Instance.DisplayHwnd;
+            set
+            {
+                AppContextService.Instance.DisplayHwnd = value;
+                OnPropertyChanged(nameof(_displayHwnd));
+            }
+        }
+
+        private IntPtr _gameHwnd
+        {
+            get => AppContextService.Instance.GameHwnd;
+            set
+            {
+                AppContextService.Instance.GameHwnd = value;
+                OnPropertyChanged(nameof(_gameHwnd));
+            }
+        }
 
         private enum StartupOption
         {
@@ -107,7 +144,7 @@ namespace AutoHPMA.ViewModels.Pages
                 if(_realTimeScreenshotEnabled)
                 {
                     //Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
-                    Mat? frame = capture?.Capture();
+                    Mat? frame = _capture?.Capture();
                     Bitmap? bmp = frame?.ToBitmap();
 
                     //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
@@ -169,8 +206,6 @@ namespace AutoHPMA.ViewModels.Pages
                 return;
             }
 
-            App._displayHwnd = _displayHwnd;
-            App._gameHwnd = _gameHwnd;
 
             StartButtonVisibility = Visibility.Collapsed;
             StopButtonVisibility = Visibility.Visible;
@@ -197,8 +232,9 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 _syncWindowTimer.Tick += SyncWindowTimer_Tick;
                 _syncWindowTimer.Start();
-                _logWindow = LogWindow.Instance();
 
+                _logWindow = new LogWindow();
+                _logWindow.Show();
                 _logWindow.ShowInTaskbar = false;   //在ALT+TAB中不显示
                 _logWindow.Owner = GetGameWindow(); // 将游戏窗口设置为LogWindow的Owner
                 _logWindow.RefreshPosition(_gameHwnd, _logWindowLeft, _logWindowTop);
@@ -207,8 +243,8 @@ namespace AutoHPMA.ViewModels.Pages
                 ShowGameWindowInfo();
             }
 
-            capture = new GraphicsCapture();
-            capture.Start(_displayHwnd);
+            _capture = new WindowsGraphicsCapture();
+            _capture.Start(_displayHwnd);
 
         }
 
@@ -221,6 +257,7 @@ namespace AutoHPMA.ViewModels.Pages
             StopButtonVisibility = Visibility.Collapsed;
 
             _logWindow?.Close();
+            _logWindow = null;
 
             _captureTimer.Tick -= CaptureTimer_Tick;
             _captureTimer.Stop();
@@ -228,8 +265,8 @@ namespace AutoHPMA.ViewModels.Pages
             _syncWindowTimer.Tick -= SyncWindowTimer_Tick;
             _syncWindowTimer.Stop();
 
-            capture.Stop();
-            capture = null;
+            _capture.Stop();
+            _capture = null;
             GC.Collect();
 
         }
@@ -290,6 +327,12 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 Console.WriteLine($"获取窗口信息失败：{ex.Message}");
             }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
     }

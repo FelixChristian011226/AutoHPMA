@@ -1,8 +1,10 @@
 ﻿using AutoHPMA.GameTask;
-using AutoHPMA.Helpers;
+using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,12 +26,36 @@ namespace AutoHPMA.ViewModels.Pages
         [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStopTriggerCommand))]
         private bool _autoClubQuizStopButtonEnabled = true;
 
+        private IntPtr _displayHwnd => AppContextService.Instance.DisplayHwnd;
+        private IntPtr _gameHwnd => AppContextService.Instance.GameHwnd;
+        private LogWindow? _logWindow => AppContextService.Instance.LogWindow;
+        private WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
 
-        private LogWindow? _logWindow;
-        private GraphicsCapture capture;
+
         private AutoClubQuiz? _autoClubQuiz;
-        private IntPtr _displayHwnd, _gameHwnd;
+        private AppContextService appContextService;
 
+        public TaskViewModel()
+        {
+            // 获取单例实例
+            appContextService = AppContextService.Instance;
+            // 订阅属性变化通知
+            appContextService.PropertyChanged += AppContextService_PropertyChanged;
+
+        }
+
+        private void AppContextService_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AppContextService.LogWindow) ||
+                e.PropertyName == nameof(AppContextService.DisplayHwnd) ||
+                e.PropertyName == nameof(AppContextService.GameHwnd) ||
+                e.PropertyName == nameof(AppContextService.Capture))
+            {
+                // 当共享数据有更新时执行相应操作
+                // CheckRequiredParameters();
+
+            }
+        }
 
         private bool CanAutoClubQuizStartTrigger() => AutoClubQuizStartButtonEnabled;
 
@@ -37,11 +63,7 @@ namespace AutoHPMA.ViewModels.Pages
         private void OnAutoClubQuizStartTrigger()
         {
 
-            _displayHwnd = App._displayHwnd;
-            _gameHwnd = App._gameHwnd;
-            _logWindow = LogWindow.GetInstance();
-
-            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero)
+            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
             {
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
@@ -72,6 +94,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             _autoClubQuiz?.Stop();
             _autoClubQuiz = null;
+            GC.Collect();
         }
 
 

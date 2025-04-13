@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using WinRT;
 
-namespace AutoHPMA.Helpers;
+namespace AutoHPMA.Helpers.CaptureHelper;
 
 #pragma warning disable CS0649
 
@@ -72,11 +72,11 @@ internal static class WinrtModule
 
     private static unsafe nint GetActivationFactory(nint hstrRuntimeClassId)
     {
-        if (s_cookie == IntPtr.Zero)
+        if (s_cookie == nint.Zero)
         {
             lock (s_lock)
             {
-                if (s_cookie == IntPtr.Zero)
+                if (s_cookie == nint.Zero)
                 {
                     nint cookie;
                     Marshal.ThrowExceptionForHR(Platform.CoIncrementMTAUsage(&cookie));

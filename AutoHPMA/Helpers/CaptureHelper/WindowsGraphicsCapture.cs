@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using AutoHPMA.Helpers;
 using SharpDX.Direct3D11;
 using Vanara.PInvoke;
 using Windows.Foundation.Metadata;
@@ -12,9 +11,9 @@ using Device = SharpDX.Direct3D11.Device;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 using System.Windows.Input;
 
-namespace AutoHPMA.Helpers;
+namespace AutoHPMA.Helpers.CaptureHelper;
 
-public class GraphicsCapture
+public class WindowsGraphicsCapture
 {
     private nint _hWnd;
 
@@ -53,7 +52,7 @@ public class GraphicsCapture
 
         IsCapturing = true;
 
-        _captureItem = CaptureHelper.CreateItemForWindow(_hWnd);
+        _captureItem = WindowsGraphicsCaptureInterop.CreateItemForWindow(_hWnd);
 
         if (_captureItem == null)
         {
@@ -129,7 +128,7 @@ public class GraphicsCapture
         try
         {
             var hdc = User32.GetDC(hWnd);
-            if (hdc != IntPtr.Zero)
+            if (hdc != nint.Zero)
             {
                 int bitsPerPixel = Gdi32.GetDeviceCaps(hdc, Gdi32.DeviceCap.BITSPIXEL);
                 User32.ReleaseDC(hWnd, hdc);
@@ -304,7 +303,7 @@ public class GraphicsCapture
         _stagingTexture?.Dispose();
         _d3dDevice?.Dispose();
 
-        _hWnd = IntPtr.Zero;
+        _hWnd = nint.Zero;
         IsCapturing = false;
 
         // 释放最新帧
