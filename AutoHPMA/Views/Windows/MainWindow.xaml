@@ -56,11 +56,6 @@
             OpenPaneLength="120"
             PaneDisplayMode="Left">
 
-            <ui:NavigationView.ContentOverlay>
-                <Grid>
-                    <ui:SnackbarPresenter x:Name="SnackbarPresenter" />
-                </Grid>
-            </ui:NavigationView.ContentOverlay>
         </ui:NavigationView>
 
         <ContentPresenter x:Name="RootContentDialog" Grid.Row="0" />
