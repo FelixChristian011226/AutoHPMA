@@ -35,11 +35,12 @@ public class AutoClubQuiz
 
     private AutoClubQuizState _state = AutoClubQuizState.Gathering;
 
-    private static Mat gather, channel, join, close, time18, time20, over, end, gothmog, question_LT, question_RB, option_a, option_b, option_c, option_d;
+    private static Mat gather, channel, join, close, time18, time20, over, end, gothmog, option_a, option_b, option_c, option_d;
     private static Mat? captureMat;
 
     private IntPtr _displayHwnd, _gameHwnd;
     private int offsetX, offsetY;
+    private double scale;
 
     private bool _textLocated = false;
     private int question_x, question_y, question_w, question_h;
@@ -57,8 +58,6 @@ public class AutoClubQuiz
     private int questionIndex = 0, roundIndex = 0;
 
     private CancellationTokenSource _cts;
-
-    char option = 'X';
 
     public AutoClubQuiz(IntPtr _displayHwnd, IntPtr _gameHwnd)
     {
@@ -102,10 +101,6 @@ public class AutoClubQuiz
         Cv2.CvtColor(option_c, option_c, ColorConversionCodes.BGR2GRAY);
         option_d = Cv2.ImRead(image_folder + "option_d.png", ImreadModes.Unchanged);
         Cv2.CvtColor(option_d, option_d, ColorConversionCodes.BGR2GRAY);
-        question_LT = Cv2.ImRead(image_folder + "question_LT.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(question_LT, question_LT, ColorConversionCodes.BGR2GRAY);
-        question_RB = Cv2.ImRead(image_folder + "question_RB.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(question_RB, question_RB, ColorConversionCodes.BGR2GRAY);
 
     }
 
@@ -232,6 +227,7 @@ public class AutoClubQuiz
     private bool FindMatch(ref Mat mat, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
         //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
@@ -245,6 +241,7 @@ public class AutoClubQuiz
     private bool FindAndClick(ref Mat mat, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
         //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
@@ -252,7 +249,7 @@ public class AutoClubQuiz
         {
             return false;
         }
-        SendMouseClick(_gameHwnd, (uint)(matchpoint.X - offsetX + mat.Width / 2.0), (uint)(matchpoint.Y - offsetY + mat.Height / 2.0));
+        SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
         return true;
     }
 
@@ -260,6 +257,7 @@ public class AutoClubQuiz
     {
         OpenCvSharp.Point matchpoint;
         captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, gothmog, TemplateMatchModes.CCoeffNormed, null, 0.9);
         if (matchpoint == default)
@@ -310,6 +308,7 @@ public class AutoClubQuiz
     public void RecogniseText()
     {
         captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
 
         Mat questionMat = new Mat(captureMat, question);
@@ -339,10 +338,11 @@ public class AutoClubQuiz
     {
         int left, top, width, height;
         int leftMumu, topMumu;
-        GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
         GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
+        GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
         offsetX = left - leftMumu;
         offsetY = top - topMumu;
+        scale = width/1280.0;
     }
 
     private void ClickOption()
@@ -350,16 +350,16 @@ public class AutoClubQuiz
         switch (bestOption)
         {
             case 'A':
-                SendMouseClick(_gameHwnd, (uint)(answer_a_x - offsetX + answer_offset_x), (uint)(answer_a_y - offsetY + answer_offset_y));
+                SendMouseClick(_gameHwnd, (uint)(answer_a_x * scale - offsetX + answer_offset_x * scale), (uint)(answer_a_y * scale - offsetY + answer_offset_y * scale));
                 break;
             case 'B':
-                SendMouseClick(_gameHwnd, (uint)(answer_b_x - offsetX + answer_offset_x), (uint)(answer_b_y - offsetY + answer_offset_y));
+                SendMouseClick(_gameHwnd, (uint)(answer_b_x * scale - offsetX + answer_offset_x * scale), (uint)(answer_b_y * scale - offsetY + answer_offset_y * scale));
                 break;
             case 'C':
-                SendMouseClick(_gameHwnd, (uint)(answer_c_x - offsetX + answer_offset_x), (uint)(answer_c_y - offsetY + answer_offset_y));
+                SendMouseClick(_gameHwnd, (uint)(answer_c_x * scale - offsetX + answer_offset_x * scale), (uint)(answer_c_y * scale - offsetY + answer_offset_y * scale));
                 break;
             case 'D':
-                SendMouseClick(_gameHwnd, (uint)(answer_d_x - offsetX + answer_offset_x), (uint)(answer_d_y - offsetY + answer_offset_y));
+                SendMouseClick(_gameHwnd, (uint)(answer_d_x * scale - offsetX + answer_offset_x * scale), (uint)(answer_d_y * scale - offsetY + answer_offset_y * scale));
                 break;
         }
     }

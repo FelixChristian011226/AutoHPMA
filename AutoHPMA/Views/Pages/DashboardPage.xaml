@@ -50,7 +50,7 @@
                                 Command="{Binding ViewModel.GoToWikiUrlCommand}"
                                 Foreground="#B7FFFFFF"
                                 TextDecorations="None">
-                                <Run>点击查看教程文档</Run>
+                                <Run>点击查看文档</Run>
                                 <Run FontFamily="{StaticResource FluentSystemIcons}" FontWeight="Light">&#xEE7A;</Run>
                             </Hyperlink>
 
@@ -79,15 +79,15 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="AutoHPMA，截图器启动！"
+                        Text="AutoHPMA，启动！"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                         TextWrapping="Wrap">
-                        <Run FontWeight="Bold" TextDecorations="Underline">
-                            点击展开启动相关配置
+                        <Run>
+                            启动后才能开始任务，点击可展开相关配置。
                         </Run>
                     </ui:TextBlock>
                     <StackPanel
@@ -197,7 +197,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="日志显示的遮罩窗口"
+                        Text="启动AutoHPMA时，在游戏左上角覆盖一个日志窗口。"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"
@@ -227,7 +227,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="显示调试信息日志"
+                        Text="勾选后日志窗口会显示DBG信息，便于调试"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"

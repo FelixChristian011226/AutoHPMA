@@ -143,13 +143,8 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 if(_realTimeScreenshotEnabled)
                 {
-                    //Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_targetHwnd);
                     Mat? frame = _capture?.Capture();
                     Bitmap? bmp = frame?.ToBitmap();
-
-                    //string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
-                    //Directory.CreateDirectory(folderPath);
-                    //ImageProcessingHelper.SaveBitmapAs(bmp, folderPath, "TEST" + ".png", ImageFormat.Png);
 
                     OnScreenshotUpdated(bmp); // 发布截图更新事件
                 }
