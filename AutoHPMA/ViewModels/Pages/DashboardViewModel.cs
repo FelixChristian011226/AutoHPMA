@@ -194,10 +194,11 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
-                    Title = "错误",
-                    Content = "未找到游戏窗口。\n请先启动游戏！",
+                    Title = "⚠️ 错误",
+                    Content = "未找到游戏窗口。请先启动游戏！",
+                    
                 };
-                var result = uiMessageBox.ShowDialogAsync();
+                _ = uiMessageBox.ShowDialogAsync();
                 return;
             }
 

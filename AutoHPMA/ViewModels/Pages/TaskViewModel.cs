@@ -67,8 +67,8 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
-                    Title = "错误",
-                    Content = "任务启动失败，请先在启动页面启动截图器",
+                    Title = "⚠️ 错误",
+                    Content = "任务启动失败。请先启动截图器!",
                 };
                 var result = uiMessageBox.ShowDialogAsync();
                 return;
