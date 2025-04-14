@@ -23,6 +23,7 @@ namespace AutoHPMA.ViewModels.Pages
     public partial class TestViewModel : ObservableObject
     {
 
+        #region Observable Properties
         // 截屏测试
         [ObservableProperty]
         private int _screenshotLeft = 0;
@@ -48,7 +49,7 @@ namespace AutoHPMA.ViewModels.Pages
         // 文字识别
         [ObservableProperty]
         private string _ocrResult = string.Empty;
-
+        #endregion
 
         [RelayCommand]
         public async void OnScreenshotTest(object sender)
@@ -56,6 +57,7 @@ namespace AutoHPMA.ViewModels.Pages
             var _gameHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
             if (_gameHwnd != IntPtr.Zero)
             {
+                // 对子窗口截图会被屏蔽，只能截取父窗口
                 //_gameHwnd = SystemControl.FindChildWindowByTitle(_gameHwnd, "MuMuPlayer");
             }
             else

@@ -22,13 +22,11 @@ namespace AutoHPMA.Views.Pages
     /// </summary>
     public partial class ScreenshotPage : Page
     {
-        private LogWindow _logWindow;
         private readonly ScreenshotViewModel _viewModel;
-        public ScreenshotPage(LogWindow logWindow)
+        public ScreenshotPage()
         {
             InitializeComponent();
-            _logWindow = logWindow;
-            _viewModel = new ScreenshotViewModel(logWindow);
+            _viewModel = new ScreenshotViewModel();
             DataContext = _viewModel;
         }
 

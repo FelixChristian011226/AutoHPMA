@@ -27,6 +27,8 @@ using OpenCvSharp.Extensions;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Services;
 using System.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using AutoHPMA.Messages;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -37,6 +39,7 @@ namespace AutoHPMA.ViewModels.Pages
         private DispatcherTimer _syncWindowTimer;
         private DispatcherTimer _captureTimer;
 
+        # region Observable Properties
         [ObservableProperty]
         private bool _realTimeScreenshotEnabled = true;
 
@@ -49,8 +52,10 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private int _captureInterval = 500;
 
-        [ObservableProperty] private Visibility _startButtonVisibility = Visibility.Visible;
-        [ObservableProperty] private Visibility _stopButtonVisibility = Visibility.Collapsed;
+        [ObservableProperty] 
+        private Visibility _startButtonVisibility = Visibility.Visible;
+        [ObservableProperty] 
+        private Visibility _stopButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartTriggerCommand))]
@@ -58,8 +63,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
         private bool _stopButtonEnabled = true;
+        #endregion
 
-
+        # region argument from AppContextService
         private LogWindow? _logWindow
         {
             get => AppContextService.Instance.LogWindow;
@@ -101,6 +107,7 @@ namespace AutoHPMA.ViewModels.Pages
                 OnPropertyChanged(nameof(_gameHwnd));
             }
         }
+        #endregion
 
         private enum StartupOption
         {
@@ -108,7 +115,6 @@ namespace AutoHPMA.ViewModels.Pages
             MumuSimulator,
             None
         }
-
         private StartupOption _startupOption = StartupOption.None;
 
         public static event Action<Bitmap> ScreenshotUpdated;
@@ -120,22 +126,17 @@ namespace AutoHPMA.ViewModels.Pages
 
         public DashboardViewModel()
         {
-            InitializeCaptureTimer();
-            InitializeSyncWindowTimer();
         }
+
         private void InitializeCaptureTimer()
         {
             _captureTimer = new DispatcherTimer();
             _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
         }
-        private void UpdateCaptureTimer()
-        {
-            _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
-        }
         public void InitializeSyncWindowTimer()
         {
             _syncWindowTimer = new DispatcherTimer();
-            _syncWindowTimer.Interval = TimeSpan.FromMilliseconds(100);
+            _syncWindowTimer.Interval = TimeSpan.FromMilliseconds(50);
         }
         private void CaptureTimer_Tick(object? sender, EventArgs e)
         {
@@ -145,7 +146,6 @@ namespace AutoHPMA.ViewModels.Pages
                 {
                     Mat? frame = _capture?.Capture();
                     Bitmap? bmp = frame?.ToBitmap();
-
                     OnScreenshotUpdated(bmp); // 发布截图更新事件
                 }
             }
@@ -175,20 +175,7 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanStartTrigger))]
         private void OnStartTrigger()
         {
-            _displayHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-            if (_displayHwnd != IntPtr.Zero)
-            {
-                _startupOption = StartupOption.MumuSimulator;
-                _gameHwnd = SystemControl.FindChildWindowByTitle(_displayHwnd, "MuMuPlayer");
-            }
-            else
-            {
-                _gameHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
-                if (_gameHwnd != IntPtr.Zero)
-                {
-                    _startupOption = StartupOption.OfficialLauncher;
-                }
-            }
+            GetGameHwnd();
 
             if (_gameHwnd == IntPtr.Zero)
             {
@@ -200,7 +187,20 @@ namespace AutoHPMA.ViewModels.Pages
                 };
                 _ = uiMessageBox.ShowDialogAsync();
                 return;
+            } 
+            else
+            {
+                var snackbarInfo = new SnackbarInfo
+                {
+                    Title = "启动成功",
+                    Message = "截图器已启动，可启动其他任务。",
+                    Appearance = ControlAppearance.Success,
+                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24),
+                    Duration = TimeSpan.FromSeconds(3),
+                };
+                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
+
 
 
             StartButtonVisibility = Visibility.Collapsed;
@@ -219,7 +219,9 @@ namespace AutoHPMA.ViewModels.Pages
                 Application.Current.MainWindow.Hide();
             });
 
-            UpdateCaptureTimer();
+            InitializeCaptureTimer();
+            InitializeSyncWindowTimer();
+
             _captureTimer.Tick += CaptureTimer_Tick;
             _captureTimer.Start();
 
@@ -232,7 +234,7 @@ namespace AutoHPMA.ViewModels.Pages
                 _logWindow = new LogWindow();
                 _logWindow.Show();
                 _logWindow.ShowInTaskbar = false;   //在ALT+TAB中不显示
-                _logWindow.Owner = GetGameWindow(); // 将游戏窗口设置为LogWindow的Owner
+                //_logWindow.Owner = GetWindow(_gameHwnd); // 将游戏窗口设置为LogWindow的Owner
                 _logWindow.RefreshPosition(_gameHwnd, _logWindowLeft, _logWindowTop);
                 _logWindow.ShowDebugLogs = DebugLogEnabled;
                 _logWindow.AddLogMessage("INF", "检测到[Yellow]" + _startupOption+ "[/Yellow]已启动");
@@ -284,9 +286,13 @@ namespace AutoHPMA.ViewModels.Pages
             //throw new NotImplementedException();
         }
 
-        private System.Windows.Window GetGameWindow()
+        /**
+         * @brief 获取游戏窗口
+         * @param hWnd 窗口句柄
+         * @return System.Windows.Window 窗口对象
+         */
+        private System.Windows.Window GetWindow(IntPtr hWnd)
         {
-            var hWnd = _gameHwnd;
             if (hWnd != IntPtr.Zero)
             {
                 var hwndSource = HwndSource.FromHwnd(hWnd);
@@ -303,9 +309,45 @@ namespace AutoHPMA.ViewModels.Pages
                     }
                 }
             }
-            return null;
+            throw new InvalidOperationException("无法获取窗口对象");
         }
 
+        /**
+         * @brief 获取游戏窗口句柄（Mumu模拟器或官方启动器）
+         * @param void
+         * @return void
+         * @note 直接对成员变量赋值
+         * _displayHwnd：模拟器窗口句柄
+         * _gameHwnd：游戏窗口句柄（若为Mumu模拟器，则为子句柄）
+         * _startupOption：启动选项（Mumu模拟器或官方启动器）
+         */
+        private void GetGameHwnd()
+        {
+            _displayHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            if (_displayHwnd != IntPtr.Zero)
+            {
+                _startupOption = StartupOption.MumuSimulator;
+                _gameHwnd = SystemControl.FindChildWindowByTitle(_displayHwnd, "MuMuPlayer");
+            }
+            else
+            {
+                _gameHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+                if (_gameHwnd != IntPtr.Zero)
+                {
+                    _startupOption = StartupOption.OfficialLauncher;
+                }
+            }
+        }
+
+        /**
+         * @brief 获取游戏窗口信息
+         * @param void
+         * @return void
+         * @note 输出方式为日志窗口
+         * 输出信息包括：
+         * 游戏窗口分辨率和坐标
+         * Mumu模拟器窗口分辨率和坐标
+         */
         private void ShowGameWindowInfo()
         {
             try
@@ -325,11 +367,15 @@ namespace AutoHPMA.ViewModels.Pages
             }
         }
 
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+
+
 
     }
 }

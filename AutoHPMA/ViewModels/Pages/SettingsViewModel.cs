@@ -15,7 +15,6 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private string _appVersion = String.Empty;
-
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
 

@@ -3,7 +3,9 @@
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
+using AutoHPMA.Messages;
 using AutoHPMA.ViewModels.Windows;
+using CommunityToolkit.Mvvm.Messaging;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Reflection;
@@ -26,6 +28,8 @@ namespace AutoHPMA.Views.Windows
     public partial class MainWindow : INavigationWindow
     {
 
+        private readonly ISnackbarService _snackbarService;
+
         private const string GitHubApiUrl = "https://api.github.com/repos/FelixChristian011226/AutoHPMA/releases/latest";
 
         public MainWindowViewModel ViewModel { get; }
@@ -33,17 +37,32 @@ namespace AutoHPMA.Views.Windows
         public MainWindow(
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
-            INavigationService navigationService
-        )
+            INavigationService navigationService,
+            ISnackbarService snackbarService)
         {
             ViewModel = viewModel;
             DataContext = this;
 
+            InitializeComponent();
+
             SystemThemeWatcher.Watch(this);
 
-            InitializeComponent();
-            SetPageService(navigationViewPageProvider);
+            _snackbarService = snackbarService;
+            _snackbarService.SetSnackbarPresenter(SnackbarPresenter);
 
+            // 注册消息接收器
+            WeakReferenceMessenger.Default.Register<ShowSnackbarMessage>(this, (r, message) =>
+            {
+                var info = message.Value;
+                _snackbarService.Show(
+                    info.Title,
+                    info.Message,
+                    info.Appearance,
+                    info.Icon,
+                    info.Duration);
+            });
+
+            SetPageService(navigationViewPageProvider);
             navigationService.SetNavigationControl(RootNavigation);
 
             CheckForUpdatesAsync();

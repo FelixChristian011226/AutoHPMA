@@ -55,6 +55,8 @@ public class AutoClubQuiz
     private string? excelPath;
     private char bestOption;
 
+    private int _answerDelay = 0;
+
     private int questionIndex = 0, roundIndex = 0;
 
     private CancellationTokenSource _cts;
@@ -188,6 +190,7 @@ public class AutoClubQuiz
                             answer = excelHelper.GetBestMatchingAnswer(q);
                             bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
                             _logWindow?.AddLogMessage("INF", "第[Yellow]" + questionIndex + "[/Yellow]题，选：[Lime]" + bestOption + "[/Lime]。");
+                            await Task.Delay(_answerDelay*1000);
                             ClickOption();
                         }
                         continue;
@@ -362,6 +365,18 @@ public class AutoClubQuiz
                 SendMouseClick(_gameHwnd, (uint)(answer_d_x * scale - offsetX + answer_offset_x * scale), (uint)(answer_d_y * scale - offsetY + answer_offset_y * scale));
                 break;
         }
+    }
+
+    public int SetAnswerDelay(int  answer_delay)
+    {
+        if (answer_delay < 0)
+        {
+            _logWindow?.AddLogMessage("ERR", "答题延迟不能小于0");
+            return -1;
+        }
+        _answerDelay = answer_delay;
+        _logWindow?.AddLogMessage("DBG", "答题延迟设置为：" + _answerDelay);
+        return 0;
     }
 
 }

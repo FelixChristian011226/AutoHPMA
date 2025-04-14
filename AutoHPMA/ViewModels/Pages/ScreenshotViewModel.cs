@@ -18,7 +18,6 @@ namespace AutoHPMA.ViewModels.Pages
     {
 
         private bool _isInitialized = false;
-        private readonly LogWindow _logWindow;
         private ImageSource _imageSource;
         public ImageSource ImageSource
         {
@@ -47,12 +46,6 @@ namespace AutoHPMA.ViewModels.Pages
                 // 必须在UI线程上更新
                 Application.Current.Dispatcher.Invoke(() => ImageSource = bitmapImage);
             }
-        }
-
-        public ScreenshotViewModel(LogWindow logWindow)
-        {
-            DashboardViewModel.ScreenshotUpdated += BitmapUpdated;
-            _logWindow = logWindow;
         }
 
         public Task OnNavigatedToAsync()

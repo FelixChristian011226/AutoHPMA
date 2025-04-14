@@ -27,24 +27,24 @@
             Command="{Binding ElementName=AutoSuggestBox, Path=FocusCommand}"
             Modifiers="Control" />
     </ui:FluentWindow.InputBindings>
-
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <ui:TitleBar
+            <ui:TitleBar
             x:Name="TitleBar"
             Title="{Binding ViewModel.ApplicationTitle}"
             Grid.Row="0"
             CloseWindowByDoubleClickOnIcon="True">
-            <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/wpfui-icon-256.png" />
-            </ui:TitleBar.Icon>
-        </ui:TitleBar>
+                <ui:TitleBar.Icon>
+                    <ui:ImageIcon Source="pack://application:,,,/Assets/wpfui-icon-256.png" />
+                </ui:TitleBar.Icon>
+            </ui:TitleBar>
 
-        <ui:NavigationView
+            <ui:NavigationView
             x:Name="RootNavigation"
             Grid.Row="1"
             BreadcrumbBar="{Binding ElementName=BreadcrumbBar}"
@@ -56,8 +56,21 @@
             OpenPaneLength="120"
             PaneDisplayMode="Left">
 
-        </ui:NavigationView>
+            </ui:NavigationView>
+            <ContentPresenter x:Name="RootContentDialog" Grid.Row="0" />
+        </Grid>
+        <Grid Panel.ZIndex="1000" IsHitTestVisible="False">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-        <ContentPresenter x:Name="RootContentDialog" Grid.Row="0" />
+                <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20">
+                    <ui:SnackbarPresenter x:Name="SnackbarPresenter" IsHitTestVisible="True"/>
+                </Border>
+            </Grid>
+        </Grid>
     </Grid>
+
 </ui:FluentWindow>

@@ -19,7 +19,7 @@ namespace AutoHPMA.Services
         private AppContextService() { }
 
         #region 共享数据属性
-
+        #region Dashboard
         private IntPtr _displayHwnd;
         public IntPtr DisplayHwnd
         {
@@ -75,7 +75,11 @@ namespace AutoHPMA.Services
                 }
             }
         }
+        #endregion
 
+        #region Task
+
+        #endregion
         #endregion
 
         #region INotifyPropertyChanged 实现

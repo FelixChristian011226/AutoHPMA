@@ -1,7 +1,10 @@
 ﻿using AutoHPMA.GameTask;
 using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Messages;
 using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wpf.Ui.Abstractions.Controls;
+using Wpf.Ui.Controls;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -16,8 +20,11 @@ namespace AutoHPMA.ViewModels.Pages
     public partial class TaskViewModel : ObservableObject, INavigationAware
     {
 
-        [ObservableProperty] private Visibility _autoClubQuizStartButtonVisibility = Visibility.Visible;
-        [ObservableProperty] private Visibility _autoClubQuizStopButtonVisibility = Visibility.Collapsed;
+        #region Observable Properties
+        [ObservableProperty] 
+        private Visibility _autoClubQuizStartButtonVisibility = Visibility.Visible;
+        [ObservableProperty] 
+        private Visibility _autoClubQuizStopButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStartTriggerCommand))]
@@ -25,6 +32,11 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStopTriggerCommand))]
         private bool _autoClubQuizStopButtonEnabled = true;
+
+        [ObservableProperty]
+        private int _answerDelay = 0;
+
+        #endregion
 
         private IntPtr _displayHwnd => AppContextService.Instance.DisplayHwnd;
         private IntPtr _gameHwnd => AppContextService.Instance.GameHwnd;
@@ -53,7 +65,6 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 // 当共享数据有更新时执行相应操作
                 // CheckRequiredParameters();
-
             }
         }
 
@@ -73,13 +84,26 @@ namespace AutoHPMA.ViewModels.Pages
                 var result = uiMessageBox.ShowDialogAsync();
                 return;
             }
+            else
+            {
+                var snackbarInfo = new SnackbarInfo
+                {
+                    Title = "启动成功",
+                    Message = "自动社团答题已启动。",
+                    Appearance = ControlAppearance.Success,
+                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24),
+                    Duration = TimeSpan.FromSeconds(3)
+                };
+                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
+            }
 
             AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
             _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
 
-            _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
-            _autoClubQuiz.Start();
+            //_autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
+            //_autoClubQuiz.SetAnswerDelay(_answerDelay);
+            //_autoClubQuiz.Start();
 
         }
 
