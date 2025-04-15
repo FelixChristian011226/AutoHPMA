@@ -195,7 +195,7 @@ namespace AutoHPMA.ViewModels.Pages
                     Title = "启动成功",
                     Message = "截图器已启动，可启动其他任务。",
                     Appearance = ControlAppearance.Success,
-                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24),
+                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
                     Duration = TimeSpan.FromSeconds(3),
                 };
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));

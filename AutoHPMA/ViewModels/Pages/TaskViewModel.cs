@@ -91,7 +91,7 @@ namespace AutoHPMA.ViewModels.Pages
                     Title = "启动成功",
                     Message = "自动社团答题已启动。",
                     Appearance = ControlAppearance.Success,
-                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24),
+                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
                     Duration = TimeSpan.FromSeconds(3)
                 };
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));

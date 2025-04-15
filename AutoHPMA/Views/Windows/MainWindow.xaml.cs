@@ -7,6 +7,7 @@ using AutoHPMA.Messages;
 using AutoHPMA.ViewModels.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Reflection;
 using Wpf.Ui;
@@ -120,22 +121,43 @@ namespace AutoHPMA.Views.Windows
                     var latestVersionStr = latestRelease.TagName.TrimStart('v');
                     var latestVersion = new Version(latestVersionStr);
 
-                    // 获取当前应用版本 (可以在Assembly信息中设置版本号)
                     var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
-                    // 比较版本
                     if (latestVersion > currentVersion)
                     {
-                        // 弹出提示或以其它方式通知用户有更新
-                        System.Windows.MessageBox.Show($"检测到新版本: {latestRelease.TagName}！请前往GitHub下载最新版本。",
-                            "发现更新", System.Windows.MessageBoxButton.OK, MessageBoxImage.Information);
 
-                        // 可选：自动打开下载页面
-                        // System.Diagnostics.Process.Start(new ProcessStartInfo("https://github.com/YourUsername/YourRepo/releases/latest") { UseShellExecute = true });
+                        var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                        {
+                            Title = "发现更新",
+                            Content = "检测到新版本：" + latestRelease.TagName + "! \n请前往GitHub下载最新版本。",
+                            IsSecondaryButtonEnabled = false,
+                            PrimaryButtonText = "确定",
+                            CloseButtonText = "取消",
+                        };
+                        var result = await uiMessageBox.ShowDialogAsync();
+
+
+                        if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
+                        {
+                            System.Diagnostics.Process.Start(new ProcessStartInfo("https://github.com/FelixChristian011226/AutoHPMA/releases/latest")
+                            {
+                                UseShellExecute = true
+                            });
+                        }
+
+                        return;
+
                     }
                     else
                     {
-                        // 如果没有更新，可以选择不做提示，或仅在调试/测试时显示信息
+                        _snackbarService.Show(
+                            title: "检查更新",
+                            message: "当前已是最新版本。",
+                            ControlAppearance.Success,
+                            icon: new SymbolIcon(SymbolRegular.ArrowCircleUp24, 36),
+                            timeout: TimeSpan.FromSeconds(3)
+                            );
+
                         // MessageBox.Show("当前已是最新版本。");
                     }
 
