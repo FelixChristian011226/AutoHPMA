@@ -14,7 +14,7 @@
       d:DesignWidth="800"
       mc:Ignorable="d" 
       Title="TaskPage">
-    
+
     <StackPanel Margin="40,30,40,30">
         <Grid>
             <!--  自动社团答题  -->
@@ -33,40 +33,72 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <ui:TextBlock
-                       Grid.Row="0"
-                       Grid.Column="0"
-                       FontTypography="Body"
-                       Text="自动社团答题"
-                       TextWrapping="Wrap" />
+                           Grid.Row="0"
+                           Grid.Column="0"
+                           FontTypography="Body"
+                           Text="自动社团答题"
+                           TextWrapping="Wrap" />
                         <ui:TextBlock
-                       Grid.Row="1"
-                       Grid.Column="0"
-                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                       TextWrapping="Wrap">
-                            <Run FontWeight="Bold" TextDecorations="Underline">
-                                点击展开启动相关配置
+                           Grid.Row="1"
+                           Grid.Column="0"
+                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                           TextWrapping="Wrap">
+                            <Run>
+                                点击展开相关配置
                             </Run>
                         </ui:TextBlock>
                         <StackPanel
-                       Grid.Row="0"
-                       Grid.RowSpan="2"
-                       Grid.Column="1"
-                       Margin="0,0,24,0"
-                       Orientation="Horizontal">
+                           Grid.Row="0"
+                           Grid.RowSpan="2"
+                           Grid.Column="1"
+                           Margin="0,0,24,0"
+                           Orientation="Horizontal">
                             <ui:Button
-                           Command="{Binding ViewModel.AutoClubQuizStartTriggerCommand}"
-                           Content="启动"
-                           Icon="{ui:SymbolIcon Play24}"
-                           Visibility="{Binding ViewModel.AutoClubQuizStartButtonVisibility}" />
+                               Command="{Binding ViewModel.AutoClubQuizStartTriggerCommand}"
+                               Content="启动"
+                               Icon="{ui:SymbolIcon Play24}"
+                               Visibility="{Binding ViewModel.AutoClubQuizStartButtonVisibility}" />
                             <ui:Button
-                           Command="{Binding ViewModel.AutoClubQuizStopTriggerCommand}"
-                           Content="停止"
-                           Icon="{ui:SymbolIcon Dismiss24}"
-                           Visibility="{Binding ViewModel.AutoClubQuizStopButtonVisibility}" />
+                               Command="{Binding ViewModel.AutoClubQuizStopTriggerCommand}"
+                               Content="停止"
+                               Icon="{ui:SymbolIcon Dismiss24}"
+                               Visibility="{Binding ViewModel.AutoClubQuizStopButtonVisibility}" />
                         </StackPanel>
                     </Grid>
                 </ui:CardExpander.Header>
-
+                <StackPanel>
+                    <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            FontTypography="Body"
+                            Text="答题延迟（秒）"
+                            TextWrapping="Wrap" />
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                            Text="默认为0，匹配答案后的点击延时。"
+                            TextWrapping="Wrap" />
+                        <ui:NumberBox
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            MinWidth="90"
+                            Margin="0,0,36,0"
+                            Value="{Binding ViewModel.AnswerDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                    <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                </StackPanel>
             </ui:CardExpander>
         </Grid>
     </StackPanel>

@@ -162,13 +162,13 @@ public class AutoClubQuiz
                         continue;
                     }
 
-                    if (!FindAndClick(ref close))
+                    if (FindAndClick(ref close))
                     {
+                        roundIndex++;
+                        _logWindow?.AddLogMessage("INF", "第[Yellow]" + roundIndex + "[/Yellow]轮答题开始");
+                        _state = AutoClubQuizState.Answering;
                         continue;
                     }
-                    roundIndex++;
-                    _logWindow?.AddLogMessage("INF", "第[Yellow]" + roundIndex + "[/Yellow]轮答题开始");
-                    _state = AutoClubQuizState.Answering;
 
                     break;
 
@@ -177,7 +177,6 @@ public class AutoClubQuiz
 
                     if (_textLocated == false)
                     {
-                        questionIndex++;
                         await Task.Delay(2000);
                         LocateText();
                         await Task.Delay(100);
@@ -189,8 +188,8 @@ public class AutoClubQuiz
                             PrintText();
                             answer = excelHelper.GetBestMatchingAnswer(q);
                             bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
-                            _logWindow?.AddLogMessage("INF", "第[Yellow]" + questionIndex + "[/Yellow]题，选：[Lime]" + bestOption + "[/Lime]。");
-                            await Task.Delay(_answerDelay*1000);
+                            await Task.Delay(_answerDelay * 1000);
+                            _logWindow?.AddLogMessage("INF", "第[Yellow]" + ++questionIndex + "[/Yellow]题，选：[Lime]" + bestOption + "[/Lime]。");
                             ClickOption();
                         }
                         continue;
@@ -206,7 +205,6 @@ public class AutoClubQuiz
 
                     if (FindMatch(ref time20))
                     {
-                        questionIndex++;
                         await Task.Delay(100);
                         await Task.Run(() => RecogniseText());
                         //RecogniseText();
@@ -215,7 +213,8 @@ public class AutoClubQuiz
                         answer = excelHelper.GetBestMatchingAnswer(q);
                         //_logWindow?.AddLogMessage("DBG", "最佳答案是：" + answer);
                         bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
-                        _logWindow?.AddLogMessage("INF", "第[Yellow]" + questionIndex + "[/Yellow]题，选：[Lime]" + bestOption + "[/Lime]。");
+                        await Task.Delay(_answerDelay * 1000);
+                        _logWindow?.AddLogMessage("INF", "第[Yellow]" + ++questionIndex + "[/Yellow]题，选：[Lime]" + bestOption + "[/Lime]。");
                         ClickOption();
 
                         continue;
@@ -367,11 +366,11 @@ public class AutoClubQuiz
         }
     }
 
-    public int SetAnswerDelay(int  answer_delay)
+    public int SetAnswerDelay(int answer_delay)
     {
         if (answer_delay < 0)
         {
-            _logWindow?.AddLogMessage("ERR", "答题延迟不能小于0");
+            _logWindow?.AddLogMessage("ERR", "答题延迟不能小于0。已设置为默认值。");
             return -1;
         }
         _answerDelay = answer_delay;

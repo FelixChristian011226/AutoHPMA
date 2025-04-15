@@ -101,9 +101,9 @@ namespace AutoHPMA.ViewModels.Pages
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
             _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
 
-            //_autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
-            //_autoClubQuiz.SetAnswerDelay(_answerDelay);
-            //_autoClubQuiz.Start();
+            _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
+            _autoClubQuiz.SetAnswerDelay(AnswerDelay);
+            _autoClubQuiz.Start();
 
         }
 
