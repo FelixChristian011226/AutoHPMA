@@ -63,7 +63,7 @@ For more detailed instructions, please follow this link: [AutoHPMA instructions]
 
 ## Notice
 
-- **Compatibility**: AutoHPMA is currently only compatible with the MuMu emulator, supporting multiple resolutions in windowed mode, however, at present, the resolution of 1600*900 will cause screenshot abnormalities, please do not use it. Furthermore, the official launcher is not currently supported.
+- **Compatibility**: AutoHPMA is currently only compatible with the MuMu emulator, supporting multiple resolutions in windowed mode, however, at present, the resolution of 1600\*900 will cause screenshot abnormalities, please do not use it. Furthermore, the official launcher is not currently supported.
 - **Guidelines**: Do not minimize the game window or click the "Show Desktop" button while the software is running, as it may cause window overlay issues. However, the game window can be covered by other windows without affecting the tool's operation.
 - **Legal Disclaimer**: AutoHPMA is intended for educational and entertainment purposes only. Please carefully read and comply with *Harry Potter: Magic Awakened*'s terms of service. The developer is not responsible for any adverse consequences resulting from misuse of this application.
 
