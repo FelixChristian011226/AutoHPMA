@@ -39,6 +39,8 @@ namespace AutoHPMA.ViewModels.Pages
         private DispatcherTimer _syncWindowTimer;
         private DispatcherTimer _captureTimer;
 
+        private Bitmap? bmp;
+
         # region Observable Properties
         [ObservableProperty]
         private bool _realTimeScreenshotEnabled = true;
@@ -119,7 +121,7 @@ namespace AutoHPMA.ViewModels.Pages
 
         public static event Action<Bitmap> ScreenshotUpdated;
 
-        private static void OnScreenshotUpdated(Bitmap bmp)
+        private static void OnScreenshotUpdated(ref Bitmap bmp)
         {
             ScreenshotUpdated?.Invoke(bmp);
         }
@@ -140,13 +142,18 @@ namespace AutoHPMA.ViewModels.Pages
         }
         private void CaptureTimer_Tick(object? sender, EventArgs e)
         {
-            if (_gameHwnd != IntPtr.Zero)
+            if (_gameHwnd != IntPtr.Zero && _realTimeScreenshotEnabled)
             {
-                if(_realTimeScreenshotEnabled)
+                bmp?.Dispose();
+                bmp = null;
+
+                using (var frame = _capture?.Capture())
                 {
-                    Mat? frame = _capture?.Capture();
-                    Bitmap? bmp = frame?.ToBitmap();
-                    OnScreenshotUpdated(bmp); // 发布截图更新事件
+                    if (frame != null)
+                    {
+                        bmp = frame.ToBitmap();
+                        OnScreenshotUpdated(ref bmp);
+                    }
                 }
             }
         }
