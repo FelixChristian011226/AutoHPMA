@@ -23,7 +23,6 @@ namespace AutoHPMA.Views.Windows
         [JsonProperty("tag_name")]
         public string TagName { get; set; }
 
-        // 你也可以添加其它你感兴趣的字段，例如发布说明、下载链接等
     }
 
     public partial class MainWindow : INavigationWindow

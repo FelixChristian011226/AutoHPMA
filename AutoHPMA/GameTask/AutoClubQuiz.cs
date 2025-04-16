@@ -35,7 +35,7 @@ public class AutoClubQuiz
 
     private AutoClubQuizState _state = AutoClubQuizState.Gathering;
 
-    private static Mat gather, channel, join, close, time18, time20, over, end, gothmog, option_a, option_b, option_c, option_d;
+    private static Mat gather, channel, quiz, join, close, time18, time20, over, end, gothmog, option_a, option_b, option_c, option_d;
     private static Mat? captureMat;
 
     private IntPtr _displayHwnd, _gameHwnd;
@@ -81,6 +81,8 @@ public class AutoClubQuiz
         Cv2.CvtColor(gather, gather, ColorConversionCodes.BGR2GRAY);
         channel = Cv2.ImRead(image_folder+"channel.png", ImreadModes.Unchanged);
         Cv2.CvtColor(channel, channel, ColorConversionCodes.BGR2GRAY);
+        quiz = Cv2.ImRead(image_folder + "quiz.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(quiz, quiz, ColorConversionCodes.BGR2GRAY);
         join = Cv2.ImRead(image_folder + "join.png", ImreadModes.Unchanged);
         Cv2.CvtColor(join, join, ColorConversionCodes.BGR2GRAY);
         close = Cv2.ImRead(image_folder + "close.png", ImreadModes.Unchanged);
@@ -133,9 +135,14 @@ public class AutoClubQuiz
                         }
                         _logWindow?.DeleteLastLogMessage();
                         SendEnter(_gameHwnd);
-                        await Task.Delay(1500);
-                        FindAndClick(ref channel);
-                        await Task.Delay(1500);
+                        await Task.Delay(2000);
+                        FindAndClick(ref channel, 0.88);
+                        await Task.Delay(2000);
+                        if (FindAndClick(ref quiz, 0.98))
+                        {
+                            _state = AutoClubQuizState.Preparing;
+                            break;
+                        }
                         SendESC(_gameHwnd);
                         continue;
                     }

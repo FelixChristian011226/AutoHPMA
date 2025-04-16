@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<!-- 版本号 -->
-	<Version>2.1.1</Version>
+	<Version>2.1.2</Version>
 	<!--<FileVersion>2.0.0.1</FileVersion>
 	<AssemblyVersion>2.0.0.0</AssemblyVersion>-->
   </PropertyGroup>
@@ -58,6 +58,7 @@
     <None Remove="Assets\ClubQuiz\channel.png" />
     <None Remove="Assets\ClubQuiz\close.png" />
     <None Remove="Assets\ClubQuiz\end.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz.png" />
     <None Remove="Assets\ClubQuiz\join.png" />
     <None Remove="Assets\ClubQuiz\over.png" />
     <None Remove="Assets\ClubQuiz\question_LT.png" />
@@ -84,6 +85,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ClubQuiz\Image\gothmog.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\quiz.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ClubQuiz\Image\time18.png">
