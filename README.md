@@ -18,6 +18,8 @@
   <img src="https://img.shields.io/github/stars/FelixChristian011226/AutoHPMA">
 </div>
 
+> Note: This software is currently developed solely by me, and as I only possess game accounts from the Chinese region, all game recognition features are implemented based on the **Chinese version** of the games. Therefore, support for other languages is not available at this time. At present, the application only supports the **Mumu emulator**, and integration with official launchers or other platforms has not yet been implemented. I sincerely apologize for any inconvenience this may cause. Given my limited capability, I warmly welcome any developers who are interested in contributing to this project. Thank you!
+
 **AutoHPMA** is a WPF tool developed in C# designed for the game *Harry Potter: Magic Awakened (HPMA)*, providing simple automation functionalities for players.
 
 <br>
@@ -59,10 +61,10 @@ For more detailed instructions, please follow this link: [AutoHPMA instructions]
 
 <br>
 
-## Notes
+## Notice
 
-- **Compatibility**: AutoHPMA is currently only compatible with the MuMu emulator, supporting a resolution of 1280×720 (support for 2560×1600 resolution is coming soon) in windowed mode. The official launcher and other resolutions are not currently supported.
-- **Guidelines**: Do not minimize the game window or click the "Show Desktop" button while the script is running, as it may cause window overlay issues. However, the game window can be covered by other windows without affecting the tool's operation.
+- **Compatibility**: AutoHPMA is currently only compatible with the MuMu emulator, supporting multiple resolutions in windowed mode, however, at present, the resolution of 1600*900 will cause screenshot abnormalities, please do not use it. Furthermore, the official launcher is not currently supported.
+- **Guidelines**: Do not minimize the game window or click the "Show Desktop" button while the software is running, as it may cause window overlay issues. However, the game window can be covered by other windows without affecting the tool's operation.
 - **Legal Disclaimer**: AutoHPMA is intended for educational and entertainment purposes only. Please carefully read and comply with *Harry Potter: Magic Awakened*'s terms of service. The developer is not responsible for any adverse consequences resulting from misuse of this application.
 
 <br>
