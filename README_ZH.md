@@ -18,6 +18,7 @@
   <img src="https://img.shields.io/github/downloads/FelixChristian011226/AutoHPMA/total">
   <img src="https://img.shields.io/github/stars/FelixChristian011226/AutoHPMA">
 </div>
+
 > 注意：由于此软件目前由我一人开发，且我仅持有中国区的游戏账号，所有游戏识别功能均基于中国区游戏实现，因此暂不支持其他国家语言。目前，仅支持在 Mumu 模拟器上运行，官方启动器等其他平台的支持尚未实现。对于可能带来的不便，我深感抱歉。本人能力有限，若有开发者对本项目感兴趣并愿意贡献力量，欢迎加入！
 
 **AutoHPMA**：一个基于C#开发的WPF工具，为哈利波特：魔法觉醒（HPMA）游戏设计，旨在为游戏玩家实现一些简单的自动化功能。
