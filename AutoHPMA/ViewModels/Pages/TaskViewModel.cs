@@ -65,6 +65,10 @@ namespace AutoHPMA.ViewModels.Pages
             // 订阅属性变化通知
             appContextService.PropertyChanged += AppContextService_PropertyChanged;
 
+            // 初始化时从设置中加载数据
+            AnswerDelay = Properties.Settings.Default.AnswerDelay;
+            SelectedGatherRefreshMode = Properties.Settings.Default.SelectedGatherRefreshMode;
+
         }
 
         private void AppContextService_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -107,6 +111,11 @@ namespace AutoHPMA.ViewModels.Pages
                 };
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
+
+            // 保存设置
+            Properties.Settings.Default.AnswerDelay = AnswerDelay;
+            Properties.Settings.Default.SelectedGatherRefreshMode = SelectedGatherRefreshMode;
+            Properties.Settings.Default.Save();
 
             AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
             AutoClubQuizStopButtonVisibility = Visibility.Visible;

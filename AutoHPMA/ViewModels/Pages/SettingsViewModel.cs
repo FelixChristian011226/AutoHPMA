@@ -66,5 +66,12 @@ namespace AutoHPMA.ViewModels.Pages
                     break;
             }
         }
+
+        [RelayCommand]
+        private void ResetSettings()
+        {
+            Properties.Settings.Default.Reset();
+            Properties.Settings.Default.Save();
+        }
     }
 }

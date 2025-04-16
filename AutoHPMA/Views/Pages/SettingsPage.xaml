@@ -41,6 +41,9 @@
             GroupName="themeSelect"
             IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
 
+        <ui:Button Content="重置设置" Command="{Binding ViewModel.ResetSettingsCommand}" 
+               Margin="0,20,0,0" />
+
         <ui:TextBlock
             Margin="0,24,0,0"
             FontTypography="Subtitle"
