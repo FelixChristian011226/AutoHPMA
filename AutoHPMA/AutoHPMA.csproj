@@ -10,16 +10,9 @@
     <UseWPF>true</UseWPF>
 	<!-- 版本号 -->
 	<Version>2.1.2</Version>
-	<!--<FileVersion>2.0.0.1</FileVersion>
-	<AssemblyVersion>2.0.0.0</AssemblyVersion>-->
+	<!--<FileVersion>2.0.0.1</FileVersion>-->
+	<!--<AssemblyVersion>2.0.0.0</AssemblyVersion>-->
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="新文件夹1\**" />
-    <EmbeddedResource Remove="新文件夹1\**" />
-    <None Remove="新文件夹1\**" />
-    <Page Remove="新文件夹1\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.106">
@@ -58,6 +51,9 @@
     <None Remove="Assets\ClubQuiz\channel.png" />
     <None Remove="Assets\ClubQuiz\close.png" />
     <None Remove="Assets\ClubQuiz\end.png" />
+    <None Remove="Assets\ClubQuiz\Image\badge.png" />
+    <None Remove="Assets\ClubQuiz\Image\enter.png" />
+    <None Remove="Assets\ClubQuiz\Image\mask_events.png" />
     <None Remove="Assets\ClubQuiz\Image\quiz.png" />
     <None Remove="Assets\ClubQuiz\join.png" />
     <None Remove="Assets\ClubQuiz\over.png" />
@@ -72,6 +68,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\ClubQuiz\Image\badge.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\enter.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\mask_events.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\ClubQuiz\Image\option_a.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

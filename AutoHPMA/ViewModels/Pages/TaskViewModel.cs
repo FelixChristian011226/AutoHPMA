@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -35,6 +36,16 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private int _answerDelay = 0;
+
+        [ObservableProperty]
+        private ObservableCollection<string> _gatherRefreshModes =
+            [
+                "ChatBox",
+                "Badge"
+            ];
+
+        [ObservableProperty]
+        private string _selectedGatherRefreshMode = "Badge";
 
         #endregion
 
@@ -103,6 +114,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
             _autoClubQuiz.SetAnswerDelay(AnswerDelay);
+            _autoClubQuiz.SetGatherRefreshMode(SelectedGatherRefreshMode);
             _autoClubQuiz.Start();
 
         }

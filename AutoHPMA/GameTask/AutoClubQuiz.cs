@@ -35,7 +35,9 @@ public class AutoClubQuiz
 
     private AutoClubQuizState _state = AutoClubQuizState.Gathering;
 
-    private static Mat gather, channel, quiz, join, close, time18, time20, over, end, gothmog, option_a, option_b, option_c, option_d;
+    private static Mat gather, channel, quiz, join;
+    private static Mat badge, enter, mask_events, close;
+    private static Mat time18, time20, over, end, gothmog, option_a, option_b, option_c, option_d;
     private static Mat? captureMat;
 
     private IntPtr _displayHwnd, _gameHwnd;
@@ -55,6 +57,13 @@ public class AutoClubQuiz
     private string? excelPath;
     private char bestOption;
 
+    private enum GatherRefreshMode
+    {
+        ChatBox,
+        Badge
+    }
+
+    private GatherRefreshMode _gatherRefreshMode=GatherRefreshMode.Badge;
     private int _answerDelay = 0;
 
     private int questionIndex = 0, roundIndex = 0;
@@ -85,6 +94,12 @@ public class AutoClubQuiz
         Cv2.CvtColor(quiz, quiz, ColorConversionCodes.BGR2GRAY);
         join = Cv2.ImRead(image_folder + "join.png", ImreadModes.Unchanged);
         Cv2.CvtColor(join, join, ColorConversionCodes.BGR2GRAY);
+        badge = Cv2.ImRead(image_folder + "badge.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(badge, badge, ColorConversionCodes.BGR2GRAY);
+        enter = Cv2.ImRead(image_folder + "enter.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(enter, enter, ColorConversionCodes.BGR2GRAY);
+        mask_events = Cv2.ImRead(image_folder + "mask_events.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(mask_events, mask_events, ColorConversionCodes.BGR2GRAY);
         close = Cv2.ImRead(image_folder + "close.png", ImreadModes.Unchanged);
         Cv2.CvtColor(close, close, ColorConversionCodes.BGR2GRAY);
         time18 = Cv2.ImRead(image_folder + "time18.png", ImreadModes.Unchanged);
@@ -123,38 +138,57 @@ public class AutoClubQuiz
             switch (_state)
             {
                 case AutoClubQuizState.Gathering:
-                    await Task.Delay(1000);
-                    if (!FindAndClick(ref gather))  //找不到集结图标，重复开关聊天框刷新状态
+
+                    _logWindow?.AddLogMessage("INF", "等待下一场答题...");
+                    for (int i = 5; i > 0; i--)
                     {
-                        _logWindow?.AddLogMessage("INF", "等待下一场答题...");
-                        for (int i = 15; i > 0; i--)
-                        {
-                            _logWindow?.AddLogMessage("INF", "还剩[Yellow]" + i + "[/Yellow]秒...");
-                            await Task.Delay(1000);
-                            _logWindow?.DeleteLastLogMessage();
-                        }
+                        _logWindow?.AddLogMessage("INF", "还剩[Yellow]" + i + "[/Yellow]秒...");
+                        await Task.Delay(1000);
                         _logWindow?.DeleteLastLogMessage();
-                        SendEnter(_gameHwnd);
-                        await Task.Delay(2000);
-                        FindAndClick(ref channel, 0.88);
-                        await Task.Delay(2000);
-                        if (FindAndClick(ref quiz, 0.98))
-                        {
+                    }
+                    _logWindow?.DeleteLastLogMessage();
+
+                    switch (_gatherRefreshMode)
+                    {
+                        case GatherRefreshMode.ChatBox:
+                            if (!FindAndClick(ref gather))  //找不到集结图标，重复开关聊天框刷新状态
+                            {
+                                SendEnter(_gameHwnd);
+                                await Task.Delay(2000);
+                                FindAndClick(ref channel, 0.88);
+                                await Task.Delay(2000);
+                                if (FindAndClick(ref quiz, 0.98))
+                                {
+                                    _state = AutoClubQuizState.Preparing;
+                                    break;
+                                }
+                                SendESC(_gameHwnd);
+                                continue;
+                            }
+                            await Task.Delay(1000);
+                            if (!FindAndClick(ref join))
+                            {
+                                SendESC(_gameHwnd);
+                                continue;
+                            }
                             _state = AutoClubQuizState.Preparing;
                             break;
-                        }
-                        SendESC(_gameHwnd);
-                        continue;
-                    }
 
-                    await Task.Delay(1000);
-                    if (!FindAndClick(ref join))
-                    {
-                        SendESC(_gameHwnd);
-                        continue;
+                        case GatherRefreshMode.Badge:
+                            if(FindAndClick(ref badge))
+                            {
+                                await Task.Delay(3000);
+                                if(FindAndClickWithMask(ref enter, ref mask_events))
+                                {
+                                    _state = AutoClubQuizState.Preparing;
+                                }
+                                else
+                                {
+                                    SendESC(_gameHwnd);
+                                }
+                            }
+                            break;
                     }
-
-                    _state = AutoClubQuizState.Preparing;
 
                     break;
 
@@ -252,6 +286,22 @@ public class AutoClubQuiz
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
+        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
+        if (matchpoint == default)
+        {
+            return false;
+        }
+        SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
+        return true;
+    }
+
+    private bool FindAndClickWithMask(ref Mat mat, ref Mat mask, double threshold = 0.9)
+    {
+        captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        Cv2.BitwiseAnd(captureMat, mask, captureMat);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
         //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
         if (matchpoint == default)
@@ -373,16 +423,37 @@ public class AutoClubQuiz
         }
     }
 
-    public int SetAnswerDelay(int answer_delay)
+    public bool SetAnswerDelay(int answer_delay)
     {
         if (answer_delay < 0)
         {
             _logWindow?.AddLogMessage("ERR", "答题延迟不能小于0。已设置为默认值。");
-            return -1;
+            return false;
         }
         _answerDelay = answer_delay;
         _logWindow?.AddLogMessage("DBG", "答题延迟设置为：" + _answerDelay);
-        return 0;
+        return true;
+    }
+
+    public bool SetGatherRefreshMode(string mode)
+    {
+        if (mode == "ChatBox")
+        {
+            _gatherRefreshMode = GatherRefreshMode.ChatBox;
+            _logWindow?.AddLogMessage("DBG", "集结刷新模式设置为：聊天框");
+            return true;
+        }
+        else if (mode == "Badge")
+        {
+            _gatherRefreshMode = GatherRefreshMode.Badge;
+            _logWindow?.AddLogMessage("DBG", "集结刷新模式设置为：徽章");
+            return true;
+        }
+        else
+        {
+            _logWindow?.AddLogMessage("ERR", "集结刷新模式设置失败。");
+            return false;
+        }
     }
 
 }
