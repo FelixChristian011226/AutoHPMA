@@ -31,6 +31,7 @@ public class WindowInteractionHelper
 
     private const int VK_RETURN = 0x0D;
     private const int VK_ESCAPE = 0x1B;
+    private const int VK_SPACE = 0x20;
 
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -123,6 +124,11 @@ public class WindowInteractionHelper
     public static void SendESC(IntPtr hWnd)
     {
         SendKey(hWnd, VK_ESCAPE);
+    }
+
+    public static void SendSpace(IntPtr hWnd)
+    {
+        SendKey(hWnd, VK_SPACE);
     }
 
     public static void SendKey(IntPtr hWnd, int virtualKey)
