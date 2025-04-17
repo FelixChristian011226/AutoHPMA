@@ -76,6 +76,7 @@ public class AutoForbiddenForest
                     {
                         _logWindow?.AddLogMessage("DBG", "点击自动战斗按钮。");
                     }
+
                     await Task.Delay(1000);
                     if (FindAndClick(ref ready))
                     {
@@ -84,15 +85,18 @@ public class AutoForbiddenForest
                     await Task.Delay(1000);
                     break;
                 case AutoForbiddenForestState.Fighting:
-                    await Task.Delay(2000);
-                    if (FindAndClickMulti(ref thumb))
+                    await Task.Delay(1000);
+                    if(FindMatch(ref thumb))
                     {
+                        await Task.Delay(3000);
+                        await FindAndClickMultiAsync(thumb);
                         _logWindow?.AddLogMessage("DBG", "点赞。");
-                        await Task.Delay(1000);
+                        await Task.Delay(2000);
                         SendSpace(_gameHwnd);
                         _state = AutoForbiddenForestState.Preparing;
                         _logWindow?.AddLogMessage("INF", "第[Yellow]" + ++index + "[/Yellow]次禁林任务完成。");
                     }
+
                     break;
 
             }
@@ -128,7 +132,7 @@ public class AutoForbiddenForest
         return true;
     }
 
-    private bool FindAndClickMulti(ref Mat mat, double threshold = 0.9)
+    private async Task<bool> FindAndClickMultiAsync(Mat mat, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
@@ -138,12 +142,17 @@ public class AutoForbiddenForest
         {
             return false;
         }
-        for(int i = 0; i < matchpoints.Count; i++)
+        for (int i = 0; i < matchpoints.Count; i++)
         {
-            SendMouseClick(_gameHwnd, (uint)(matchpoints[i].X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoints[i].Y * scale - offsetY + mat.Height / 2.0 * scale));
+            SendMouseClick(_gameHwnd,
+                (uint)(matchpoints[i].X * scale - offsetX + mat.Width / 2.0 * scale),
+                (uint)(matchpoints[i].Y * scale - offsetY + mat.Height / 2.0 * scale));
+
+            await Task.Delay(1500);
         }
-        return true; 
+        return true;
     }
+
 
     private bool FindAndClickWithMask(ref Mat mat, ref Mat mask, double threshold = 0.9)
     {
