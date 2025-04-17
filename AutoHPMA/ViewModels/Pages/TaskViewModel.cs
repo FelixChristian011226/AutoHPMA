@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -142,6 +143,22 @@ namespace AutoHPMA.ViewModels.Pages
             GC.Collect();
         }
 
+
+        [RelayCommand]
+        private void OnOpenQuestionBank(object sender)
+        {
+            var questionBankPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/ClubQuiz");
+            if (!Directory.Exists(questionBankPath))
+            {
+                Directory.CreateDirectory(questionBankPath);
+            }
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = questionBankPath,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
 
         public Task OnNavigatedToAsync()
         {

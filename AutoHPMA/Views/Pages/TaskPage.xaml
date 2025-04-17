@@ -98,7 +98,6 @@
                             Value="{Binding ViewModel.AnswerDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </Grid>
                     <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                    <!-- Here -->
                     <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -108,7 +107,6 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <!-- 标签 -->
                         <ui:TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
@@ -121,15 +119,45 @@
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                             Text="通过聊天框的图标或者社团活动徽章。"
                             TextWrapping="Wrap" />
-                        <!-- 下拉框 -->
                         <ComboBox
                             Grid.Row="0"
                             Grid.RowSpan="2"
                             Grid.Column="1"
-                            MinWidth="120"
+                            MinWidth="80"
                             Margin="0,0,36,0"
                             ItemsSource="{Binding ViewModel.GatherRefreshModes}"
                             SelectedItem="{Binding ViewModel.SelectedGatherRefreshMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                    <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            FontTypography="Body"
+                            Text="打开题库"
+                            TextWrapping="Wrap" />
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                            Text="点击打开题库所在文件夹。"
+                            TextWrapping="Wrap" />
+                        <ui:Button
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            Margin="0,0,36,0"
+                            Command="{Binding ViewModel.OpenQuestionBankCommand}"
+                            Content="打开"
+                            Icon="{ui:SymbolIcon FolderOpen24}" />
                     </Grid>
                 </StackPanel>
             </ui:CardExpander>
