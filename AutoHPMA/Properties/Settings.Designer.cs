@@ -94,5 +94,17 @@ namespace AutoHPMA.Properties {
                 this["CaptureInterval"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        public int AutoForbiddenForestTimes {
+            get {
+                return ((int)(this["AutoForbiddenForestTimes"]));
+            }
+            set {
+                this["AutoForbiddenForestTimes"] = value;
+            }
+        }
     }
 }

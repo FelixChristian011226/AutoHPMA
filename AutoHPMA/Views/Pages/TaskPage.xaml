@@ -16,110 +16,109 @@
       Title="TaskPage">
 
     <StackPanel Margin="40,30,40,30">
-        <Grid>
-            <!--  自动社团答题  -->
-            <ui:CardExpander
+        <!--  自动社团答题  -->
+        <ui:CardExpander
                Margin="0,0,0,12"
                ContentPadding="0"
                Icon="{ui:SymbolIcon QuizNew24}">
-                <ui:CardExpander.Header>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <ui:TextBlock
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
                            Grid.Row="0"
                            Grid.Column="0"
                            FontTypography="Body"
                            Text="自动社团答题"
                            TextWrapping="Wrap" />
-                        <ui:TextBlock
+                    <ui:TextBlock
                            Grid.Row="1"
                            Grid.Column="0"
                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                            TextWrapping="Wrap">
-                            <Run>
-                                点击展开相关配置
-                            </Run>
-                        </ui:TextBlock>
-                        <StackPanel
+                        <Run>
+                            点击展开相关配置
+                        </Run>
+                    </ui:TextBlock>
+                    <StackPanel
                            Grid.Row="0"
                            Grid.RowSpan="2"
                            Grid.Column="1"
                            Margin="0,0,24,0"
                            Orientation="Horizontal">
-                            <ui:Button
+                        <ui:Button
                                Command="{Binding ViewModel.AutoClubQuizStartTriggerCommand}"
                                Content="启动"
                                Icon="{ui:SymbolIcon Play24}"
                                Visibility="{Binding ViewModel.AutoClubQuizStartButtonVisibility}" />
-                            <ui:Button
+                        <ui:Button
                                Command="{Binding ViewModel.AutoClubQuizStopTriggerCommand}"
                                Content="停止"
                                Icon="{ui:SymbolIcon Dismiss24}"
                                Visibility="{Binding ViewModel.AutoClubQuizStopButtonVisibility}" />
-                        </StackPanel>
-                    </Grid>
-                </ui:CardExpander.Header>
-                <StackPanel>
-                    <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                    <Grid Margin="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <ui:TextBlock
+                    </StackPanel>
+                </Grid>
+            </ui:CardExpander.Header>
+            <StackPanel>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
                             FontTypography="Body"
                             Text="答题延迟（秒）"
                             TextWrapping="Wrap" />
-                        <ui:TextBlock
+                    <ui:TextBlock
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                             Text="默认为0，匹配答案后的点击延时。"
                             TextWrapping="Wrap" />
-                        <ui:NumberBox
+                    <ui:NumberBox
                             Grid.Row="0"
                             Grid.RowSpan="2"
                             Grid.Column="1"
                             MinWidth="90"
                             Margin="0,0,36,0"
                             Value="{Binding ViewModel.AnswerDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </Grid>
-                    <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                    <Grid Margin="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <ui:TextBlock
+                </Grid>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
                             FontTypography="Body"
                             Text="集结刷新方式"
                             TextWrapping="Wrap" />
-                        <ui:TextBlock
+                    <ui:TextBlock
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                             Text="通过聊天框的图标或者社团活动徽章。"
                             TextWrapping="Wrap" />
-                        <ComboBox
+                    <ComboBox
                             Grid.Row="0"
                             Grid.RowSpan="2"
                             Grid.Column="1"
@@ -127,30 +126,30 @@
                             Margin="0,0,36,0"
                             ItemsSource="{Binding ViewModel.GatherRefreshModes}"
                             SelectedItem="{Binding ViewModel.SelectedGatherRefreshMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </Grid>
-                    <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                    <Grid Margin="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <ui:TextBlock
+                </Grid>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
                             FontTypography="Body"
                             Text="打开题库"
                             TextWrapping="Wrap" />
-                        <ui:TextBlock
+                    <ui:TextBlock
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                             Text="点击打开题库所在文件夹。"
                             TextWrapping="Wrap" />
-                        <ui:Button
+                    <ui:Button
                             Grid.Row="0"
                             Grid.RowSpan="2"
                             Grid.Column="1"
@@ -158,9 +157,92 @@
                             Command="{Binding ViewModel.OpenQuestionBankCommand}"
                             Content="打开"
                             Icon="{ui:SymbolIcon FolderOpen24}" />
-                    </Grid>
-                </StackPanel>
-            </ui:CardExpander>
-        </Grid>
+                </Grid>
+            </StackPanel>
+        </ui:CardExpander>
+        <!--  自动禁林  -->
+        <ui:CardExpander
+               Margin="0,0,0,12"
+               ContentPadding="0"
+               Icon="{ui:SymbolIcon QuizNew24}">
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
+                           Grid.Row="0"
+                           Grid.Column="0"
+                           FontTypography="Body"
+                           Text="自动禁林"
+                           TextWrapping="Wrap" />
+                    <ui:TextBlock
+                           Grid.Row="1"
+                           Grid.Column="0"
+                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                           TextWrapping="Wrap">
+                        <Run>
+                            点击展开相关配置
+                        </Run>
+                    </ui:TextBlock>
+                    <StackPanel
+                           Grid.Row="0"
+                           Grid.RowSpan="2"
+                           Grid.Column="1"
+                           Margin="0,0,24,0"
+                           Orientation="Horizontal">
+                        <ui:Button
+                               Command="{Binding ViewModel.AutoForbiddenForestStartTriggerCommand}"
+                               Content="启动"
+                               Icon="{ui:SymbolIcon Play24}"
+                               Visibility="{Binding ViewModel.AutoForbiddenForestStartButtonVisibility}" />
+                        <ui:Button
+                               Command="{Binding ViewModel.AutoForbiddenForestStopTriggerCommand}"
+                               Content="停止"
+                               Icon="{ui:SymbolIcon Dismiss24}"
+                               Visibility="{Binding ViewModel.AutoForbiddenForestStopButtonVisibility}" />
+                    </StackPanel>
+                </Grid>
+            </ui:CardExpander.Header>
+            <StackPanel>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            FontTypography="Body"
+                            Text="禁林次数"
+                            TextWrapping="Wrap" />
+                    <ui:TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                            Text="在执行目标次数后终止。"
+                            TextWrapping="Wrap" />
+                    <ui:NumberBox
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            MinWidth="90"
+                            Margin="0,0,36,0"
+                            Value="{Binding ViewModel.AutoForbiddenForestTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+            </StackPanel>
+        </ui:CardExpander>
+
     </StackPanel>
 </Page>

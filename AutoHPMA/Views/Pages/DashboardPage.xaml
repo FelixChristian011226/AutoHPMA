@@ -167,7 +167,7 @@
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         Margin="0,0,24,0"
-                        IsChecked="{Binding ViewModel.RealTimeScreenshotEnabled, Mode=TwoWay}" />
+                        IsChecked="{Binding ViewModel.RealTimeScreenshotEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
             </StackPanel>
         </ui:CardExpander>
@@ -234,7 +234,7 @@
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         Margin="0,0,24,0"
-                        IsChecked="{Binding ViewModel.DebugLogEnabled, Mode=TwoWay}" />
+                        IsChecked="{Binding ViewModel.DebugLogEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
             </StackPanel>
         </ui:CardExpander>

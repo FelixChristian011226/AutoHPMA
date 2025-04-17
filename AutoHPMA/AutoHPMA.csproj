@@ -60,6 +60,10 @@
     <None Remove="Assets\ClubQuiz\question_LT.png" />
     <None Remove="Assets\ClubQuiz\question_RB.png" />
     <None Remove="Assets\club_question_bank.xlsx" />
+    <None Remove="Assets\ForbiddenForest\auto.png" />
+    <None Remove="Assets\ForbiddenForest\Image\loading.png" />
+    <None Remove="Assets\ForbiddenForest\Image\thumb.png" />
+    <None Remove="Assets\ForbiddenForest\ready.png" />
     <None Remove="Assets\hpma.png" />
     <None Remove="Assets\Logo.ico" />
     <None Remove="Assets\ClubQuiz\Gather.png" />
@@ -120,6 +124,18 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ClubQuiz\club_question_bank.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\auto.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\loading.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\ready.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\thumb.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="tessdata\chi_sim.traineddata">

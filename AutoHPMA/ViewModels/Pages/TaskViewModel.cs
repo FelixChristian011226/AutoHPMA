@@ -27,6 +27,10 @@ namespace AutoHPMA.ViewModels.Pages
         private Visibility _autoClubQuizStartButtonVisibility = Visibility.Visible;
         [ObservableProperty] 
         private Visibility _autoClubQuizStopButtonVisibility = Visibility.Collapsed;
+        [ObservableProperty]
+        private Visibility _autoForbiddenForestStartButtonVisibility = Visibility.Visible;
+        [ObservableProperty]
+        private Visibility _autoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStartTriggerCommand))]
@@ -34,6 +38,12 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStopTriggerCommand))]
         private bool _autoClubQuizStopButtonEnabled = true;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AutoForbiddenForestStartTriggerCommand))]
+        private bool _autoForbiddenForestStartButtonEnabled = true;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AutoForbiddenForestStopTriggerCommand))]
+        private bool _autoForbiddenForestStopButtonEnabled = true;
 
         [ObservableProperty]
         private int _answerDelay = 0;
@@ -48,6 +58,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private string _selectedGatherRefreshMode = "Badge";
 
+        [ObservableProperty]
+        private int _autoForbiddenForestTimes = 30;
+
         #endregion
 
         private IntPtr _displayHwnd => AppContextService.Instance.DisplayHwnd;
@@ -57,6 +70,7 @@ namespace AutoHPMA.ViewModels.Pages
 
 
         private AutoClubQuiz? _autoClubQuiz;
+        private AutoForbiddenForest? _autoForbiddenForest;
         private AppContextService appContextService;
 
         public TaskViewModel()
@@ -69,6 +83,8 @@ namespace AutoHPMA.ViewModels.Pages
             // 初始化时从设置中加载数据
             AnswerDelay = Properties.Settings.Default.AnswerDelay;
             SelectedGatherRefreshMode = Properties.Settings.Default.SelectedGatherRefreshMode;
+
+            AutoForbiddenForestTimes = Properties.Settings.Default.AutoForbiddenForestTimes;
 
         }
 
@@ -143,6 +159,62 @@ namespace AutoHPMA.ViewModels.Pages
             GC.Collect();
         }
 
+        private bool CanAutoForbiddenForestStartTrigger() => AutoForbiddenForestStartButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoForbiddenForestStartTrigger))]
+        private void OnAutoForbiddenForestStartTrigger()
+        {
+
+            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "⚠️ 错误",
+                    Content = "任务启动失败。请先启动截图器!",
+                };
+                var result = uiMessageBox.ShowDialogAsync();
+                return;
+            }
+            else
+            {
+                var snackbarInfo = new SnackbarInfo
+                {
+                    Title = "启动成功",
+                    Message = "自动禁林已启动。",
+                    Appearance = ControlAppearance.Success,
+                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
+                    Duration = TimeSpan.FromSeconds(3)
+                };
+                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
+            }
+
+            // 保存设置
+            Properties.Settings.Default.AutoForbiddenForestTimes = AutoForbiddenForestTimes;
+            Properties.Settings.Default.Save();
+
+            AutoForbiddenForestStartButtonVisibility = Visibility.Collapsed;
+            AutoForbiddenForestStopButtonVisibility = Visibility.Visible;
+            _logWindow?.AddLogMessage("INF", "[Aquamarine]---禁林任务已启动---[/Aquamarine]");
+
+            _autoForbiddenForest = new AutoForbiddenForest(_displayHwnd, _gameHwnd);
+            _autoForbiddenForest.SetAutoForbiddenForestTimes(AutoForbiddenForestTimes);
+            _autoForbiddenForest.Start();
+
+        }
+
+        private bool CanAutoForbiddenForestStopTrigger() => AutoForbiddenForestStopButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoForbiddenForestStopTrigger))]
+        private void OnAutoForbiddenForestStopTrigger()
+        {
+            AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
+            AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
+            _logWindow?.AddLogMessage("INF", "[Aquamarine]---禁林任务已终止---[/Aquamarine]");
+
+            _autoForbiddenForest?.Stop();
+            _autoForbiddenForest = null;
+            GC.Collect();
+        }
 
         [RelayCommand]
         private void OnOpenQuestionBank(object sender)
