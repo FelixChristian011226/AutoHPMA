@@ -46,5 +46,53 @@ namespace AutoHPMA.Properties {
                 this["SelectedGatherRefreshMode"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool RealTimeScreenshotEnabled {
+            get {
+                return ((bool)(this["RealTimeScreenshotEnabled"]));
+            }
+            set {
+                this["RealTimeScreenshotEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LogWindowEnabled {
+            get {
+                return ((bool)(this["LogWindowEnabled"]));
+            }
+            set {
+                this["LogWindowEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DebugLogEnabled {
+            get {
+                return ((bool)(this["DebugLogEnabled"]));
+            }
+            set {
+                this["DebugLogEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public int CaptureInterval {
+            get {
+                return ((int)(this["CaptureInterval"]));
+            }
+            set {
+                this["CaptureInterval"] = value;
+            }
+        }
     }
 }

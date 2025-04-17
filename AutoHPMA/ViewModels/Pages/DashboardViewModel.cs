@@ -128,6 +128,13 @@ namespace AutoHPMA.ViewModels.Pages
 
         public DashboardViewModel()
         {
+
+            _captureInterval = Properties.Settings.Default.CaptureInterval;
+            _realTimeScreenshotEnabled = Properties.Settings.Default.RealTimeScreenshotEnabled;
+
+            _logWindowEnabled = Properties.Settings.Default.LogWindowEnabled;
+            _debugLogEnabled = Properties.Settings.Default.DebugLogEnabled;
+
         }
 
         private void InitializeCaptureTimer()
@@ -208,8 +215,6 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
-
-
             StartButtonVisibility = Visibility.Collapsed;
             StopButtonVisibility = Visibility.Visible;
 
@@ -250,6 +255,12 @@ namespace AutoHPMA.ViewModels.Pages
 
             _capture = new WindowsGraphicsCapture();
             _capture.Start(_displayHwnd);
+
+            Properties.Settings.Default.CaptureInterval = _captureInterval;
+            Properties.Settings.Default.RealTimeScreenshotEnabled = _realTimeScreenshotEnabled;
+            Properties.Settings.Default.LogWindowEnabled = _logWindowEnabled;
+            Properties.Settings.Default.DebugLogEnabled = _debugLogEnabled;
+            Properties.Settings.Default.Save();
 
         }
 

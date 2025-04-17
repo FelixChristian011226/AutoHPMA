@@ -8,5 +8,17 @@
     <Setting Name="SelectedGatherRefreshMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">Badge</Value>
     </Setting>
+    <Setting Name="RealTimeScreenshotEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="LogWindowEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="DebugLogEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="CaptureInterval" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">500</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
