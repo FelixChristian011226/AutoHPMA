@@ -113,13 +113,13 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             FontTypography="Body"
-                            Text="选择参数"
+                            Text="集结刷新方式"
                             TextWrapping="Wrap" />
                         <ui:TextBlock
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="请选择你需要的参数"
+                            Text="通过聊天框的图标或者社团活动徽章。"
                             TextWrapping="Wrap" />
                         <!-- 下拉框 -->
                         <ComboBox
