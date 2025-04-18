@@ -62,7 +62,10 @@
     <None Remove="Assets\ClubQuiz\question_RB.png" />
     <None Remove="Assets\club_question_bank.xlsx" />
     <None Remove="Assets\ForbiddenForest\auto.png" />
+    <None Remove="Assets\ForbiddenForest\Image\auto_fight.png" />
+    <None Remove="Assets\ForbiddenForest\Image\confirm.png" />
     <None Remove="Assets\ForbiddenForest\Image\loading.png" />
+    <None Remove="Assets\ForbiddenForest\Image\start.png" />
     <None Remove="Assets\ForbiddenForest\Image\thumb.png" />
     <None Remove="Assets\ForbiddenForest\ready.png" />
     <None Remove="Assets\hpma.png" />
@@ -130,10 +133,19 @@
     <Content Include="Assets\ForbiddenForest\Image\auto.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\ForbiddenForest\Image\auto_fight.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\confirm.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\ForbiddenForest\Image\loading.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ForbiddenForest\Image\ready.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\start.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ForbiddenForest\Image\thumb.png">

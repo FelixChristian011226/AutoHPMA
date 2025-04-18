@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using static AutoHPMA.Helpers.WindowInteractionHelper;
@@ -21,6 +22,12 @@ public enum AutoForbiddenForestState
     Fighting,
 }
 
+public enum AutoForbiddenForestOption
+{
+    Leader,
+    Member,
+}
+
 public class AutoForbiddenForest
 {
     private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
@@ -28,7 +35,7 @@ public class AutoForbiddenForest
 
     private AutoForbiddenForestState _state = AutoForbiddenForestState.Preparing;
 
-    private Mat auto, ready, loading, thumb;
+    private Mat auto, auto_fight, start, confirm, ready, loading, thumb;
     private Mat? captureMat;
 
     private IntPtr _displayHwnd, _gameHwnd;
@@ -36,6 +43,7 @@ public class AutoForbiddenForest
     private double scale;
 
     private int _autoForbiddenForestTimes;
+    private AutoForbiddenForestOption _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
 
     private int index = 0;
 
@@ -72,25 +80,43 @@ public class AutoForbiddenForest
                         _logWindow?.AddLogMessage("DBG", "检测到加载页面");
                         _state = AutoForbiddenForestState.Fighting;
                     }
+
                     if (FindAndClick(ref auto))
                     {
                         _logWindow?.AddLogMessage("DBG", "点击自动战斗按钮。");
                     }
-
                     await Task.Delay(1000);
-                    if (FindAndClick(ref ready))
+                    switch (_autoForbiddenForestOption)
                     {
-                        _logWindow?.AddLogMessage("DBG", "点击准备按钮。");
+                        case AutoForbiddenForestOption.Leader:
+                            if (FindAndClick(ref start))
+                            {
+                                _logWindow?.AddLogMessage("DBG", "点击开始。");
+                            }
+                            await Task.Delay(1500);
+                            if (FindAndClick(ref confirm))
+                            {
+                                _logWindow?.AddLogMessage("DBG", "点击是。");
+                            }
+                            break;
+                        case AutoForbiddenForestOption.Member:
+                            if (FindAndClick(ref ready))
+                            {
+                                _logWindow?.AddLogMessage("DBG", "点击准备。");
+                            }
+                            await Task.Delay(1000);
+                            break;
+
                     }
-                    await Task.Delay(1000);
                     break;
                 case AutoForbiddenForestState.Fighting:
                     await Task.Delay(1000);
+                    FindAndClick(ref auto_fight);
                     if(FindMatch(ref thumb))
                     {
-                        await Task.Delay(3000);
+                        _logWindow?.AddLogMessage("DBG", "检测到点赞页面");
+                        await Task.Delay(4000);
                         await FindAndClickMultiAsync(thumb);
-                        _logWindow?.AddLogMessage("DBG", "点赞。");
                         await Task.Delay(2000);
                         SendSpace(_gameHwnd);
                         _state = AutoForbiddenForestState.Preparing;
@@ -137,18 +163,20 @@ public class AutoForbiddenForest
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        var matchpoints = MatchTemplateHelper.MatchTemplateMulti(captureMat, mat, null, threshold);
-        if (matchpoints.Count == 0)
+
+        var matchrects = MatchTemplateHelper.MatchOnePicForOnePic(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
+        if(matchrects.Count == 0)
         {
             return false;
         }
-        for (int i = 0; i < matchpoints.Count; i++)
+        int index = 0;
+        foreach (var rect in matchrects)
         {
             SendMouseClick(_gameHwnd,
-                (uint)(matchpoints[i].X * scale - offsetX + mat.Width / 2.0 * scale),
-                (uint)(matchpoints[i].Y * scale - offsetY + mat.Height / 2.0 * scale));
-
-            await Task.Delay(1500);
+                (uint)(rect.X * scale - offsetX + mat.Width / 2.0 * scale),
+                (uint)(rect.Y * scale - offsetY + mat.Height / 2.0 * scale));
+            _logWindow?.AddLogMessage("DBG", "第" + ++index + "次点赞：(" + rect.X + "," + rect.Y + ")");
+            await Task.Delay(1000);
         }
         return true;
     }
@@ -176,6 +204,19 @@ public class AutoForbiddenForest
         return true;
     }
 
+    public bool SetTeamPosition(string SelectedTeamPosition)
+    {
+        if (SelectedTeamPosition == "Leader")
+        {
+            _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
+        }
+        else if (SelectedTeamPosition == "Member")
+        {
+            _autoForbiddenForestOption = AutoForbiddenForestOption.Member;
+        }
+        return true;
+    }
+
     private void LoadAssets()
     {
         string image_folder = "Assets/ForbiddenForest/Image/";
@@ -187,6 +228,12 @@ public class AutoForbiddenForest
         Cv2.CvtColor(loading, loading, ColorConversionCodes.BGR2GRAY);
         thumb = Cv2.ImRead(image_folder + "thumb.png", ImreadModes.Unchanged);
         Cv2.CvtColor(thumb, thumb, ColorConversionCodes.BGR2GRAY);
+        auto_fight = Cv2.ImRead(image_folder + "auto_fight.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(auto_fight, auto_fight, ColorConversionCodes.BGR2GRAY);
+        start = Cv2.ImRead(image_folder + "start.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(start, start, ColorConversionCodes.BGR2GRAY);
+        confirm = Cv2.ImRead(image_folder + "confirm.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(confirm, confirm, ColorConversionCodes.BGR2GRAY);
 
     }
 

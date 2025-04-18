@@ -54,12 +54,20 @@ namespace AutoHPMA.ViewModels.Pages
                 "ChatBox",
                 "Badge"
             ];
-
         [ObservableProperty]
         private string _selectedGatherRefreshMode = "Badge";
 
         [ObservableProperty]
         private int _autoForbiddenForestTimes = 30;
+
+        [ObservableProperty]
+        private ObservableCollection<string> _teamPositions =
+            [
+                "Leader",
+                "Member"
+            ];
+        [ObservableProperty]
+        private string _selectedTeamPosition = "Leader";
 
         #endregion
 
@@ -85,6 +93,10 @@ namespace AutoHPMA.ViewModels.Pages
             SelectedGatherRefreshMode = Properties.Settings.Default.SelectedGatherRefreshMode;
 
             AutoForbiddenForestTimes = Properties.Settings.Default.AutoForbiddenForestTimes;
+            SelectedTeamPosition = Properties.Settings.Default.SelectedTeamPosition;
+
+
+
 
         }
 
@@ -190,6 +202,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             // 保存设置
             Properties.Settings.Default.AutoForbiddenForestTimes = AutoForbiddenForestTimes;
+            Properties.Settings.Default.SelectedTeamPosition = SelectedTeamPosition;
             Properties.Settings.Default.Save();
 
             AutoForbiddenForestStartButtonVisibility = Visibility.Collapsed;
@@ -198,6 +211,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             _autoForbiddenForest = new AutoForbiddenForest(_displayHwnd, _gameHwnd);
             _autoForbiddenForest.SetAutoForbiddenForestTimes(AutoForbiddenForestTimes);
+            _autoForbiddenForest.SetTeamPosition(SelectedTeamPosition);
             _autoForbiddenForest.Start();
 
         }

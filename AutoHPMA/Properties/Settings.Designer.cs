@@ -106,5 +106,17 @@ namespace AutoHPMA.Properties {
                 this["AutoForbiddenForestTimes"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Member")]
+        public string SelectedTeamPosition {
+            get {
+                return ((string)(this["SelectedTeamPosition"]));
+            }
+            set {
+                this["SelectedTeamPosition"] = value;
+            }
+        }
     }
 }
