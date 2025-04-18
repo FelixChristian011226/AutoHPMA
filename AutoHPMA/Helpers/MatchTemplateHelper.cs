@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Point = OpenCvSharp.Point;
+using Rect = OpenCvSharp.Rect;
 
 namespace AutoHPMA.Helpers
 {
@@ -12,7 +14,7 @@ namespace AutoHPMA.Helpers
     /// </summary>
     public class MatchTemplateHelper
     {
-        public static OpenCvSharp.Point MatchTemplate(Mat srcMat, Mat dstMat, TemplateMatchModes matchMode, Mat? maskMat = null, double threshold = 0.8)
+        public static Point MatchTemplate(Mat srcMat, Mat dstMat, TemplateMatchModes matchMode, Mat? maskMat = null, double threshold = 0.8)
         {
             try
             {
@@ -51,9 +53,9 @@ namespace AutoHPMA.Helpers
             }
         }
 
-        public static List<OpenCvSharp.Point> MatchTemplateMulti(Mat srcMat, Mat dstMat, Mat? maskMat = null, double threshold = 0.8, int maxCount = 8)
+        public static List<Point> MatchTemplateMulti(Mat srcMat, Mat dstMat, Mat? maskMat = null, double threshold = 0.8, int maxCount = 8)
         {
-            var points = new List<OpenCvSharp.Point>();
+            var points = new List<Point>();
             try
             {
                 using var result = new Mat();
@@ -64,7 +66,7 @@ namespace AutoHPMA.Helpers
                 while (true)
                 {
                     Cv2.MinMaxLoc(result, out _, out var maxValue, out _, out var maxLoc, mask);
-                    var maskRect = new OpenCvSharp.Rect(maxLoc.X, maxLoc.Y, dstMat.Width, dstMat.Height);
+                    var maskRect = new Rect(maxLoc.X, maxLoc.Y, dstMat.Width, dstMat.Height);
                     maskSub.Rectangle(maskRect, Scalar.White, -1);
                     mask -= maskSub;
                     if (maxValue >= threshold)
@@ -82,5 +84,34 @@ namespace AutoHPMA.Helpers
                 return points;
             }
         }
+
+        public static List<Rect> MatchOnePicForOnePic(Mat srcMat, Mat dstMat, TemplateMatchModes matchMode, Mat? maskMat, double threshold, int maxCount = -1)
+        {
+            List<Rect> list = [];
+
+            if (maxCount < 0)
+            {
+                maxCount = srcMat.Width * srcMat.Height / dstMat.Width / dstMat.Height;
+            }
+
+            for (int i = 0; i < maxCount; i++)
+            {
+                var point = MatchTemplate(srcMat, dstMat, matchMode, maskMat, threshold);
+                if (point != new Point())
+                {
+                    // 把结果给遮掩掉，避免重复识别
+                    Cv2.Rectangle(srcMat, point, new Point(point.X + dstMat.Width, point.Y + dstMat.Height), Scalar.Black, -1);
+                    list.Add(new Rect(point.X, point.Y, dstMat.Width, dstMat.Height));
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return list;
+        }
+
+
     }
 }

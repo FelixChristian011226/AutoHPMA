@@ -17,6 +17,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Vanara.PInvoke;
+using OpenCvSharp.WpfExtensions;
+using Point = OpenCvSharp.Point;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -49,6 +51,16 @@ namespace AutoHPMA.ViewModels.Pages
         // 文字识别
         [ObservableProperty]
         private string _ocrResult = string.Empty;
+
+        //模板匹配
+        [ObservableProperty]
+        private string? _sourceImagePath;
+
+        [ObservableProperty]
+        private string? _templateImagePath;
+
+        [ObservableProperty]
+        private System.Windows.Media.ImageSource? _resultImage;
         #endregion
 
         [RelayCommand]
@@ -142,6 +154,68 @@ namespace AutoHPMA.ViewModels.Pages
                     OcrResult = "识别出错：" + ex.Message;
                 }
             }
+        }
+
+        // 模板匹配
+        [RelayCommand]
+        private void OnSelectSourceImage()
+        {
+            var dlg = new OpenFileDialog
+            {
+                Filter = "Image Files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                SourceImagePath = dlg.FileName;
+            }
+        }
+
+        [RelayCommand]
+        private void OnSelectTemplateImage()
+        {
+            var dlg = new OpenFileDialog
+            {
+                Filter = "Image Files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                TemplateImagePath = dlg.FileName;
+            }
+        }
+
+        [RelayCommand]
+        private void OnTemplateMatch()
+        {
+            if (string.IsNullOrEmpty(SourceImagePath) || string.IsNullOrEmpty(TemplateImagePath))
+                return;
+
+            Mat originalMat = Cv2.ImRead(SourceImagePath);
+            Mat templateMat = Cv2.ImRead(TemplateImagePath);
+
+            Mat detectMat = originalMat.Clone();
+
+            var matches = MatchTemplateHelper.MatchOnePicForOnePic(
+                detectMat,
+                templateMat,
+                TemplateMatchModes.CCoeffNormed,
+                maskMat: null,
+                threshold: 0.8
+            );
+
+            foreach (var rect in matches)
+            {
+                Cv2.Rectangle(
+                    originalMat,
+                    new Point(rect.X, rect.Y),
+                    new Point(rect.X + rect.Width, rect.Y + rect.Height),
+                    Scalar.Red,
+                    thickness: 2
+                );
+            }
+
+            var bitmapSource = BitmapSourceConverter.ToBitmapSource(originalMat);
+            bitmapSource.Freeze();
+            ResultImage = bitmapSource;
         }
 
 

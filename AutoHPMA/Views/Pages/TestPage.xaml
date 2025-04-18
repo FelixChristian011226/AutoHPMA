@@ -205,7 +205,7 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Margin="0,0,6,0" Symbol="DesktopCursor24" />
+                            <ui:SymbolIcon Margin="0,0,6,0" Symbol="TapSingle24" />
                             <TextBlock Text="模拟点击" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
@@ -368,6 +368,53 @@
                             Height="80"
                             IsReadOnly="True" Cursor="IBeam"/>
                         </StackPanel>
+                    </StackPanel>
+                </TabItem>
+                <!-- 模板匹配 -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Margin="0,0,6,0" Symbol="TargetArrow24" />
+                            <TextBlock Text="模板匹配" FontWeight="Bold" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <StackPanel Margin="0,10,0,0" Orientation="Vertical">
+                        <Grid Margin="0,0,0,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox 
+                                Grid.Row="0" 
+                                Grid.Column="0" 
+                                Text="{Binding ViewModel.SourceImagePath, TargetNullValue='请点击按钮选择源图→'}" 
+                                VerticalAlignment="Center" 
+                                Margin="4"
+                                IsReadOnly="True"
+                                />
+                            <ui:Button Grid.Row="0" Grid.Column="1" Content="选择源图" Command="{Binding ViewModel.SelectSourceImageCommand}" Margin="4"/>
+
+                            <TextBox 
+                                Grid.Row="1" 
+                                Grid.Column="0" 
+                                Text="{Binding ViewModel.TemplateImagePath, TargetNullValue='请点击按钮选择模板→'}" 
+                                VerticalAlignment="Center" 
+                                Margin="4"
+                                IsReadOnly="True"/>
+                            <ui:Button Grid.Row="1" Grid.Column="1" Content="选择模板" Command="{Binding ViewModel.SelectTemplateImageCommand}" Margin="4"/>
+
+                            <ui:Button Grid.Row="2" Grid.Column="0" Content="开始匹配" Command="{Binding ViewModel.TemplateMatchCommand}" Margin="4" HorizontalAlignment="Center" Grid.ColumnSpan="2"/>
+                        </Grid>
+
+                        <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="4">
+                            <Image Source="{Binding ViewModel.ResultImage}" Stretch="Uniform" Height="300"/>
+                        </Border>
                     </StackPanel>
                 </TabItem>
             </TabControl>
