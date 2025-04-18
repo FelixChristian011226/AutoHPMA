@@ -17,332 +17,354 @@
     mc:Ignorable="d">
 
     <StackPanel Margin="40,30,40,10" Cursor="">
-        <!--  截屏测试  -->
-        <ui:TextBlock FontTypography="Subtitle" Text="截屏测试" Margin="0 0 0 0"/>
-        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="Left"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="左偏移"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="100"
-                    Margin="5,0,10,0"
-                    Text="{Binding ViewModel.ScreenshotLeft, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="Top"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="上偏移"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="100"
-                    Margin="5,0,10,0"
-                    Text="{Binding ViewModel.ScreenshotTop, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="Width"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="宽"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="100"
-                    Margin="5,0,10,0"
-                    Text="{Binding ViewModel.ScreenshotWidth, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="Height"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="高"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="100"
-                    Margin="5,0,10,0"
-                    Cursor="IBeam"
-                    Text="{Binding ViewModel.ScreenshotHeight, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-        </StackPanel>
-        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="文件名"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="路径默认为\Captures"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="400"
-                    Margin="5,0,10,0"
-                    Cursor="IBeam"
-                    Text="{Binding ViewModel.ScreenshotFilename, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-            <Grid>
-                <ui:Button
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Margin="10,0,36,0"
-                    Command="{Binding ViewModel.ScreenshotTestCommand}"
-                    Content="截取"
-                    Cursor="" />
-            </Grid>
-        </StackPanel>
-
-        <!--  模拟点击  -->
-        <ui:TextBlock
-            Margin="0,20,0,0"
-            FontTypography="Subtitle"
-            Text="模拟点击" />
-        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="X-axis"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="横坐标"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="100"
-                    Margin="5,0,10,0"
-                    Text="{Binding ViewModel.ClickLeft, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="Y-axis"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="纵坐标"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="100"
-                    Margin="5,0,10,0"
-                    Text="{Binding ViewModel.ClickTop, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="Interval"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="点击间隔"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="100"
-                    Margin="5,0,10,0"
-                    Text="{Binding ViewModel.ClickInterval, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-            <Grid Cursor="">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    FontTypography="BodyStrong"
-                    Text="Times"
-                    TextWrapping="Wrap" />
-                <ui:TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                    Text="点击次数"
-                    TextWrapping="Wrap" />
-                <ui:TextBox
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Width="50"
-                    Margin="5,0,10,0"
-                    Text="{Binding ViewModel.ClickTimes, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
-            </Grid>
-            <Grid>
-                <ui:Button
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    Margin="10,0,36,0"
-                    Command="{Binding ViewModel.ClickTestCommand}"
-                    Content="点击"
-                    Cursor="" />
-            </Grid>
-        </StackPanel>
-
-        <!-- 文字识别 -->
-        <ui:TextBlock Margin="0,20,0,0" FontTypography="Subtitle" Text="文字识别" />
-        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-            <ui:Button
-        Command="{Binding ViewModel.OCRTestCommand}"
-        Content="浏览文件并识别"
-        Margin="0,0,10,0" />
-        </StackPanel>
-        <StackPanel Margin="0,10,0,0">
-            <ui:TextBlock FontTypography="BodyStrong" Text="识别结果：" />
-            <ui:TextBox
-        Text="{Binding ViewModel.OcrResult, Mode=TwoWay}"
-        AcceptsReturn="True"
-        TextWrapping="Wrap"
-        Height="80"
-        IsReadOnly="True" Cursor="IBeam"/>
-        </StackPanel>
-
-
+        <TabControl Margin="0 0 0 0">
+            <!--  截屏测试  -->
+            <TabItem IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="XboxConsole24" />
+                        <TextBlock Text="截屏测试" FontWeight="Bold" />
+                    </StackPanel>
+                </TabItem.Header>
+                <StackPanel>
+                    <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="Left"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="左偏移"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.ScreenshotLeft, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="Top"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="上偏移"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.ScreenshotTop, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="Width"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="宽"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.ScreenshotWidth, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="Height"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="高"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Cursor="IBeam"
+                                Text="{Binding ViewModel.ScreenshotHeight, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="文件名"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="路径默认为\Captures"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="400"
+                                Margin="5,0,10,0"
+                                Cursor="IBeam"
+                                Text="{Binding ViewModel.ScreenshotFilename, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                        <Grid>
+                            <ui:Button
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Margin="10,0,36,0"
+                                Command="{Binding ViewModel.ScreenshotTestCommand}"
+                                Content="截取"
+                                Cursor="" />    
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+            <!--  模拟点击  -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="XboxConsole24" />
+                        <TextBlock Text="模拟点击" FontWeight="Bold" />
+                    </StackPanel>
+                </TabItem.Header>
+                <StackPanel>
+                    <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="X-axis"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="横坐标"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.ClickLeft, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="Y-axis"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="纵坐标"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.ClickTop, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="Interval"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="点击间隔"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.ClickInterval, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                        <Grid Cursor="">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="Times"
+                                TextWrapping="Wrap" />
+                            <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="点击次数"
+                                TextWrapping="Wrap" />
+                            <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="50"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.ClickTimes, Mode=TwoWay}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                        <Grid>
+                            <ui:Button
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Margin="10,0,36,0"
+                                Command="{Binding ViewModel.ClickTestCommand}"
+                                Content="点击"
+                                Cursor="" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+            <!-- 文字识别 -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="XboxConsole24" />
+                        <TextBlock Text="文字识别" FontWeight="Bold" />
+                    </StackPanel>
+                </TabItem.Header>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <ui:Button
+                            Command="{Binding ViewModel.OCRTestCommand}"
+                            Content="浏览文件并识别"
+                            Margin="0,0,10,0" />
+                    </StackPanel>
+                    <StackPanel Margin="0,10,0,0">
+                        <ui:TextBlock FontTypography="BodyStrong" Text="识别结果：" />
+                        <ui:TextBox
+                            Text="{Binding ViewModel.OcrResult, Mode=TwoWay}"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap"
+                            Height="80"
+                            IsReadOnly="True" Cursor="IBeam"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
 
     </StackPanel>
 </Page>
