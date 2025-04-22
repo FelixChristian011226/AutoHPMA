@@ -139,8 +139,9 @@ public class AutoClubQuiz
             {
                 case AutoClubQuizState.Gathering:
 
+                    // 等待固定时间后刷新
                     _logWindow?.AddLogMessage("INF", "等待下一场答题...");
-                    for (int i = 5; i > 0; i--)
+                    for (int i = 15; i > 0; i--)
                     {
                         _logWindow?.AddLogMessage("INF", "还剩[Yellow]" + i + "[/Yellow]秒...");
                         await Task.Delay(1000);
@@ -150,14 +151,14 @@ public class AutoClubQuiz
 
                     switch (_gatherRefreshMode)
                     {
-                        case GatherRefreshMode.ChatBox:
-                            if (!FindAndClick(ref gather))  //找不到集结图标，重复开关聊天框刷新状态
+                        case GatherRefreshMode.ChatBox:     //从聊天框刷新
+                            if (!FindAndClick(ref gather))  //没有找到集结图标，则打开关闭聊天框刷新
                             {
                                 SendEnter(_gameHwnd);
                                 await Task.Delay(2000);
-                                FindAndClick(ref channel, 0.88);
+                                FindAndClick(ref channel, 0.88);    //点击展开社团频道
                                 await Task.Delay(2000);
-                                if (FindAndClick(ref quiz, 0.98))
+                                if (FindAndClick(ref quiz, 0.98))   //点击前往活动面板
                                 {
                                     _state = AutoClubQuizState.Preparing;
                                     break;
@@ -166,7 +167,7 @@ public class AutoClubQuiz
                                 continue;
                             }
                             await Task.Delay(1000);
-                            if (!FindAndClick(ref join))
+                            if (!FindAndClick(ref join))    //找到集结图标，找寻加入按钮
                             {
                                 SendESC(_gameHwnd);
                                 continue;
@@ -174,8 +175,8 @@ public class AutoClubQuiz
                             _state = AutoClubQuizState.Preparing;
                             break;
 
-                        case GatherRefreshMode.Badge:
-                            if(FindAndClick(ref badge))
+                        case GatherRefreshMode.Badge:       //从社团活动徽章刷新
+                            if (FindAndClick(ref badge))
                             {
                                 await Task.Delay(3000);
                                 if(FindAndClickWithMask(ref enter, ref mask_events))
@@ -195,7 +196,7 @@ public class AutoClubQuiz
                 case AutoClubQuizState.Preparing:
                     await Task.Delay(1000);
 
-                    if (FindMatch(ref time20))
+                    if (FindMatch(ref time20) || FindMatch(ref time18))
                     {
                         roundIndex++;
                         _logWindow?.AddLogMessage("INF", "第[Yellow]" + roundIndex + "[/Yellow]轮答题开始");
@@ -299,7 +300,7 @@ public class AutoClubQuiz
     private bool FindAndClickWithMask(ref Mat mat, ref Mat mask, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(mask.Width, mask.Height));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         Cv2.BitwiseAnd(captureMat, mask, captureMat);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
