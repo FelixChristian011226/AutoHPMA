@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<!-- 版本号 -->
-	<Version>2.2.0</Version>
+	<Version>3.0.0</Version>
 	<!--<FileVersion>2.0.0.1</FileVersion>-->
 	<!--<AssemblyVersion>2.0.0.0</AssemblyVersion>-->
   </PropertyGroup>
@@ -53,6 +53,8 @@
     <None Remove="Assets\ClubQuiz\close.png" />
     <None Remove="Assets\ClubQuiz\end.png" />
     <None Remove="Assets\ClubQuiz\Image\badge.png" />
+    <None Remove="Assets\ClubQuiz\Image\college.png" />
+    <None Remove="Assets\ClubQuiz\Image\college_help.png" />
     <None Remove="Assets\ClubQuiz\Image\enter.png" />
     <None Remove="Assets\ClubQuiz\Image\mask_events.png" />
     <None Remove="Assets\ClubQuiz\Image\quiz.png" />
@@ -77,6 +79,12 @@
 
   <ItemGroup>
     <Content Include="Assets\ClubQuiz\Image\badge.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\college.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\college_help.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ClubQuiz\Image\enter.png">

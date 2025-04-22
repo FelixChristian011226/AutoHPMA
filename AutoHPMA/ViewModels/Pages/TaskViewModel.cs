@@ -52,7 +52,8 @@ namespace AutoHPMA.ViewModels.Pages
         private ObservableCollection<string> _gatherRefreshModes =
             [
                 "ChatBox",
-                "Badge"
+                "Badge",
+                "College"
             ];
         [ObservableProperty]
         private string _selectedGatherRefreshMode = "Badge";

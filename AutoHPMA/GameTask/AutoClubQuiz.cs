@@ -37,6 +37,7 @@ public class AutoClubQuiz
 
     private static Mat gather, channel, quiz, join;
     private static Mat badge, enter, mask_events, close;
+    private static Mat college, college_help;
     private static Mat time18, time20, over, end, gothmog, option_a, option_b, option_c, option_d;
     private static Mat? captureMat;
 
@@ -60,7 +61,8 @@ public class AutoClubQuiz
     private enum GatherRefreshMode
     {
         ChatBox,
-        Badge
+        Badge,
+        College
     }
 
     private GatherRefreshMode _gatherRefreshMode=GatherRefreshMode.Badge;
@@ -100,6 +102,10 @@ public class AutoClubQuiz
         Cv2.CvtColor(enter, enter, ColorConversionCodes.BGR2GRAY);
         mask_events = Cv2.ImRead(image_folder + "mask_events.png", ImreadModes.Unchanged);
         Cv2.CvtColor(mask_events, mask_events, ColorConversionCodes.BGR2GRAY);
+        college = Cv2.ImRead(image_folder + "college.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(college, college, ColorConversionCodes.BGR2GRAY);
+        college_help = Cv2.ImRead(image_folder + "college_help.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(college_help, college_help, ColorConversionCodes.BGR2GRAY);
         close = Cv2.ImRead(image_folder + "close.png", ImreadModes.Unchanged);
         Cv2.CvtColor(close, close, ColorConversionCodes.BGR2GRAY);
         time18 = Cv2.ImRead(image_folder + "time18.png", ImreadModes.Unchanged);
@@ -138,7 +144,7 @@ public class AutoClubQuiz
             switch (_state)
             {
                 case AutoClubQuizState.Gathering:
-
+                    SendESC(_gameHwnd);
                     // 等待固定时间后刷新
                     _logWindow?.AddLogMessage("INF", "等待下一场答题...");
                     for (int i = 15; i > 0; i--)
@@ -160,6 +166,12 @@ public class AutoClubQuiz
                                 await Task.Delay(2000);
                                 if (FindAndClick(ref quiz, 0.98))   //点击前往活动面板
                                 {
+                                    await Task.Delay(2000);
+                                    if(FindMatch(ref quiz, 0.98))   //点击没反应
+                                    {
+                                        SendESC(_gameHwnd);
+                                        continue;
+                                    }
                                     _state = AutoClubQuizState.Preparing;
                                     break;
                                 }
@@ -189,6 +201,74 @@ public class AutoClubQuiz
                                 }
                             }
                             break;
+
+                        case GatherRefreshMode.College:     //从学院互助刷新
+                            SendEnter(_gameHwnd);
+                            await Task.Delay(1500);
+                            if(FindAndClick(ref quiz, 0.98))        // case 1: 在学院互助频道，直接点前往活动
+                            {
+                                await Task.Delay(2000);
+                                if (FindMatch(ref quiz, 0.98))
+                                {
+                                    SendESC(_gameHwnd);
+                                    continue;
+                                }
+                                _state = AutoClubQuizState.Preparing;
+                                continue;
+                            }
+                            if(FindAndClick(ref college_help))      // case 2: 在学院聊天频道，先点击学院互助
+                            {
+                                await Task.Delay(1500);
+                                if (FindAndClick(ref quiz, 0.98))           //case 2.1: 有社团答题，点击前往活动
+                                {
+                                    await Task.Delay(2000);
+                                    if (FindMatch(ref quiz, 0.98))
+                                    {
+                                        SendESC(_gameHwnd);
+                                        continue;
+                                    }
+                                    _state = AutoClubQuizState.Preparing;
+                                    continue;
+                                }
+                                SendESC(_gameHwnd);                         //case 2.2: 没有社团答题，关闭聊天框
+                                continue;
+                            }
+                            if (FindAndClick(ref college))          // case 3: 在其他聊天频道，先点击学院
+                            {
+                                await Task.Delay(1500);
+                                if (FindAndClick(ref quiz, 0.98))          // case 3.1: 直接进入学院互助频道，点前往活动
+                                {
+                                    await Task.Delay(2000);
+                                    if (FindMatch(ref quiz, 0.98))
+                                    {
+                                        SendESC(_gameHwnd);
+                                        continue;
+                                    }
+                                    _state = AutoClubQuizState.Preparing;
+                                    continue;
+                                }
+                                if (FindAndClick(ref college_help))         // case 3.2: 在学院聊天频道，先点击学院互助
+                                {
+                                    await Task.Delay(1500);
+                                    if (FindAndClick(ref quiz, 0.98))               //case 3.2.1: 有社团答题，点击前往活动
+                                    {
+                                        await Task.Delay(2000);
+                                        if (FindMatch(ref quiz, 0.98))
+                                        {
+                                            SendESC(_gameHwnd);
+                                            continue;
+                                        }
+                                        _state = AutoClubQuizState.Preparing;
+                                        continue;
+                                    }
+                                    SendESC(_gameHwnd);                             //case 3.2.2: 没有社团答题，关闭聊天框
+                                    continue;
+                                }
+                            }
+                            SendESC(_gameHwnd);
+
+                            break;
+
                     }
 
                     break;
@@ -448,6 +528,12 @@ public class AutoClubQuiz
         {
             _gatherRefreshMode = GatherRefreshMode.Badge;
             _logWindow?.AddLogMessage("DBG", "集结刷新模式设置为：徽章");
+            return true;
+        }
+        else if (mode == "College")
+        {
+            _gatherRefreshMode = GatherRefreshMode.College;
+            _logWindow?.AddLogMessage("DBG", "集结刷新模式设置为：学院互助");
             return true;
         }
         else
