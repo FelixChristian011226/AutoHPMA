@@ -145,6 +145,7 @@ public class AutoClubQuiz
             {
                 case AutoClubQuizState.Gathering:
                     SendESC(_gameHwnd);
+                    await Task.Delay(1000);
                     // 等待固定时间后刷新
                     _logWindow?.AddLogMessage("INF", "等待下一场答题...");
                     for (int i = 15; i > 0; i--)
@@ -216,7 +217,7 @@ public class AutoClubQuiz
                                 _state = AutoClubQuizState.Preparing;
                                 continue;
                             }
-                            if(FindAndClick(ref college_help))      // case 2: 在学院聊天频道，先点击学院互助
+                            if(FindAndClick(ref college_help, 0.88))      // case 2: 在学院聊天频道，先点击学院互助
                             {
                                 await Task.Delay(1500);
                                 if (FindAndClick(ref quiz, 0.98))           //case 2.1: 有社团答题，点击前往活动
@@ -233,7 +234,7 @@ public class AutoClubQuiz
                                 SendESC(_gameHwnd);                         //case 2.2: 没有社团答题，关闭聊天框
                                 continue;
                             }
-                            if (FindAndClick(ref college))          // case 3: 在其他聊天频道，先点击学院
+                            if (FindAndClick(ref college, 0.88))          // case 3: 在其他聊天频道，先点击学院
                             {
                                 await Task.Delay(1500);
                                 if (FindAndClick(ref quiz, 0.98))          // case 3.1: 直接进入学院互助频道，点前往活动
