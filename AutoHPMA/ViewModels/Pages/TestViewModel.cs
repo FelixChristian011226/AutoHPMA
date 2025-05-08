@@ -55,9 +55,10 @@ namespace AutoHPMA.ViewModels.Pages
         //模板匹配
         [ObservableProperty]
         private string? _sourceImagePath;
-
         [ObservableProperty]
         private string? _templateImagePath;
+        [ObservableProperty]
+        private string? _maskImagePath;
 
         [ObservableProperty]
         private System.Windows.Media.ImageSource? _resultImage;
@@ -184,13 +185,27 @@ namespace AutoHPMA.ViewModels.Pages
         }
 
         [RelayCommand]
+        private void OnSelectMaskImage()
+        {
+            var dlg = new OpenFileDialog
+            {
+                Filter = "Image Files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                MaskImagePath = dlg.FileName;
+            }
+        }
+
+        [RelayCommand]
         private void OnTemplateMatch()
         {
-            if (string.IsNullOrEmpty(SourceImagePath) || string.IsNullOrEmpty(TemplateImagePath))
+            if (string.IsNullOrEmpty(SourceImagePath) || string.IsNullOrEmpty(TemplateImagePath) || string.IsNullOrEmpty(MaskImagePath))
                 return;
 
             Mat originalMat = Cv2.ImRead(SourceImagePath);
             Mat templateMat = Cv2.ImRead(TemplateImagePath);
+            Mat maskMat = Cv2.ImRead(MaskImagePath);
 
             Mat detectMat = originalMat.Clone();
 
@@ -198,7 +213,7 @@ namespace AutoHPMA.ViewModels.Pages
                 detectMat,
                 templateMat,
                 TemplateMatchModes.CCoeffNormed,
-                maskMat: null,
+                maskMat,
                 threshold: 0.8
             );
 
