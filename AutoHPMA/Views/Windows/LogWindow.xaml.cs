@@ -8,6 +8,8 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using AutoHPMA.Helpers;
+using System.ComponentModel;
+using System.Windows.Threading;
 
 namespace AutoHPMA.Views.Windows
 {
@@ -18,7 +20,7 @@ namespace AutoHPMA.Views.Windows
         public string Content { get; set; }
     }
 
-    public partial class LogWindow : Window
+    public partial class LogWindow : Window, INotifyPropertyChanged
     {
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TRANSPARENT = 0x00000020;
@@ -37,9 +39,58 @@ namespace AutoHPMA.Views.Windows
             }
         }
 
+        private string _timeNow;
+        public string TimeNow
+        {
+            get => _timeNow;
+            set
+            {
+                if (_timeNow != value)
+                {
+                    _timeNow = value;
+                    OnPropertyChanged(nameof(TimeNow));
+                }
+            }
+        }
+
+        private string _currentGameState = "空闲";
+        public string CurrentGameState
+        {
+            get => _currentGameState;
+            set
+            {
+                if (_currentGameState != value)
+                {
+                    _currentGameState = value;
+                    OnPropertyChanged(nameof(CurrentGameState));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propName) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+
+        public void SetGameState(string state)
+        {
+            CurrentGameState = state;
+        }
+
         public LogWindow()
         {
             InitializeComponent();
+            DataContext = this;
+
+            var timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            timer.Tick += (s, e) =>
+            {
+                TimeNow = DateTime.Now.ToString("HH:mm:ss");
+            };
+            timer.Start();
+
             // 绑定日志消息集合到TextBlock
             LogListBox.ItemsSource = _logMessages;
             Loaded += LogWindow_Loaded;
