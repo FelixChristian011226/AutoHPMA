@@ -59,6 +59,16 @@ namespace AutoHPMA.ViewModels.Pages
         private string? _templateImagePath;
         [ObservableProperty]
         private string? _maskImagePath;
+        [ObservableProperty]
+        private double _threshold = 0.8;
+
+        public ObservableCollection<TemplateMatchModes> MatchModes { get; }
+            = new ObservableCollection<TemplateMatchModes>(
+                  (TemplateMatchModes[])Enum.GetValues(typeof(TemplateMatchModes))
+              );
+
+        [ObservableProperty]
+        private TemplateMatchModes _selectedMatchMode = TemplateMatchModes.CCoeffNormed;
 
         [ObservableProperty]
         private System.Windows.Media.ImageSource? _resultImage;
@@ -200,21 +210,31 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         private void OnTemplateMatch()
         {
-            if (string.IsNullOrEmpty(SourceImagePath) || string.IsNullOrEmpty(TemplateImagePath) || string.IsNullOrEmpty(MaskImagePath))
+            if (string.IsNullOrEmpty(SourceImagePath) || string.IsNullOrEmpty(TemplateImagePath))
                 return;
 
             Mat originalMat = Cv2.ImRead(SourceImagePath);
-            Mat templateMat = Cv2.ImRead(TemplateImagePath);
-            Mat maskMat = Cv2.ImRead(MaskImagePath);
-
             Mat detectMat = originalMat.Clone();
+            Cv2.CvtColor(detectMat, detectMat, ColorConversionCodes.BGR2GRAY);
+            Mat templateMat = Cv2.ImRead(TemplateImagePath);
+            Cv2.CvtColor(templateMat, templateMat, ColorConversionCodes.BGR2GRAY);
+            Mat maskMat;
+            if(!string.IsNullOrEmpty(MaskImagePath))
+            {
+                maskMat = Cv2.ImRead(MaskImagePath);
+                Cv2.CvtColor(maskMat, maskMat, ColorConversionCodes.BGR2GRAY);
+            }
+            else
+            {
+                maskMat = null;
+            }
 
             var matches = MatchTemplateHelper.MatchOnePicForOnePic(
                 detectMat,
                 templateMat,
-                TemplateMatchModes.CCoeffNormed,
+                SelectedMatchMode,
                 maskMat,
-                threshold: 0.8
+                threshold: Threshold
             );
 
             foreach (var rect in matches)

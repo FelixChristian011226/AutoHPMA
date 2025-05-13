@@ -417,9 +417,28 @@
                                 VerticalAlignment="Center" 
                                 Margin="4"
                                 IsReadOnly="True"/>
-                            <ui:Button Grid.Row="2" Grid.Column="1" Content="选择模板" Command="{Binding ViewModel.SelectMaskImageCommand}" Margin="4"/>
+                            <ui:Button Grid.Row="2" Grid.Column="1" Content="选择遮罩" Command="{Binding ViewModel.SelectMaskImageCommand}" Margin="4"/>
 
-                            <ui:Button Grid.Row="3" Grid.Column="0" Content="开始匹配" Command="{Binding ViewModel.TemplateMatchCommand}" Margin="4" HorizontalAlignment="Center" Grid.ColumnSpan="2"/>
+                            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0">
+                                <TextBlock Text="Threshold:" FontWeight="Bold" VerticalAlignment="Center" Margin="8, 0, 8, 0"/>
+                                <Slider
+                                       Width="200"
+                                       Margin="0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       IsSnapToTickEnabled="True"
+                                       Maximum="1.00"
+                                       Minimum="0.00"
+                                       TickFrequency="0.01"
+                                       Value="{Binding ViewModel.Threshold, Mode=TwoWay}" />
+                                <TextBlock Text="{Binding ViewModel.Threshold, StringFormat={}{0:F2}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="2, 0, 0, 0"/>
+                                <TextBlock Text="Mode:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                                <ComboBox Width="150"
+                                      ItemsSource="{Binding ViewModel.MatchModes}"
+                                      SelectedItem="{Binding ViewModel.SelectedMatchMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+ 
+                            <ui:Button Grid.Row="3" Grid.Column="1" Content="开始匹配" Command="{Binding ViewModel.TemplateMatchCommand}" Margin="4" HorizontalAlignment="Center" Grid.ColumnSpan="1"/>
                         </Grid>
 
                         <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="4">
