@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.User32;
 
-namespace AutoHPMA.GameTask;
+namespace AutoHPMA.Helpers;
 
 public class SystemControl
 {
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool EnumChildWindows(IntPtr hwndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
+    private static extern bool EnumChildWindows(nint hwndParent, EnumWindowsProc lpEnumFunc, nint lParam);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+    private static extern int GetWindowText(nint hWnd, StringBuilder lpString, int nMaxCount);
 
-    private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+    private delegate bool EnumWindowsProc(nint hWnd, nint lParam);
 
 
     public static nint FindHandleByProcessName(params string[] names)
@@ -36,9 +36,9 @@ public class SystemControl
         return 0;
     }
 
-    public static IntPtr FindChildWindowByTitle(IntPtr parentHandle, string targetTitle)
+    public static nint FindChildWindowByTitle(nint parentHandle, string targetTitle)
     {
-        IntPtr result = IntPtr.Zero;
+        nint result = nint.Zero;
         EnumChildWindows(parentHandle, (hWnd, lParam) =>
         {
             StringBuilder windowText = new StringBuilder(255);
@@ -49,7 +49,7 @@ public class SystemControl
                 return false; // 返回 false 以停止窗口枚举
             }
             return true; // 返回 true 继续枚举
-        }, IntPtr.Zero);
+        }, nint.Zero);
 
         return result;
     }

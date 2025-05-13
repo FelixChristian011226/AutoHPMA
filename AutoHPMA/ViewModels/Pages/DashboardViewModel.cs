@@ -4,7 +4,6 @@
 // All Rights Reserved.
 
 using AutoHPMA.Views;
-using AutoHPMA.GameTask;
 using AutoHPMA.Views.Windows;
 using AutoHPMA.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;

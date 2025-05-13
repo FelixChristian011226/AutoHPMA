@@ -1,5 +1,4 @@
-﻿using AutoHPMA.GameTask;
-using AutoHPMA.Helpers;
+﻿using AutoHPMA.Helpers;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Views.Windows;
