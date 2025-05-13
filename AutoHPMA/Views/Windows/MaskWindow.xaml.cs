@@ -36,13 +36,21 @@ namespace AutoHPMA.Views.Windows
         {
             OverlayCanvas.Children.Clear();
 
+            // 获取当前 DPI 缩放比例
+            PresentationSource source = PresentationSource.FromVisual(this);
+            double dpiX = 1.0, dpiY = 1.0;
+            if (source?.CompositionTarget != null)
+            {
+                dpiX = source.CompositionTarget.TransformFromDevice.M11;
+                dpiY = source.CompositionTarget.TransformFromDevice.M22;
+            }
+
             foreach (var cvR in cvRects)
             {
-                // 将 OpenCvSharp.Rect 转成 WPF 上的坐标和大小
-                double left = cvR.X;
-                double top = cvR.Y;
-                double width = cvR.Width;
-                double height = cvR.Height;
+                double left = cvR.X * dpiX;
+                double top = cvR.Y * dpiY;
+                double width = cvR.Width * dpiX;
+                double height = cvR.Height * dpiY;
 
                 var rect = new Rectangle
                 {
@@ -57,6 +65,7 @@ namespace AutoHPMA.Views.Windows
                 OverlayCanvas.Children.Add(rect);
             }
         }
+
 
         /// <summary>
         /// 同步遮罩窗口位置与大小，使其覆盖在目标窗口之上

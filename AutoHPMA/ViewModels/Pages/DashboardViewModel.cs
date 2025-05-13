@@ -51,7 +51,7 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _debugLogEnabled = false;
 
         [ObservableProperty]
-        private bool _maskWindowEnabled = true;
+        private bool _maskWindowEnabled = false;
 
         [ObservableProperty]
         private int _captureInterval = 500;
@@ -196,7 +196,7 @@ namespace AutoHPMA.ViewModels.Pages
                     _maskWindow?.Show();
                 }
                 _logWindow?.RefreshPosition(_gameHwnd);
-                _maskWindow?.RefreshPosition(_gameHwnd);
+                _maskWindow?.RefreshPosition(_displayHwnd);
             }
         }
 
@@ -282,6 +282,7 @@ namespace AutoHPMA.ViewModels.Pages
             //var highlightRects = new List<Rect>
             //{
             //    // 这里的坐标都是相对于游戏窗口左上角的屏幕坐标
+            //    new Rect(0, 0, 1200, 700),
             //    new Rect(800, 200, 150, 50),
             //    new Rect(400, 300, 80, 80)
             //};
