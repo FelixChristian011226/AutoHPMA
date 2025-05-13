@@ -26,8 +26,8 @@ using OpenCvSharp.Extensions;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Services;
 using System.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
 using AutoHPMA.Messages;
+using Rect = OpenCvSharp.Rect;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -49,6 +49,9 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private bool _debugLogEnabled = false;
+
+        [ObservableProperty]
+        private bool _maskWindowEnabled = true;
 
         [ObservableProperty]
         private int _captureInterval = 500;
@@ -76,8 +79,16 @@ namespace AutoHPMA.ViewModels.Pages
                 OnPropertyChanged(nameof(_logWindow));
             }
         }
-        private int _logWindowLeft = 0;
-        private int _logWindowTop = 0;
+
+        private MaskWindow? _maskWindow
+        {
+            get => AppContextService.Instance.MaskWindow;
+            set
+            {
+                AppContextService.Instance.MaskWindow = value;
+                OnPropertyChanged(nameof(_maskWindow));
+            }
+        }
 
         private WindowsGraphicsCapture _capture
         {
@@ -134,6 +145,8 @@ namespace AutoHPMA.ViewModels.Pages
             _logWindowEnabled = Properties.Settings.Default.LogWindowEnabled;
             _debugLogEnabled = Properties.Settings.Default.DebugLogEnabled;
 
+            _maskWindowEnabled = Properties.Settings.Default.MaskWindowEnabled;
+
         }
 
         private void InitializeCaptureTimer()
@@ -170,16 +183,20 @@ namespace AutoHPMA.ViewModels.Pages
                 if (NativeMethodsService.IsIconic(_gameHwnd)) // 最小化
                 {
                     _logWindow?.HideLogWindow();
+                    _maskWindow?.Hide();
                 }
                 else if (NativeMethodsService.GetForegroundWindow()!= _displayHwnd) // 由于Mumu模拟器有两个句柄，真正的游戏窗口句柄是子句柄，而且不在顶层，所以需要父句柄
                 {
                     _logWindow?.HideLogWindow();
+                    _maskWindow?.Hide();
                 }
                 else
                 {
                     _logWindow?.ShowLogWindow();
+                    _maskWindow?.Show();
                 }
-                _logWindow?.RefreshPosition(_gameHwnd, _logWindowLeft, _logWindowTop);
+                _logWindow?.RefreshPosition(_gameHwnd);
+                _maskWindow?.RefreshPosition(_gameHwnd);
             }
         }
 
@@ -246,11 +263,30 @@ namespace AutoHPMA.ViewModels.Pages
                 _logWindow.Show();
                 _logWindow.ShowInTaskbar = false;   //在ALT+TAB中不显示
                 //_logWindow.Owner = GetWindow(_gameHwnd); // 将游戏窗口设置为LogWindow的Owner
-                _logWindow.RefreshPosition(_gameHwnd, _logWindowLeft, _logWindowTop);
+                _logWindow.RefreshPosition(_gameHwnd);
                 _logWindow.ShowDebugLogs = DebugLogEnabled;
                 _logWindow.AddLogMessage("INF", "检测到[Yellow]" + _startupOption+ "[/Yellow]已启动");
                 ShowGameWindowInfo();
             }
+
+            if (_maskWindowEnabled)
+            {
+                _maskWindow = new MaskWindow();
+                _maskWindow.Show();
+                _maskWindow.ShowInTaskbar = false;
+
+                _maskWindow.RefreshPosition(_displayHwnd);
+
+            }
+
+            //var highlightRects = new List<Rect>
+            //{
+            //    // 这里的坐标都是相对于游戏窗口左上角的屏幕坐标
+            //    new Rect(800, 200, 150, 50),
+            //    new Rect(400, 300, 80, 80)
+            //};
+            //_maskWindow?.UpdateRects(highlightRects);
+
 
             _capture = new WindowsGraphicsCapture();
             _capture.Start(_displayHwnd);
@@ -259,6 +295,7 @@ namespace AutoHPMA.ViewModels.Pages
             Properties.Settings.Default.RealTimeScreenshotEnabled = _realTimeScreenshotEnabled;
             Properties.Settings.Default.LogWindowEnabled = _logWindowEnabled;
             Properties.Settings.Default.DebugLogEnabled = _debugLogEnabled;
+            Properties.Settings.Default.MaskWindowEnabled = _maskWindowEnabled;
             Properties.Settings.Default.Save();
 
         }
@@ -273,6 +310,9 @@ namespace AutoHPMA.ViewModels.Pages
 
             _logWindow?.Close();
             _logWindow = null;
+
+            _maskWindow?.Close();
+            _maskWindow = null;
 
             _captureTimer.Tick -= CaptureTimer_Tick;
             _captureTimer.Stop();

@@ -62,6 +62,20 @@ namespace AutoHPMA.Services
             }
         }
 
+        private MaskWindow _maskWindow;
+        public MaskWindow MaskWindow
+        {
+            get => _maskWindow;
+            set
+            {
+                if (_maskWindow != value)
+                {
+                    _maskWindow = value;
+                    OnPropertyChanged(nameof(MaskWindow));
+                }
+            }
+        }
+
         private WindowsGraphicsCapture _capture;
         public WindowsGraphicsCapture Capture
         {

@@ -135,7 +135,7 @@ namespace AutoHPMA.Views.Windows
             }
         }
 
-        public void RefreshPosition(IntPtr hWnd, int Loffset, int Toffset)
+        public void RefreshPosition(IntPtr hWnd, int Loffset = 0, int Toffset = 0)
         {
             var rect = new RECT();
             if (GetWindowRect(hWnd, out rect))

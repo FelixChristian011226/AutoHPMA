@@ -1,0 +1,17 @@
+﻿<Window
+    x:Class="AutoHPMA.Views.Windows.MaskWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="MaskWindow"
+    Width="800" Height="600"
+    AllowsTransparency="True"
+    WindowStyle="None"
+    Background="Transparent"
+    Topmost="True"
+    ShowInTaskbar="False"
+    IsHitTestVisible="False"
+    Loaded="Window_Loaded">
+
+    <!-- 用于绘制矩形的画布 -->
+    <Canvas x:Name="OverlayCanvas" Background="Transparent"/>
+</Window>

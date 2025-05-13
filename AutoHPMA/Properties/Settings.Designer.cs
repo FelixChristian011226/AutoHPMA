@@ -118,5 +118,17 @@ namespace AutoHPMA.Properties {
                 this["SelectedTeamPosition"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool MaskWindowEnabled {
+            get {
+                return ((bool)(this["MaskWindowEnabled"]));
+            }
+            set {
+                this["MaskWindowEnabled"] = value;
+            }
+        }
     }
 }

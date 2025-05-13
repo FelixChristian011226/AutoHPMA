@@ -64,7 +64,7 @@
         <ui:CardExpander
             Margin="0,12,0,12"
             ContentPadding="0"
-            Icon="{ui:SymbolIcon Play24}">
+            Icon="{ui:SymbolIcon Play20}">
             <ui:CardExpander.Header>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -176,7 +176,7 @@
         <ui:CardExpander
             Margin="0,0,0,12"
             ContentPadding="0"
-            Icon="{ui:SymbolIcon LinkSquare24}">
+            Icon="{ui:SymbolIcon WindowBulletList20}">
             <ui:CardExpander.Header>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -197,7 +197,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="启动AutoHPMA时，在游戏左上角覆盖一个日志窗口。"
+                        Text="在游戏左上角覆盖一个日志窗口，输出运行状态信息。"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"
@@ -221,13 +221,13 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="显示调试信息"
+                        Text="输出调试信息"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="勾选后日志窗口会显示DBG信息，便于调试"
+                        Text="勾选后日志窗口会输出DBG信息，便于调试任务运行。"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"
@@ -239,6 +239,44 @@
             </StackPanel>
         </ui:CardExpander>
 
+        <!--  遮罩窗口  -->
+        <ui:CardExpander
+            Margin="0,0,0,12"
+            ContentPadding="0"
+            Icon="{ui:SymbolIcon WindowAd20}">
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        FontTypography="Body"
+                        Text="启用遮罩窗口"
+                        TextWrapping="Wrap" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                        Text="实时显示任务过程中，模板匹配的识别结果，以红色矩形圈出。"
+                        TextWrapping="Wrap" />
+                    <ui:ToggleSwitch
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        Margin="0,0,24,0"
+                        IsChecked="{Binding ViewModel.MaskWindowEnabled, Mode=TwoWay}" />
+                </Grid>
+            </ui:CardExpander.Header>
+            <StackPanel>
+            </StackPanel>
+        </ui:CardExpander>
 
     </StackPanel>
 

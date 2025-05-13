@@ -49,6 +49,9 @@ namespace AutoHPMA
                 var logWindow = new LogWindow();
                 services.AddSingleton(logWindow);
 
+                var maskWindow = new MaskWindow();
+                services.AddSingleton(maskWindow);
+
                 services.AddNavigationViewPageProvider();
 
                 services.AddLogging(c => c.AddSerilog());

@@ -26,5 +26,8 @@
     <Setting Name="SelectedTeamPosition" Type="System.String" Scope="User">
       <Value Profile="(Default)">Member</Value>
     </Setting>
+    <Setting Name="MaskWindowEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
