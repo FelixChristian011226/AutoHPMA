@@ -12,6 +12,5 @@
     IsHitTestVisible="False"
     Loaded="Window_Loaded">
 
-    <!-- 用于绘制矩形的画布 -->
-    <Canvas x:Name="OverlayCanvas" Background="Transparent"/>
+    <Grid x:Name="RootGrid" Background="Transparent"/>
 </Window>
