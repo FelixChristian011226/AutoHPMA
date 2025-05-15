@@ -18,6 +18,7 @@ using System.Windows;
 using Vanara.PInvoke;
 using OpenCvSharp.WpfExtensions;
 using Point = OpenCvSharp.Point;
+using Rect = OpenCvSharp.Rect;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -71,6 +72,15 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private System.Windows.Media.ImageSource? _resultImage;
+
+        //轮廓检测
+        [ObservableProperty] private int _minLen = 60;
+        [ObservableProperty] private int _maxGap = 10;
+        [ObservableProperty] private int _angleThresh = 1;
+
+        [ObservableProperty] private string? _detectImagePath;
+        [ObservableProperty] private System.Windows.Media.ImageSource? _detectResultImage;
+
         #endregion
 
         [RelayCommand]
@@ -252,6 +262,58 @@ namespace AutoHPMA.ViewModels.Pages
             ResultImage = bitmapSource;
         }
 
+        //轮廓检测
 
+        [RelayCommand]
+        private void SelectDetectImage()
+        {
+            var dlg = new OpenFileDialog
+            {
+                Filter = "Image Files (*.png;*.jpg)|*.png;*.jpg"
+            };
+            if (dlg.ShowDialog() == true)
+                DetectImagePath = dlg.FileName;
+        }
+
+        [RelayCommand]
+        private void DetectLines()
+        {
+            if (string.IsNullOrEmpty(DetectImagePath))
+                return;
+            Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
+            Mat src_binary = RectangleDetectHelper.Binarize(src);
+            Mat src_line  = RectangleDetectHelper.DetectBlackWhiteBordersWithMorph(src_binary, minLen: MinLen, maxGap: MaxGap, angleThresh:AngleThresh);
+
+            var bmp = BitmapSourceConverter.ToBitmapSource(src_line);
+            bmp.Freeze();
+            DetectResultImage = bmp;
+        }
+
+        [RelayCommand]
+        private void DetectRectangle()
+        {
+            if (string.IsNullOrEmpty(DetectImagePath))
+                return;
+
+            Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
+
+            Mat src_binary = RectangleDetectHelper.Binarize(src);
+
+            var rect = RectangleDetectHelper.DetectApproxRectangle(src_binary);
+
+            Cv2.Rectangle(src, rect, Scalar.Red, 2);
+
+            //string resultPath = Path.Combine(
+            //    Path.GetDirectoryName(DetectImagePath),
+            //    "test_result.png"
+            //);
+            //Cv2.ImWrite(resultPath, output);
+
+
+            var bmp = BitmapSourceConverter.ToBitmapSource(src);
+            bmp.Freeze();
+            DetectResultImage = bmp;
+        }
+ 
     }
 }

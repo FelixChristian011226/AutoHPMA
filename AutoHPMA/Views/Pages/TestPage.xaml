@@ -25,7 +25,7 @@
             CornerRadius="8,8,8,8">
             <TabControl Margin="0 0 0 0">
                 <!--  截屏测试  -->
-                <TabItem IsSelected="True">
+                <TabItem IsSelected="True" MaxWidth="100">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Margin="0,0,6,0" Symbol="ScanCamera24" />
@@ -202,7 +202,7 @@
                     </StackPanel>
                 </TabItem>
                 <!--  模拟点击  -->
-                <TabItem>
+                <TabItem  MaxWidth="100">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Margin="0,0,6,0" Symbol="TapSingle24" />
@@ -345,7 +345,7 @@
                     </StackPanel>
                 </TabItem>
                 <!-- 文字识别 -->
-                <TabItem>
+                <TabItem  MaxWidth="100">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Margin="0,0,6,0" Symbol="ScanText24" />
@@ -371,7 +371,7 @@
                     </StackPanel>
                 </TabItem>
                 <!-- 模板匹配 -->
-                <TabItem>
+                <TabItem  MaxWidth="100">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Margin="0,0,6,0" Symbol="TargetArrow24" />
@@ -443,6 +443,120 @@
 
                         <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="4">
                             <Image Source="{Binding ViewModel.ResultImage}" Stretch="Uniform" Height="300"/>
+                        </Border>
+                    </StackPanel>
+                </TabItem>
+                <!-- 轮廓检测 -->
+                <TabItem  MaxWidth="100">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Margin="0,0,6,0" Symbol="SearchSquare24" />
+                            <TextBlock Text="轮廓检测" FontWeight="Bold" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <StackPanel Margin="0,10,0,0" Orientation="Vertical" DataContext="{Binding}">
+                        <StackPanel Margin="10,10,0,0" Orientation="Horizontal">
+                            <Grid Cursor="">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="MinLen"
+                                TextWrapping="Wrap" />
+                                <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="线段最小长度"
+                                TextWrapping="Wrap" />
+                                <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.MinLen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextWrapping="Wrap" />
+                            </Grid>
+                            <Grid Cursor="">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="MaxGap"
+                                TextWrapping="Wrap" />
+                                <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="线段最大间隔"
+                                TextWrapping="Wrap" />
+                                <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.MaxGap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextWrapping="Wrap" />
+                            </Grid>
+                            <Grid Cursor="">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                FontTypography="BodyStrong"
+                                Text="angleThresh"
+                                TextWrapping="Wrap" />
+                                <ui:TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                Text="线段角度阈值"
+                                TextWrapping="Wrap" />
+                                <ui:TextBox
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Width="100"
+                                Margin="5,0,10,0"
+                                Text="{Binding ViewModel.AngleThresh, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextWrapping="Wrap" />
+                            </Grid>
+
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" Margin="10,10,0,10">
+                            
+                            <ui:Button Content="选择图像" Command="{Binding ViewModel.SelectDetectImageCommand}" Margin="0,0,10,0" />
+                            <ui:Button Content="检测线段" Command="{Binding ViewModel.DetectLinesCommand}" Margin="0,0,10,0" />
+                            <ui:Button Content="检测矩形" Command="{Binding ViewModel.DetectRectangleCommand}" />
+                        </StackPanel>
+                        <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="4">
+                            <Image Source="{Binding ViewModel.DetectResultImage}" Stretch="Uniform" Height="Auto" MinHeight="300" />
                         </Border>
                     </StackPanel>
                 </TabItem>
