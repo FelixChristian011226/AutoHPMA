@@ -52,12 +52,22 @@
     <None Remove="Assets\ClubQuiz\channel.png" />
     <None Remove="Assets\ClubQuiz\close.png" />
     <None Remove="Assets\ClubQuiz\end.png" />
-    <None Remove="Assets\ClubQuiz\Image\badge.png" />
-    <None Remove="Assets\ClubQuiz\Image\college.png" />
-    <None Remove="Assets\ClubQuiz\Image\college_help.png" />
-    <None Remove="Assets\ClubQuiz\Image\enter.png" />
-    <None Remove="Assets\ClubQuiz\Image\mask_events.png" />
-    <None Remove="Assets\ClubQuiz\Image\quiz.png" />
+    <None Remove="Assets\ClubQuiz\Image\badge_club_shop.png" />
+    <None Remove="Assets\ClubQuiz\Image\chat_mail.png" />
+    <None Remove="Assets\ClubQuiz\Image\chat_whisper.png" />
+    <None Remove="Assets\ClubQuiz\Image\map_castle_symbol.png" />
+    <None Remove="Assets\ClubQuiz\Image\map_club_enter.png" />
+    <None Remove="Assets\ClubQuiz\Image\map_club_symbol.png" />
+    <None Remove="Assets\ClubQuiz\Image\map_return.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_leave.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_option_a.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_option_b.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_option_c.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_option_d.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_option_mask.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_time0.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_victory.png" />
+    <None Remove="Assets\ClubQuiz\Image\quiz_wait.png" />
     <None Remove="Assets\ClubQuiz\join.png" />
     <None Remove="Assets\ClubQuiz\over.png" />
     <None Remove="Assets\ClubQuiz\question_LT.png" />
@@ -78,64 +88,88 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\ClubQuiz\Image\badge.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_leave.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\college.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_option_a.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\college_help.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_option_b.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\enter.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_option_c.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\mask_events.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_option_d.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\option_a.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_option_mask.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\option_b.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_time0.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\option_c.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_victory.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\option_d.png">
+    <Content Include="Assets\ClubQuiz\Image\quiz_wait.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\gothmog.png">
+    <Content Include="Assets\ClubQuiz\Image\ui_badge.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\quiz.png">
+    <Content Include="Assets\ClubQuiz\Image\badge_club_shop.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\time18.png">
+    <Content Include="Assets\ClubQuiz\Image\chat_mail.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\time20.png">
+    <Content Include="Assets\ClubQuiz\Image\chat_whisper.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\channel.png">
+    <Content Include="Assets\ClubQuiz\Image\chat_college.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\close.png">
+    <Content Include="Assets\ClubQuiz\Image\chat_college_help.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\end.png">
+    <Content Include="Assets\ClubQuiz\Image\badge_enter.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\gather.png">
+    <Content Include="Assets\ClubQuiz\Image\map_castle_symbol.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\join.png">
+    <Content Include="Assets\ClubQuiz\Image\map_club_enter.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\over.png">
+    <Content Include="Assets\ClubQuiz\Image\map_club_symbol.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\map_return.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\badge_enter_mask.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\chat_club_quiz.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\quiz_time20.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\chat_club.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\quiz_reward_close.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\quiz_over.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ClubQuiz\club_question_bank.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ClubQuiz\Image\ui_club_symbol.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ForbiddenForest\Image\auto.png">

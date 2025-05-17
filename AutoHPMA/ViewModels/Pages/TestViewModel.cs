@@ -297,7 +297,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
 
-            Mat src_binary = RectangleDetectHelper.Binarize(src);
+            Mat src_binary = RectangleDetectHelper.Binarize(src, 200);
 
             var rect = RectangleDetectHelper.DetectApproxRectangle(src_binary);
 

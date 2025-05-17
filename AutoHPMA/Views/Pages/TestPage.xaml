@@ -23,7 +23,7 @@
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
             BorderThickness="1,1,1,0"
             CornerRadius="8,8,8,8">
-            <TabControl Margin="0 0 0 0">
+            <TabControl Margin="0 0 0 0" TabStripPlacement="Top">
                 <!--  截屏测试  -->
                 <TabItem IsSelected="True" MaxWidth="100">
                     <TabItem.Header>
