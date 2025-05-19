@@ -327,12 +327,20 @@ public class AutoClubQuiz
                     }
                     if (_optionLocated == false)
                     {
-                        LocateOption();
+                        if(!LocateOption())
+                        {
+                            _logWindow?.AddLogMessage("WRN", "未定位到选项框位置！即将重新尝试定位。");
+                            await Task.Delay(1000);
+                        }
                         continue;
                     }
                     if (_questionLocated == false)
                     {
-                        LocateQuestion();
+                        if(!LocateQuestion())
+                        {
+                            _logWindow?.AddLogMessage("WRN", "未定位到问题框位置！即将重新尝试定位。");
+                            await Task.Delay(1000);
+                        }
                         continue;
                     }
 
@@ -386,64 +394,73 @@ public class AutoClubQuiz
         ClickOption();
     }
 
-    private void LocateOption()
+    private bool LocateOption()
     {
-        OpenCvSharp.Point matchpoint;
+        Point matchpoint;
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_a, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.9);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_a, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.85);
         if (matchpoint == default || matchpoint.X < 0 || matchpoint.Y < 0 || matchpoint.X > captureMat.Width || matchpoint.Y > captureMat.Height)
         {
-            return;
+            return false;
         }
-        option_a_rect = new OpenCvSharp.Rect(matchpoint.X, matchpoint.Y, quiz_option_a.Width, quiz_option_a.Height);
-        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_b, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.9);
+        option_a_rect = new Rect(matchpoint.X, matchpoint.Y, quiz_option_a.Width, quiz_option_a.Height);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_b, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.85);
         if (matchpoint == default || matchpoint.X < 0 || matchpoint.Y < 0 || matchpoint.X > captureMat.Width || matchpoint.Y > captureMat.Height)
         {
-            return;
+            return false;
         }
-        option_b_rect = new OpenCvSharp.Rect(matchpoint.X, matchpoint.Y, quiz_option_b.Width, quiz_option_b.Height);
-        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_c, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.9);
+        option_b_rect = new Rect(matchpoint.X, matchpoint.Y, quiz_option_b.Width, quiz_option_b.Height);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_c, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.85);
         if (matchpoint == default || matchpoint.X < 0 || matchpoint.Y < 0 || matchpoint.X > captureMat.Width || matchpoint.Y > captureMat.Height)
         {
-            return;
+            return false;
         }
-        option_c_rect = new OpenCvSharp.Rect(matchpoint.X, matchpoint.Y, quiz_option_c.Width, quiz_option_c.Height);
-        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_d, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.9);
+        option_c_rect = new Rect(matchpoint.X, matchpoint.Y, quiz_option_c.Width, quiz_option_c.Height);
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_d, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.85);
         if (matchpoint == default || matchpoint.X < 0 || matchpoint.Y < 0 || matchpoint.X > captureMat.Width || matchpoint.Y > captureMat.Height)
         {
-            return;
+            return false;
         }
-        option_d_rect = new OpenCvSharp.Rect(matchpoint.X, matchpoint.Y, quiz_option_d.Width, quiz_option_d.Height);
+        option_d_rect = new Rect(matchpoint.X, matchpoint.Y, quiz_option_d.Width, quiz_option_d.Height);
 
-        _maskWindow?.SetLayerRects("Option", new List<OpenCvSharp.Rect> { option_a_rect, option_b_rect, option_c_rect, option_d_rect });
+        _maskWindow?.SetLayerRects("Option", new List<OpenCvSharp.Rect>
+        {
+            ScaleRect(option_a_rect, scale),
+            ScaleRect(option_b_rect, scale),
+            ScaleRect(option_c_rect, scale),
+            ScaleRect(option_d_rect, scale)
+        });
 
         _optionLocated = true;
 
+        return true;
+
     }
 
-    private void LocateQuestion()
+    private bool LocateQuestion()
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Mat captureMat_binary = RectangleDetectHelper.Binarize(captureMat, 200);
         question_rect = RectangleDetectHelper.DetectApproxRectangle(captureMat_binary);
         if (question_rect == default)
         {
-            return;
+            return false;
         }
-        else
-        {
-            _questionLocated = true;
-            _maskWindow.SetLayerRects("Question", new List<OpenCvSharp.Rect> { question_rect });
-        }
+
+        _questionLocated = true;
+        _maskWindow.SetLayerRects("Question", new List<Rect> { ScaleRect(question_rect, scale) });
+
+        return true;
+
     }
 
     public void RecogniseText()
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
 
         Mat questionMat = new Mat(captureMat, question_rect);
@@ -501,7 +518,7 @@ public class AutoClubQuiz
     public void FindState()
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
 
         if(FindMatch(ref ui_club_symbol))
@@ -577,7 +594,7 @@ public class AutoClubQuiz
     private void FindScore()
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
         string ocrText = paddleOCRHelper.Ocr(captureMat);
         var match = Regex.Match(ocrText,
@@ -600,7 +617,7 @@ public class AutoClubQuiz
     private bool FindTime20AndIndex()
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_time20, TemplateMatchModes.CCoeffNormed, null, 0.9);
         if (matchpoint == default)
@@ -608,16 +625,16 @@ public class AutoClubQuiz
             return false;
         }
         time_rects.Clear();
-        time_rects.Add(new OpenCvSharp.Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(quiz_time20.Width * scale), (int)(quiz_time20.Height * scale)));
+        time_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(quiz_time20.Width * scale), (int)(quiz_time20.Height * scale)));
         _maskWindow?.SetLayerRects("Time", time_rects);
-        index_rect = new OpenCvSharp.Rect((int)(matchpoint.X), (int)(matchpoint.Y + quiz_time20.Height), (int)(quiz_time20.Width), (int)(quiz_time20.Height));
+        index_rect = new Rect((int)(matchpoint.X), (int)(matchpoint.Y + quiz_time20.Height), (int)(quiz_time20.Width), (int)(quiz_time20.Height));
         return true;
     }
 
     private bool FindMatch(ref Mat mat, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
         //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
@@ -626,7 +643,7 @@ public class AutoClubQuiz
             return false;
         }
         detect_rects.Clear();
-        detect_rects.Add(new OpenCvSharp.Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
+        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
         _maskWindow?.SetLayerRects("Match", detect_rects);
         return true;
 
@@ -635,7 +652,7 @@ public class AutoClubQuiz
     private bool FindAndClick(ref Mat mat, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
         //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
@@ -644,7 +661,7 @@ public class AutoClubQuiz
             return false;
         }
         detect_rects.Clear();
-        detect_rects.Add(new OpenCvSharp.Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
+        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
         _maskWindow?.SetLayerRects("Match", detect_rects);
         SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
         return true;
@@ -653,7 +670,7 @@ public class AutoClubQuiz
     private bool FindAndClickWithMask(ref Mat mat, ref Mat mask, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(mask.Width, mask.Height));
+        Cv2.Resize(captureMat, captureMat, new Size(mask.Width, mask.Height));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         Cv2.BitwiseAnd(captureMat, mask, captureMat);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
@@ -663,7 +680,7 @@ public class AutoClubQuiz
             return false;
         }
         detect_rects.Clear();
-        detect_rects.Add(new OpenCvSharp.Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
+        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
         _maskWindow?.SetLayerRects("Match", detect_rects);
         SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
         return true;
@@ -680,6 +697,16 @@ public class AutoClubQuiz
         scale = width / 1280.0;
     }
 
+    private Rect ScaleRect(Rect rect, double scale)
+    {
+        return new Rect(
+            (int)(rect.X * scale),
+            (int)(rect.Y * scale),
+            (int)(rect.Width * scale),
+            (int)(rect.Height * scale)
+        );
+    }
+
     #region SetParameter
 
     public bool SetAnswerDelay(int answer_delay)
@@ -694,25 +721,10 @@ public class AutoClubQuiz
         return true;
     }
 
-    public bool SetGatherRefreshMode(string mode)
+    public bool SetJoinOthers(bool join_others)
     {
-        if (mode == "ChatBox")
-        {
-            _gatherRefreshMode = GatherRefreshMode.ChatBox;
-            _logWindow?.AddLogMessage("DBG", "集结刷新模式设置为：聊天框");
-            return true;
-        }
-        else if (mode == "Badge")
-        {
-            _gatherRefreshMode = GatherRefreshMode.Badge;
-            _logWindow?.AddLogMessage("DBG", "集结刷新模式设置为：徽章");
-            return true;
-        }
-        else
-        {
-            _logWindow?.AddLogMessage("ERR", "集结刷新模式设置失败。");
-            return false;
-        }
+        _joinOthers = join_others;
+        return true;
     }
 
     #endregion

@@ -42,11 +42,10 @@
         <ListBox
                 x:Name="LogListBox"
                 Width="380"
-                Height="280"
+                Height="260"
                 Margin="10,0,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
-                FontSize="6"
                 ScrollViewer.VerticalScrollBarVisibility="Hidden">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
