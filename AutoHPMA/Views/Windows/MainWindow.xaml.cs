@@ -165,7 +165,14 @@ namespace AutoHPMA.Views.Windows
             catch (Exception ex)
             {
                 // 捕获异常，记录日志或在调试阶段查看
-                System.Windows.MessageBox.Show($"更新检测失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, MessageBoxImage.Error);
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "更新检测失败",
+                    Content = ex.Message,
+                    IsSecondaryButtonEnabled = false,
+                    CloseButtonText = "确定",
+                };
+                var result = await uiMessageBox.ShowDialogAsync();
             }
         }
 
