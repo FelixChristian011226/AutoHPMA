@@ -49,14 +49,7 @@ namespace AutoHPMA.ViewModels.Pages
         private int _answerDelay = 0;
 
         [ObservableProperty]
-        private ObservableCollection<string> _gatherRefreshModes =
-            [
-                "ChatBox",
-                "Badge",
-                "College"
-            ];
-        [ObservableProperty]
-        private string _selectedGatherRefreshMode = "Badge";
+        private bool _joinOthers = false;
 
         [ObservableProperty]
         private int _autoForbiddenForestTimes = 30;
@@ -91,7 +84,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             // 初始化时从设置中加载数据
             AnswerDelay = Properties.Settings.Default.AnswerDelay;
-            SelectedGatherRefreshMode = Properties.Settings.Default.SelectedGatherRefreshMode;
+            JoinOthers = Properties.Settings.Default.JoinOthers;
 
             AutoForbiddenForestTimes = Properties.Settings.Default.AutoForbiddenForestTimes;
             SelectedTeamPosition = Properties.Settings.Default.SelectedTeamPosition;
@@ -144,7 +137,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             // 保存设置
             Properties.Settings.Default.AnswerDelay = AnswerDelay;
-            Properties.Settings.Default.SelectedGatherRefreshMode = SelectedGatherRefreshMode;
+            Properties.Settings.Default.JoinOthers = JoinOthers;
             Properties.Settings.Default.Save();
 
             AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
@@ -153,7 +146,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
             _autoClubQuiz.SetAnswerDelay(AnswerDelay);
-            _autoClubQuiz.SetGatherRefreshMode(SelectedGatherRefreshMode);
+            _autoClubQuiz.SetJoinOthers(JoinOthers);
             _autoClubQuiz.Start();
 
         }

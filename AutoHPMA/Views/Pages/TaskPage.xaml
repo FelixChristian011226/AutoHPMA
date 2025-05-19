@@ -92,7 +92,7 @@
                             Grid.Row="0"
                             Grid.RowSpan="2"
                             Grid.Column="1"
-                            MinWidth="90"
+                            MinWidth="100"
                             Margin="0,0,36,0"
                             Value="{Binding ViewModel.AnswerDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
@@ -110,22 +110,20 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             FontTypography="Body"
-                            Text="集结刷新方式"
+                            Text="加入学院互助"
                             TextWrapping="Wrap" />
                     <ui:TextBlock
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="通过聊天框的图标或者社团活动徽章。"
+                            Text="当本社团未开启社团答题，加入学院互助频道的答题活动。"
                             TextWrapping="Wrap" />
-                    <ComboBox
+                    <ui:ToggleSwitch
                             Grid.Row="0"
                             Grid.RowSpan="2"
-                            Grid.Column="1"
-                            MinWidth="80"
+                            Grid.Column="3"
                             Margin="0,0,36,0"
-                            ItemsSource="{Binding ViewModel.GatherRefreshModes}"
-                            SelectedItem="{Binding ViewModel.SelectedGatherRefreshMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            IsChecked="{Binding ViewModel.JoinOthers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <Grid Margin="16">

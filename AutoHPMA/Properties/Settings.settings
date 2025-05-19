@@ -5,8 +5,8 @@
     <Setting Name="AnswerDelay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="SelectedGatherRefreshMode" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Badge</Value>
+    <Setting Name="JoinOthers" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="RealTimeScreenshotEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
