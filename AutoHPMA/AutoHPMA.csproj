@@ -88,6 +88,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\ClubQuiz\Image\close_club_rank.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\ClubQuiz\Image\quiz_leave.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -160,7 +163,7 @@
     <Content Include="Assets\ClubQuiz\Image\chat_club.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ClubQuiz\Image\quiz_reward_close.png">
+    <Content Include="Assets\ClubQuiz\Image\close_quiz_info.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ClubQuiz\Image\quiz_over.png">

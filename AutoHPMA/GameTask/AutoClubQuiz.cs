@@ -36,9 +36,6 @@ public enum AutoClubQuizState
     Over,
     Victory,
 
-    Gathering,
-    Preparing,
-    Answering,
 }
 
 public class AutoClubQuiz
@@ -55,11 +52,12 @@ public class AutoClubQuiz
     private AutoClubQuizState _state = AutoClubQuizState.Outside;
 
     private static Mat? captureMat;
+    private Mat close_quiz_info, close_club_rank;
     private Mat map_castle_symbol, map_club_symbol, map_club_enter, map_return;
     private Mat ui_club_symbol, ui_badge;
     private Mat chat_mail, chat_whisper, chat_club, chat_club_quiz, chat_college, chat_college_help;
     private Mat badge_club_shop, badge_enter, badge_enter_mask;
-    private Mat quiz_wait, quiz_reward_close, quiz_leave, quiz_over, quiz_victory;
+    private Mat quiz_wait, quiz_leave, quiz_over, quiz_victory;
     private Mat quiz_option_a, quiz_option_b, quiz_option_c, quiz_option_d, quiz_option_mask;
     private Mat quiz_time0, quiz_time20;
 
@@ -116,6 +114,10 @@ public class AutoClubQuiz
     {
         string image_folder = "Assets/ClubQuiz/Image/";
 
+        close_club_rank = Cv2.ImRead(image_folder + "close_club_rank.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(close_club_rank, close_club_rank, ColorConversionCodes.BGR2GRAY);
+        close_quiz_info = Cv2.ImRead(image_folder + "close_quiz_info.png", ImreadModes.Unchanged);
+        Cv2.CvtColor(close_quiz_info, close_quiz_info, ColorConversionCodes.BGR2GRAY);
         map_castle_symbol = Cv2.ImRead(image_folder+"map_castle_symbol.png", ImreadModes.Unchanged);
         Cv2.CvtColor(map_castle_symbol, map_castle_symbol, ColorConversionCodes.BGR2GRAY);
         map_club_symbol = Cv2.ImRead(image_folder + "map_club_symbol.png", ImreadModes.Unchanged);
@@ -148,8 +150,6 @@ public class AutoClubQuiz
         Cv2.CvtColor(badge_enter_mask, badge_enter_mask, ColorConversionCodes.BGR2GRAY);
         quiz_wait = Cv2.ImRead(image_folder + "quiz_wait.png", ImreadModes.Unchanged);
         Cv2.CvtColor(quiz_wait, quiz_wait, ColorConversionCodes.BGR2GRAY);
-        quiz_reward_close = Cv2.ImRead(image_folder + "quiz_reward_close.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_reward_close, quiz_reward_close, ColorConversionCodes.BGR2GRAY);
         quiz_leave = Cv2.ImRead(image_folder + "quiz_leave.png", ImreadModes.Unchanged);
         Cv2.CvtColor(quiz_leave, quiz_leave, ColorConversionCodes.BGR2GRAY);
         quiz_option_a = Cv2.ImRead(image_folder + "quiz_option_a.png", ImreadModes.Unchanged);
@@ -181,7 +181,7 @@ public class AutoClubQuiz
 
     public async void Start()
     {
-        _state = AutoClubQuizState.Gathering;
+        _state = AutoClubQuizState.Outside;
         _logWindow?.SetGameState("社团答题");
 
         while (!_cts.Token.IsCancellationRequested)
@@ -511,7 +511,9 @@ public class AutoClubQuiz
 
     public async Task CloseDialogs()
     {
-        if(FindAndClick(ref quiz_reward_close))
+        if(FindAndClick(ref close_quiz_info))
+            await Task.Delay(1000);
+        if(FindAndClick(ref close_club_rank))
             await Task.Delay(1000);
     }
 
@@ -604,7 +606,7 @@ public class AutoClubQuiz
 
         if (!match.Success)
         {
-            _logWindow?.AddLogMessage("Err", "无法识别社团贡献分数，请检查OCR设置或截图质量。");
+            _logWindow?.AddLogMessage("WRN", "无法识别社团贡献分数，请检查OCR设置或截图质量。");
         }
         int addScore = int.Parse(match.Groups[1].Value);
         string weekTotal = match.Groups[2].Value;
@@ -713,7 +715,7 @@ public class AutoClubQuiz
     {
         if (answer_delay < 0)
         {
-            _logWindow?.AddLogMessage("ERR", "答题延迟不能小于0。已设置为默认值。");
+            _logWindow?.AddLogMessage("WRN", "答题延迟不能小于0。已设置为默认值。");
             return false;
         }
         _answerDelay = answer_delay;
