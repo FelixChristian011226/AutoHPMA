@@ -63,18 +63,18 @@
                         <TextBlock>
                                 <Run Foreground="White" Text="[" />
                                 <Run Foreground="LightGray" Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" />
-                                <Run Text=" " />
                                 <Run
+                                    FontFamily="Cascadia Mono"
                                     FontWeight="Bold"
                                     Foreground="{Binding Category, Converter={StaticResource CategoryToColorConverter}}"
                                     Text="{Binding Category}" />
                                 <Run Foreground="White" Text="] " />
                         </TextBlock>
                         <TextBlock Foreground="FloralWhite"
-                               TextWrapping="Wrap"
-                               Width="240"
-                               helpers:InlineBindingHelper.FormattedText="{Binding Content}" />
-                </StackPanel>
+                                   TextWrapping="Wrap"
+                                   Width="240"
+                                   helpers:InlineBindingHelper.FormattedText="{Binding Content}" />
+                    </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
