@@ -74,11 +74,9 @@
     <None Remove="Assets\ClubQuiz\question_RB.png" />
     <None Remove="Assets\club_question_bank.xlsx" />
     <None Remove="Assets\ForbiddenForest\auto.png" />
-    <None Remove="Assets\ForbiddenForest\Image\auto_fight.png" />
-    <None Remove="Assets\ForbiddenForest\Image\confirm.png" />
-    <None Remove="Assets\ForbiddenForest\Image\loading.png" />
-    <None Remove="Assets\ForbiddenForest\Image\start.png" />
-    <None Remove="Assets\ForbiddenForest\Image\thumb.png" />
+    <None Remove="Assets\ForbiddenForest\Image\ui_clock.png" />
+    <None Remove="Assets\ForbiddenForest\Image\ui_explore.png" />
+    <None Remove="Assets\ForbiddenForest\Image\ui_statistics.png" />
     <None Remove="Assets\ForbiddenForest\ready.png" />
     <None Remove="Assets\hpma.png" />
     <None Remove="Assets\Logo.ico" />
@@ -175,25 +173,34 @@
     <Content Include="Assets\ClubQuiz\Image\ui_club_symbol.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ForbiddenForest\Image\auto.png">
+    <Content Include="Assets\ForbiddenForest\Image\team_auto.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ForbiddenForest\Image\auto_fight.png">
+    <Content Include="Assets\ForbiddenForest\Image\fight_auto.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ForbiddenForest\Image\confirm.png">
+    <Content Include="Assets\ForbiddenForest\Image\team_confirm.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ForbiddenForest\Image\loading.png">
+    <Content Include="Assets\ForbiddenForest\Image\ui_clock.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ForbiddenForest\Image\ready.png">
+    <Content Include="Assets\ForbiddenForest\Image\ui_loading.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ForbiddenForest\Image\start.png">
+    <Content Include="Assets\ForbiddenForest\Image\team_ready.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\ForbiddenForest\Image\thumb.png">
+    <Content Include="Assets\ForbiddenForest\Image\team_start.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\over_thumb.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\ui_explore.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\ForbiddenForest\Image\ui_statistics.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="tessdata\chi_sim.traineddata">

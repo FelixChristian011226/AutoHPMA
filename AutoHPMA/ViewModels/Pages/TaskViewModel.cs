@@ -200,7 +200,6 @@ namespace AutoHPMA.ViewModels.Pages
 
             AutoForbiddenForestStartButtonVisibility = Visibility.Collapsed;
             AutoForbiddenForestStopButtonVisibility = Visibility.Visible;
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---禁林任务已启动---[/Aquamarine]");
 
             _autoForbiddenForest = new AutoForbiddenForest(_displayHwnd, _gameHwnd);
             _autoForbiddenForest.SetAutoForbiddenForestTimes(AutoForbiddenForestTimes);
@@ -216,7 +215,6 @@ namespace AutoHPMA.ViewModels.Pages
         {
             AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
             AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---禁林任务已终止---[/Aquamarine]");
 
             _autoForbiddenForest?.Stop();
             _autoForbiddenForest = null;
