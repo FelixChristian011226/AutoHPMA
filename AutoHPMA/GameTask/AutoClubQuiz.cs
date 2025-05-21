@@ -183,202 +183,223 @@ public class AutoClubQuiz
     {
         _state = AutoClubQuizState.Outside;
         _logWindow?.SetGameState("社团答题");
-
-        while (!_cts.Token.IsCancellationRequested)
+        _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
+        try
         {
-            System.GC.Collect();
-            await CloseDialogs();
-            FindState();
-            switch (_state)
+            while (!_cts.Token.IsCancellationRequested)
             {
-                case AutoClubQuizState.Outside:
-                    if (!_waited)
-                    {
-                        _logWindow?.SetGameState("社团答题-等待加载");
-                        await Task.Delay(3000);
-                        _waited = true;
-                        break;
-                    }
-                    _waited = false;
-                    SendESC(_gameHwnd);
-                    await Task.Delay(2000);
-                    SendKey(_gameHwnd, 0x4D);
-                    await Task.Delay(2000);
-                    break;
-
-                case AutoClubQuizState.Map:
-                    FindAndClick(ref map_castle_symbol);
-                    await Task.Delay(1000);
-                    FindAndClick(ref map_club_symbol);
-                    await Task.Delay(1000);
-                    FindAndClick(ref map_club_enter);
-                    await Task.Delay(1000);
-                    SendESC(_gameHwnd);
-                    await Task.Delay(2000);
-                    break;
-
-                case AutoClubQuizState.ClubScene:
-                    _logWindow?.AddLogMessage("INF", "等待下一场答题...");
-                    for (int i = 5; i > 0; i--)
-                    {
-                        _logWindow?.AddLogMessage("INF", "还剩[Yellow]" + i + "[/Yellow]秒...");
-                        await Task.Delay(1000);
-                        _logWindow?.DeleteLastLogMessage();
-                    }
-                    _logWindow?.DeleteLastLogMessage();
-
-                    switch (_gatherRefreshMode)
-                    {
-                        case GatherRefreshMode.ChatBox:
-                            SendEnter(_gameHwnd);
-                            await Task.Delay(2000);
-                            _gatherRefreshMode = GatherRefreshMode.Badge;
-                            break;
-                        case GatherRefreshMode.Badge:
-                            FindAndClick(ref ui_badge);
-                            await Task.Delay(3000);
-                            _gatherRefreshMode = GatherRefreshMode.ChatBox;
-                            break;
-
-                    }
-                    break;
-
-                case AutoClubQuizState.ChatFrame:
-                    if (FindAndClick(ref chat_club, 0.88))       //点击展开社团频道
-                        await Task.Delay(2000);
-                    if (FindAndClick(ref chat_club_quiz, 0.98))  //点击前往活动面板
-                        await Task.Delay(2000);
-
-                    if (_joinOthers)
-                    {
-                        if (FindAndClick(ref chat_college_help, 0.88))  // case 1: 学院聊天频道已经展开，点击学院互助
+                System.GC.Collect();
+                await CloseDialogs();
+                FindState();
+                switch (_state)
+                {
+                    case AutoClubQuizState.Outside:
+                        if (!_waited)
                         {
-                            await Task.Delay(1500);
-                            if (FindAndClick(ref chat_club_quiz, 0.98))     //case 1.1: 有社团答题，点击前往活动
-                            {
-                                await Task.Delay(2000);
-                                if (FindMatch(ref chat_club_quiz, 0.98))
-                                {
-                                    SendESC(_gameHwnd);
-                                    await Task.Delay(1500);
-                                }
-                                continue;
-                            }
-                            SendESC(_gameHwnd);                             //case 1.2: 没有社团答题，关闭聊天框
-                            await Task.Delay(1500);
-                            continue;
+                            _logWindow?.SetGameState("社团答题-等待加载");
+                            await Task.Delay(3000, _cts.Token);
+                            _waited = true;
+                            break;
                         }
-                        if (FindAndClick(ref chat_college, 0.88))       // case 2: 学院聊天频道未展开，先点击学院
+                        _waited = false;
+                        SendESC(_gameHwnd);
+                        await Task.Delay(2000, _cts.Token);
+                        SendKey(_gameHwnd, 0x4D);
+                        await Task.Delay(2000, _cts.Token);
+                        break;
+
+                    case AutoClubQuizState.Map:
+                        FindAndClick(ref map_castle_symbol);
+                        await Task.Delay(1000, _cts.Token);
+                        FindAndClick(ref map_club_symbol);
+                        await Task.Delay(1000, _cts.Token);
+                        FindAndClick(ref map_club_enter);
+                        await Task.Delay(1000, _cts.Token);
+                        SendESC(_gameHwnd);
+                        await Task.Delay(2000, _cts.Token);
+                        break;
+
+                    case AutoClubQuizState.ClubScene:
+                        _logWindow?.AddLogMessage("INF", "等待下一场答题...");
+                        for (int i = 5; i > 0; i--)
                         {
-                            await Task.Delay(1500);
-                            if (FindAndClick(ref chat_club_quiz, 0.98))     // case 2.1: 直接进入学院互助频道，点前往活动
+                            _logWindow?.AddLogMessage("INF", "还剩[Yellow]" + i + "[/Yellow]秒...");
+                            await Task.Delay(1000, _cts.Token);
+                            _logWindow?.DeleteLastLogMessage();
+                        }
+                        _logWindow?.DeleteLastLogMessage();
+
+                        switch (_gatherRefreshMode)
+                        {
+                            case GatherRefreshMode.ChatBox:
+                                SendEnter(_gameHwnd);
+                                await Task.Delay(2000, _cts.Token);
+                                _gatherRefreshMode = GatherRefreshMode.Badge;
+                                break;
+                            case GatherRefreshMode.Badge:
+                                FindAndClick(ref ui_badge);
+                                await Task.Delay(3000, _cts.Token);
+                                _gatherRefreshMode = GatherRefreshMode.ChatBox;
+                                break;
+
+                        }
+                        break;
+
+                    case AutoClubQuizState.ChatFrame:
+                        if (FindAndClick(ref chat_club, 0.88))       //点击展开社团频道
+                            await Task.Delay(2000, _cts.Token);
+                        if (FindAndClick(ref chat_club_quiz, 0.98))  //点击前往活动面板
+                            await Task.Delay(2000, _cts.Token);
+
+                        if (_joinOthers)
+                        {
+                            if (FindAndClick(ref chat_college_help, 0.88))  // case 1: 学院聊天频道已经展开，点击学院互助
                             {
-                                await Task.Delay(2000);
-                                if (FindMatch(ref chat_club_quiz, 0.98))
+                                await Task.Delay(1500, _cts.Token);
+                                if (FindAndClick(ref chat_club_quiz, 0.98))     //case 1.1: 有社团答题，点击前往活动
                                 {
-                                    SendESC(_gameHwnd);
-                                    await Task.Delay(1500);
-                                }
-                                continue;
-                            }
-                            if (FindAndClick(ref chat_college_help))        // case 2.2: 在学院聊天频道，先点击学院互助
-                            {
-                                await Task.Delay(1500);
-                                if (FindAndClick(ref chat_club_quiz, 0.98))     //case 3.2.1: 有社团答题，点击前往活动
-                                {
-                                    await Task.Delay(2000);
+                                    await Task.Delay(2000, _cts.Token);
                                     if (FindMatch(ref chat_club_quiz, 0.98))
                                     {
                                         SendESC(_gameHwnd);
-                                        await Task.Delay(1500);
+                                        await Task.Delay(1500, _cts.Token);
                                     }
                                     continue;
                                 }
-                                SendESC(_gameHwnd);                             //case 3.2.2: 没有社团答题，关闭聊天框
-                                await Task.Delay(1500);
+                                SendESC(_gameHwnd);                             //case 1.2: 没有社团答题，关闭聊天框
+                                await Task.Delay(1500, _cts.Token);
                                 continue;
                             }
+                            if (FindAndClick(ref chat_college, 0.88))       // case 2: 学院聊天频道未展开，先点击学院
+                            {
+                                await Task.Delay(1500, _cts.Token);
+                                if (FindAndClick(ref chat_club_quiz, 0.98))     // case 2.1: 直接进入学院互助频道，点前往活动
+                                {
+                                    await Task.Delay(2000, _cts.Token);
+                                    if (FindMatch(ref chat_club_quiz, 0.98))
+                                    {
+                                        SendESC(_gameHwnd);
+                                        await Task.Delay(1500, _cts.Token);
+                                    }
+                                    continue;
+                                }
+                                if (FindAndClick(ref chat_college_help))        // case 2.2: 在学院聊天频道，先点击学院互助
+                                {
+                                    await Task.Delay(1500, _cts.Token);
+                                    if (FindAndClick(ref chat_club_quiz, 0.98))     //case 3.2.1: 有社团答题，点击前往活动
+                                    {
+                                        await Task.Delay(2000, _cts.Token);
+                                        if (FindMatch(ref chat_club_quiz, 0.98))
+                                        {
+                                            SendESC(_gameHwnd);
+                                            await Task.Delay(1500, _cts.Token);
+                                        }
+                                        continue;
+                                    }
+                                    SendESC(_gameHwnd);                             //case 3.2.2: 没有社团答题，关闭聊天框
+                                    await Task.Delay(1500, _cts.Token);
+                                    continue;
+                                }
+                            }
                         }
-                    }
 
-                    SendESC(_gameHwnd);     //所有操作完成后，关闭聊天框
-                    await Task.Delay(1500);
-                    break;
+                        SendESC(_gameHwnd);     //所有操作完成后，关闭聊天框
+                        await Task.Delay(1500, _cts.Token);
+                        break;
 
-                case AutoClubQuizState.Events:
-                    if (!FindAndClickWithMask(ref badge_enter, ref badge_enter_mask))
-                    {
+                    case AutoClubQuizState.Events:
+                        if (!FindAndClickWithMask(ref badge_enter, ref badge_enter_mask))
+                        {
+                            SendESC(_gameHwnd);
+                            await Task.Delay(1500, _cts.Token);
+                        }
+                        await Task.Delay(1500, _cts.Token);
+                        break;
+
+                    case AutoClubQuizState.Wait:
+                        await Task.Delay(1000, _cts.Token);
+                        break;
+
+                    case AutoClubQuizState.Quiz:
+                        _maskWindow.ShowLayer("Option");
+                        if (_quiz_over)
+                        {
+                            _logWindow?.AddLogMessage("INF", "第[Yellow]" + roundIndex + "[/Yellow]轮答题开始");
+                            _quiz_over = false;
+                        }
+                        if (_optionLocated == false)
+                        {
+                            if (!LocateOption())
+                            {
+                                _logWindow?.AddLogMessage("WRN", "未定位到选项框位置！即将重新尝试定位。");
+                                await Task.Delay(1000, _cts.Token);
+                            }
+                            continue;
+                        }
+                        if (_questionLocated == false)
+                        {
+                            if (!LocateQuestion())
+                            {
+                                _logWindow?.AddLogMessage("WRN", "未定位到问题框位置！即将重新尝试定位。");
+                                await Task.Delay(1000, _cts.Token);
+                            }
+                            continue;
+                        }
+
+                        if (FindTime20AndIndex())
+                        {
+                            await Task.Delay(500, _cts.Token);
+                            LocateQuestion();
+                            await Task.Delay(100, _cts.Token);
+                            await AcquireAnswerAsync();
+                            continue;
+                        }
+
+                        await Task.Delay(detect_gap, _cts.Token);
+                        _maskWindow.HideLayer("Option");
+                        break;
+
+                    case AutoClubQuizState.Over:
+                        _maskWindow.ClearLayer("Time");
+                        _maskWindow.ClearLayer("Question");
+                        await Task.Delay(1000, _cts.Token);
+                        FindAndClick(ref quiz_over);
+                        await Task.Delay(2000, _cts.Token);
+                        break;
+
+                    case AutoClubQuizState.Victory:
+                        await Task.Delay(1000, _cts.Token);
+                        roundIndex++;
+                        _quiz_over = true;
+                        FindScore();
                         SendESC(_gameHwnd);
-                        await Task.Delay(1500);
-                    }
-                    await Task.Delay(1500);
-                    break;
+                        await Task.Delay(1000, _cts.Token);
+                        break;
 
-                case AutoClubQuizState.Wait:
-                    await Task.Delay(1000);
-                    break;
+                }
 
-                case AutoClubQuizState.Quiz:
-                    _maskWindow.ShowLayer("Option");
-                    if(_quiz_over)
-                    {
-                        _logWindow?.AddLogMessage("INF", "第[Yellow]" + roundIndex + "[/Yellow]轮答题开始");
-                        _quiz_over = false;
-                    }
-                    if (_optionLocated == false)
-                    {
-                        if(!LocateOption())
-                        {
-                            _logWindow?.AddLogMessage("WRN", "未定位到选项框位置！即将重新尝试定位。");
-                            await Task.Delay(1000);
-                        }
-                        continue;
-                    }
-                    if (_questionLocated == false)
-                    {
-                        if(!LocateQuestion())
-                        {
-                            _logWindow?.AddLogMessage("WRN", "未定位到问题框位置！即将重新尝试定位。");
-                            await Task.Delay(1000);
-                        }
-                        continue;
-                    }
 
-                    if (FindTime20AndIndex())
-                    {
-                        await Task.Delay(500);
-                        LocateQuestion();
-                        await Task.Delay(100);
-                        await AcquireAnswerAsync();
-                        continue;
-                    }
-
-                    await Task.Delay(detect_gap);
-                    _maskWindow.HideLayer("Option");
-                    break;
-
-                case AutoClubQuizState.Over:
-                    _maskWindow.ClearLayer("Time");
-                    _maskWindow.ClearLayer("Question");
-                    await Task.Delay(1000);
-                    FindAndClick(ref quiz_over);
-                    await Task.Delay(2000);
-                    break;
-
-                case AutoClubQuizState.Victory:
-                    await Task.Delay(1000);
-                    roundIndex++;
-                    _quiz_over = true;
-                    FindScore();
-                    SendESC(_gameHwnd);
-                    await Task.Delay(1000);
-                    break;
-
+                continue;
             }
 
-
-            continue;
         }
+        catch (TaskCanceledException)
+        {
+            _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已终止---[/Aquamarine]");
+        }
+        catch (Exception ex)
+        {
+            _logWindow?.AddLogMessage("ERR", "发生异常：" + ex.Message);
+        }
+        finally
+        {
+            _maskWindow.ClearAllLayers();
+            _logWindow?.SetGameState("空闲");
+            _cts.Dispose();
+            _cts = new CancellationTokenSource();
+        }
+
+
     }
 
     private async Task AcquireAnswerAsync()
@@ -388,7 +409,7 @@ public class AutoClubQuiz
         PrintText();
         answer = excelHelper.GetBestMatchingAnswer(q);
         bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
-        await Task.Delay(_answerDelay * 1000);
+        await Task.Delay(_answerDelay * 1000, _cts.Token);
         i = Regex.Match(i, @"\d+/\d+").Value;   //正则匹配去掉多余符号
         _logWindow?.AddLogMessage("INF", "进度：[Yellow]" + i + "[/Yellow]。答案：[Lime]" + bestOption + "[/Lime]。");
         ClickOption();
@@ -512,9 +533,9 @@ public class AutoClubQuiz
     public async Task CloseDialogs()
     {
         if(FindAndClick(ref close_quiz_info))
-            await Task.Delay(1000);
+            await Task.Delay(1000, _cts.Token);
         if(FindAndClick(ref close_club_rank))
-            await Task.Delay(1000);
+            await Task.Delay(1000, _cts.Token);
     }
 
     public void FindState()

@@ -142,7 +142,6 @@ namespace AutoHPMA.ViewModels.Pages
 
             AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
 
             _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
             _autoClubQuiz.SetAnswerDelay(AnswerDelay);
@@ -158,10 +157,10 @@ namespace AutoHPMA.ViewModels.Pages
         {
             AutoClubQuizStartButtonVisibility = Visibility.Visible;
             AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已终止---[/Aquamarine]");
 
             _autoClubQuiz?.Stop();
             _autoClubQuiz = null;
+
             GC.Collect();
         }
 
