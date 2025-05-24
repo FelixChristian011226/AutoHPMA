@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using static AutoHPMA.Helpers.WindowInteractionHelper;
-using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
 
@@ -38,7 +37,6 @@ public enum AutoForbiddenForestOption
 public class AutoForbiddenForest
 {
     private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
-
     private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
     private static WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
 
