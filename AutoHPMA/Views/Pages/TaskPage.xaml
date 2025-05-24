@@ -272,5 +272,58 @@
             </StackPanel>
         </ui:CardExpander>
 
+        <!--  甜蜜冒险  -->
+        <ui:CardExpander
+               Margin="0,0,0,12"
+               ContentPadding="0"
+               Icon="{ui:SymbolIcon QuizNew24}">
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock
+                           Grid.Row="0"
+                           Grid.Column="0"
+                           FontTypography="Body"
+                           Text="自动甜蜜冒险"
+                           TextWrapping="Wrap" />
+                    <ui:TextBlock
+                           Grid.Row="1"
+                           Grid.Column="0"
+                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                           TextWrapping="Wrap">
+                        <Run>
+                            点击展开相关配置
+                        </Run>
+                    </ui:TextBlock>
+                    <StackPanel
+                           Grid.Row="0"
+                           Grid.RowSpan="2"
+                           Grid.Column="1"
+                           Margin="0,0,24,0"
+                           Orientation="Horizontal">
+                        <ui:Button
+                               Command="{Binding ViewModel.AutoSweetAdventureStartTriggerCommand}"
+                               Content="启动"
+                               Icon="{ui:SymbolIcon Play24}"
+                               Visibility="{Binding ViewModel.AutoSweetAdventureStartButtonVisibility}" />
+                        <ui:Button
+                               Command="{Binding ViewModel.AutoSweetAdventureStopTriggerCommand}"
+                               Content="停止"
+                               Icon="{ui:SymbolIcon Dismiss24}"
+                               Visibility="{Binding ViewModel.AutoSweetAdventureStopButtonVisibility}" />
+                    </StackPanel>
+                </Grid>
+            </ui:CardExpander.Header>
+            <StackPanel>
+            </StackPanel>
+        </ui:CardExpander>        
+        
     </StackPanel>
 </Page>

@@ -81,6 +81,18 @@
     <None Remove="Assets\hpma.png" />
     <None Remove="Assets\Logo.ico" />
     <None Remove="Assets\ClubQuiz\Gather.png" />
+    <None Remove="Assets\SweetAdventure\Image\gaming_candy.png" />
+    <None Remove="Assets\SweetAdventure\Image\gaming_forward.png" />
+    <None Remove="Assets\SweetAdventure\Image\gaming_monster.png" />
+    <None Remove="Assets\SweetAdventure\Image\gaming_return.png" />
+    <None Remove="Assets\SweetAdventure\Image\gaming_round2.png" />
+    <None Remove="Assets\SweetAdventure\Image\gaming_round3.png" />
+    <None Remove="Assets\SweetAdventure\Image\gaming_round4.png" />
+    <None Remove="Assets\SweetAdventure\Image\gaming_round5.png" />
+    <None Remove="Assets\SweetAdventure\Image\teaming_start.png" />
+    <None Remove="Assets\SweetAdventure\Image\ui_endding.png" />
+    <None Remove="Assets\SweetAdventure\Image\ui_gaming.png" />
+    <None Remove="Assets\SweetAdventure\Image\ui_teaming.png" />
     <None Remove="Assets\wpfui-icon-256.png" />
     <None Remove="Assets\wpfui-icon-1024.png" />
   </ItemGroup>
@@ -201,6 +213,45 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ForbiddenForest\Image\ui_statistics.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_candy.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_forward.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_monster.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_return.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_round1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_round2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_round3.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_round4.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\gaming_round5.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\teaming_start.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\ui_endding.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\ui_gaming.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SweetAdventure\Image\ui_teaming.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="tessdata\chi_sim.traineddata">

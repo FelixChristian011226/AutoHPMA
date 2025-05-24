@@ -1,4 +1,5 @@
 ﻿using AutoHPMA.GameTask;
+using AutoHPMA.GameTask.Temporary;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Messages;
 using AutoHPMA.Services;
@@ -31,6 +32,10 @@ namespace AutoHPMA.ViewModels.Pages
         private Visibility _autoForbiddenForestStartButtonVisibility = Visibility.Visible;
         [ObservableProperty]
         private Visibility _autoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
+        [ObservableProperty]
+        private Visibility _autoSweetAdventureStartButtonVisibility = Visibility.Visible;
+        [ObservableProperty]
+        private Visibility _autoSweetAdventureStopButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStartTriggerCommand))]
@@ -44,6 +49,12 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AutoForbiddenForestStopTriggerCommand))]
         private bool _autoForbiddenForestStopButtonEnabled = true;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AutoSweetAdventureStartTriggerCommand))]
+        private bool _autoSweetAdventureStartButtonEnabled = true;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AutoSweetAdventureStopTriggerCommand))]
+        private bool _autoSweetAdventureStopButtonEnabled = true;
 
         [ObservableProperty]
         private int _answerDelay = 0;
@@ -73,6 +84,7 @@ namespace AutoHPMA.ViewModels.Pages
 
         private AutoClubQuiz? _autoClubQuiz;
         private AutoForbiddenForest? _autoForbiddenForest;
+        private AutoSweetAdventure? _autoSweetAdventure;
         private AppContextService appContextService;
 
         public TaskViewModel()
@@ -220,6 +232,57 @@ namespace AutoHPMA.ViewModels.Pages
             _autoForbiddenForest = null;
             GC.Collect();
         }
+
+        private bool CanAutoSweetAdventureStartTrigger() => AutoSweetAdventureStartButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStartTrigger))]
+        private void OnAutoSweetAdventureStartTrigger()
+        {
+
+            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "⚠️ 错误",
+                    Content = "任务启动失败。请先启动截图器!",
+                };
+                var result = uiMessageBox.ShowDialogAsync();
+                return;
+            }
+            else
+            {
+                var snackbarInfo = new SnackbarInfo
+                {
+                    Title = "启动成功",
+                    Message = "甜蜜冒险已启动。",
+                    Appearance = ControlAppearance.Success,
+                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
+                    Duration = TimeSpan.FromSeconds(3)
+                };
+                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
+            }
+
+            AutoSweetAdventureStartButtonVisibility = Visibility.Collapsed;
+            AutoSweetAdventureStopButtonVisibility = Visibility.Visible;
+
+            _autoSweetAdventure = new AutoSweetAdventure(_displayHwnd, _gameHwnd);
+            _autoSweetAdventure.Start();
+
+        }
+
+        private bool CanAutoSweetAdventureStopTrigger() => AutoSweetAdventureStopButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStopTrigger))]
+        private void OnAutoSweetAdventureStopTrigger()
+        {
+            AutoSweetAdventureStartButtonVisibility = Visibility.Visible;
+            AutoSweetAdventureStopButtonVisibility = Visibility.Collapsed;
+
+            _autoSweetAdventure?.Stop();
+            _autoSweetAdventure = null;
+            GC.Collect();
+        }
+
 
         [RelayCommand]
         private void OnOpenQuestionBank(object sender)
