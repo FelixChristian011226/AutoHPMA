@@ -27,8 +27,6 @@ public enum AutoForbiddenForestState
     Loading,
     Fighting,
     Summary,
-
-    Preparing,
 }
 
 public enum AutoForbiddenForestOption
