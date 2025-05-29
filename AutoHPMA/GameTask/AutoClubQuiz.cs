@@ -635,6 +635,8 @@ public class AutoClubQuiz
         _logWindow?.AddLogMessage("INF", "本次社团贡献：[Yellow]+" + addScore + "[/Yellow]。");
         _logWindow?.AddLogMessage("INF", "本周社团贡献：[Yellow]" + weekTotal + "[/Yellow]。");
 
+        ToastNotificationHelper.ShowToastWithImage("答题结束", "本次社团贡献：[Yellow]+" + addScore + "[/Yellow]。\n" + "本周社团贡献：[Yellow]" + weekTotal + "[/Yellow]。", captureMat);
+
     }
 
     private bool FindTime20AndIndex()
