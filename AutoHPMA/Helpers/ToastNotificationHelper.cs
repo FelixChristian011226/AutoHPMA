@@ -15,6 +15,8 @@ public class ToastNotificationHelper
     {
         try
         {
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string logoPath = Path.Combine(baseDir, "Assets", "logo.png");
             string imageDir = CacheHelper.GetSubCacheDir("Images");
             string tempImagePath = Path.Combine(imageDir, $"toast_{Guid.NewGuid()}.png");
 
@@ -24,6 +26,7 @@ public class ToastNotificationHelper
                 .AddText(title)
                 .AddText(content)
                 .AddInlineImage(new Uri(tempImagePath))
+                .AddAppLogoOverride(new Uri(logoPath), ToastGenericAppLogoCrop.Circle)
                 .AddArgument("action", "viewImage")
                 .AddArgument("launchArgs", launchArgs)
                 .Show();
