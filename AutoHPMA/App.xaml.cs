@@ -21,6 +21,7 @@ using System.Reflection;
 using System.Windows.Threading;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
+using AutoHPMA.Config;
 
 namespace AutoHPMA
 {
@@ -99,6 +100,30 @@ namespace AutoHPMA
         private async void OnStartup(object sender, StartupEventArgs e)
         {
             await _host.StartAsync();
+
+            // 检查是否显示过使用条款
+            var settings = AppSettings.Load();
+            if (!settings.HasShownTermsOfUse)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "使用条款",
+                    Content = 
+                    "1. 本软件仅供学习和研究使用\n" +
+                    "2. 请勿将本软件用于任何非法用途\n" +
+                    "3. 使用本软件产生的任何后果由用户自行承担\n" +
+                    "4. 本软件不保证100%的准确性和稳定性\n\n" +
+                    "点击确定表示您同意以上条款。",
+                    CloseButtonText = "确定",
+                };
+
+                var result = await uiMessageBox.ShowDialogAsync();
+                if(result == Wpf.Ui.Controls.MessageBoxResult.None)
+                {
+                    settings.HasShownTermsOfUse = true;
+                    settings.Save();
+                }
+            }
         }
 
         /// <summary>
