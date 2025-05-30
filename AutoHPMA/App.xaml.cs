@@ -126,6 +126,10 @@ namespace AutoHPMA
                     settings.HasShownTermsOfUse = true;
                     settings.Save();
                 }
+                else
+                {
+                    Application.Current.Shutdown();
+                }
             }
         }
 

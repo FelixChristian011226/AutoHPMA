@@ -130,7 +130,8 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         private void ResetSettings()
         {
-            _settings.Reset();
+            //_settings.Reset();
+            _settings.Clear();
             Application.Current.Shutdown();
         }
     }

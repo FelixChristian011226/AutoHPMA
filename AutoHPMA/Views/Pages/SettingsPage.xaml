@@ -72,7 +72,7 @@
             </ui:CardControl.Header>
             <ui:Button 
                 Margin="0, 0, 36, 0"
-                Content="重置并退出" 
+                Content="重置" 
                 Command="{Binding ViewModel.ResetSettingsCommand}" />
         </ui:CardControl>
 

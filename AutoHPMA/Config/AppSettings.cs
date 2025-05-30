@@ -123,5 +123,20 @@ namespace AutoHPMA.Config
 
             Save();
         }
+
+        public void Clear()
+        {
+            try
+            {
+                if (File.Exists(SettingsPath))
+                {
+                    File.Delete(SettingsPath);
+                }
+            }
+            catch (Exception)
+            {
+                // 处理删除失败的情况
+            }
+        }
     }
 }
