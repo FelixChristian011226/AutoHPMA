@@ -6,6 +6,7 @@
 using AutoHPMA.Views;
 using AutoHPMA.Views.Windows;
 using AutoHPMA.Helpers;
+using AutoHPMA.Config;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -35,6 +36,7 @@ namespace AutoHPMA.ViewModels.Pages
     public partial class DashboardViewModel : ObservableObject
     {
 
+        private readonly AppSettings _settings;
         private DispatcherTimer _syncWindowTimer;
         private DispatcherTimer _captureTimer;
 
@@ -136,16 +138,16 @@ namespace AutoHPMA.ViewModels.Pages
             ScreenshotUpdated?.Invoke(bmp);
         }
 
-        public DashboardViewModel()
+        public DashboardViewModel(AppSettings settings)
         {
+            _settings = settings;
 
-            _captureInterval = Properties.Settings.Default.CaptureInterval;
-            _realTimeScreenshotEnabled = Properties.Settings.Default.RealTimeScreenshotEnabled;
-
-            _logWindowEnabled = Properties.Settings.Default.LogWindowEnabled;
-            _debugLogEnabled = Properties.Settings.Default.DebugLogEnabled;
-
-            _maskWindowEnabled = Properties.Settings.Default.MaskWindowEnabled;
+            // 初始化时从设置中加载数据
+            CaptureInterval = _settings.CaptureInterval;
+            RealTimeScreenshotEnabled = _settings.RealTimeScreenshotEnabled;
+            LogWindowEnabled = _settings.LogWindowEnabled;
+            DebugLogEnabled = _settings.DebugLogEnabled;
+            MaskWindowEnabled = _settings.MaskWindowEnabled;
 
         }
 
@@ -282,13 +284,6 @@ namespace AutoHPMA.ViewModels.Pages
             _capture = new WindowsGraphicsCapture();
             _capture.Start(_displayHwnd);
 
-            Properties.Settings.Default.CaptureInterval = _captureInterval;
-            Properties.Settings.Default.RealTimeScreenshotEnabled = _realTimeScreenshotEnabled;
-            Properties.Settings.Default.LogWindowEnabled = _logWindowEnabled;
-            Properties.Settings.Default.DebugLogEnabled = _debugLogEnabled;
-            Properties.Settings.Default.MaskWindowEnabled = _maskWindowEnabled;
-            Properties.Settings.Default.Save();
-
         }
 
         private bool CanStopTrigger() => StopButtonEnabled;
@@ -422,8 +417,39 @@ namespace AutoHPMA.ViewModels.Pages
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        partial void OnCaptureIntervalChanged(int value)
+        {
+            _settings.CaptureInterval = value;
+            _settings.Save();
+            if (_captureTimer != null)
+            {
+                _captureTimer.Interval = TimeSpan.FromMilliseconds(value);
+            }
+        }
 
+        partial void OnRealTimeScreenshotEnabledChanged(bool value)
+        {
+            _settings.RealTimeScreenshotEnabled = value;
+            _settings.Save();
+        }
 
+        partial void OnLogWindowEnabledChanged(bool value)
+        {
+            _settings.LogWindowEnabled = value;
+            _settings.Save();
+        }
+
+        partial void OnDebugLogEnabledChanged(bool value)
+        {
+            _settings.DebugLogEnabled = value;
+            _settings.Save();
+        }
+
+        partial void OnMaskWindowEnabledChanged(bool value)
+        {
+            _settings.MaskWindowEnabled = value;
+            _settings.Save();
+        }
 
     }
 }

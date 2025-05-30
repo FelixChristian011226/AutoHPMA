@@ -4,6 +4,7 @@ using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Messages;
 using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
+using AutoHPMA.Config;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using System;
@@ -22,6 +23,7 @@ namespace AutoHPMA.ViewModels.Pages
 
     public partial class TaskViewModel : ObservableObject, INavigationAware
     {
+        private readonly AppSettings _settings;
 
         #region Observable Properties
         [ObservableProperty] 
@@ -87,23 +89,20 @@ namespace AutoHPMA.ViewModels.Pages
         private AutoSweetAdventure? _autoSweetAdventure;
         private AppContextService appContextService;
 
-        public TaskViewModel()
+        public TaskViewModel(AppSettings settings)
         {
+            _settings = settings;
+            
             // 获取单例实例
             appContextService = AppContextService.Instance;
             // 订阅属性变化通知
             appContextService.PropertyChanged += AppContextService_PropertyChanged;
 
             // 初始化时从设置中加载数据
-            AnswerDelay = Properties.Settings.Default.AnswerDelay;
-            JoinOthers = Properties.Settings.Default.JoinOthers;
-
-            AutoForbiddenForestTimes = Properties.Settings.Default.AutoForbiddenForestTimes;
-            SelectedTeamPosition = Properties.Settings.Default.SelectedTeamPosition;
-
-
-
-
+            AnswerDelay = _settings.AnswerDelay;
+            JoinOthers = _settings.JoinOthers;
+            AutoForbiddenForestTimes = _settings.AutoForbiddenForestTimes;
+            SelectedTeamPosition = _settings.SelectedTeamPosition;
         }
 
         private void AppContextService_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -146,11 +145,6 @@ namespace AutoHPMA.ViewModels.Pages
                 };
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
-
-            // 保存设置
-            Properties.Settings.Default.AnswerDelay = AnswerDelay;
-            Properties.Settings.Default.JoinOthers = JoinOthers;
-            Properties.Settings.Default.Save();
 
             AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
@@ -205,10 +199,6 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
-            // 保存设置
-            Properties.Settings.Default.AutoForbiddenForestTimes = AutoForbiddenForestTimes;
-            Properties.Settings.Default.SelectedTeamPosition = SelectedTeamPosition;
-            Properties.Settings.Default.Save();
 
             AutoForbiddenForestStartButtonVisibility = Visibility.Collapsed;
             AutoForbiddenForestStopButtonVisibility = Visibility.Visible;
@@ -308,6 +298,30 @@ namespace AutoHPMA.ViewModels.Pages
         public Task OnNavigatedFromAsync()
         {
             return Task.CompletedTask;
+        }
+
+        partial void OnAnswerDelayChanged(int value)
+        {
+            _settings.AnswerDelay = value;
+            _settings.Save();
+        }
+
+        partial void OnJoinOthersChanged(bool value)
+        {
+            _settings.JoinOthers = value;
+            _settings.Save();
+        }
+
+        partial void OnAutoForbiddenForestTimesChanged(int value)
+        {
+            _settings.AutoForbiddenForestTimes = value;
+            _settings.Save();
+        }
+
+        partial void OnSelectedTeamPositionChanged(string value)
+        {
+            _settings.SelectedTeamPosition = value;
+            _settings.Save();
         }
     }
 }

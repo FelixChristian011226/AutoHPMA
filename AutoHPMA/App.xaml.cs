@@ -116,11 +116,12 @@ namespace AutoHPMA
                     "3. 使用本软件产生的任何后果由用户自行承担\n" +
                     "4. 本软件不保证100%的准确性和稳定性\n\n" +
                     "点击确定表示您同意以上条款。",
-                    CloseButtonText = "确定",
+                    PrimaryButtonText = "确定",
+                    CloseButtonText = "退出",
                 };
 
                 var result = await uiMessageBox.ShowDialogAsync();
-                if(result == Wpf.Ui.Controls.MessageBoxResult.None)
+                if(result == Wpf.Ui.Controls.MessageBoxResult.Primary)
                 {
                     settings.HasShownTermsOfUse = true;
                     settings.Save();
