@@ -16,7 +16,11 @@
       Title="TaskPage">
 
     <StackPanel Margin="40,30,40,30">
-        <!--  自动社团答题  -->
+        <ui:TextBlock
+            Margin="0,0,0,8"
+            FontWeight="Bold"
+            Text="常驻功能" />
+            <!--  自动社团答题  -->
         <ui:CardExpander
                Margin="0,0,0,12"
                ContentPadding="0"
@@ -86,7 +90,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="默认为0，匹配答案后的点击延时。"
+                            Text="匹配答案后的点击延时，默认为0"
                             TextWrapping="Wrap" />
                     <ui:NumberBox
                             Grid.Row="0"
@@ -116,7 +120,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="当本社团未开启社团答题，加入学院互助频道的答题活动。"
+                            Text="当本社团未开启社团答题时，加入学院互助频道的答题活动"
                             TextWrapping="Wrap" />
                     <CheckBox
                             Grid.Row="0"
@@ -145,7 +149,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="点击打开题库所在文件夹。"
+                            Text="点击打开题库所在文件夹"
                             TextWrapping="Wrap" />
                     <ui:Button
                             Grid.Row="0"
@@ -162,7 +166,7 @@
         <ui:CardExpander
                Margin="0,0,0,12"
                ContentPadding="0"
-               Icon="{ui:SymbolIcon QuizNew24}">
+               Icon="{ui:SymbolIcon TreeDeciduous20}">
             <ui:CardExpander.Header>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -228,7 +232,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="在执行目标次数后终止。"
+                            Text="在执行目标次数后终止"
                             TextWrapping="Wrap" />
                     <ui:NumberBox
                             Grid.Row="0"
@@ -258,7 +262,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="选择自己身份：队长或者队员。"
+                            Text="选择自己身份：队长或者队员"
                             TextWrapping="Wrap" />
                     <ComboBox
                             Grid.Row="0"
@@ -272,11 +276,15 @@
             </StackPanel>
         </ui:CardExpander>
 
+        <ui:TextBlock
+            Margin="0,0,0,8"
+            FontWeight="Bold"
+            Text="限时活动" />
         <!--  甜蜜冒险  -->
         <ui:CardExpander
                Margin="0,0,0,12"
                ContentPadding="0"
-               Icon="{ui:SymbolIcon QuizNew24}">
+               Icon="{ui:SymbolIcon Diversity24}">
             <ui:CardExpander.Header>
                 <Grid>
                     <Grid.RowDefinitions>
