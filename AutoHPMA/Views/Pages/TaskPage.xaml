@@ -118,7 +118,7 @@
                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                             Text="当本社团未开启社团答题，加入学院互助频道的答题活动。"
                             TextWrapping="Wrap" />
-                    <ui:ToggleSwitch
+                    <CheckBox
                             Grid.Row="0"
                             Grid.RowSpan="2"
                             Grid.Column="3"

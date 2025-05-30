@@ -132,13 +132,13 @@
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                         Text="默认500ms，可根据需要自行调整"
                         TextWrapping="Wrap" />
-                    <ui:TextBox
+                    <ui:NumberBox
                         Grid.Row="0"
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         MinWidth="90"
                         Margin="0,0,36,0"
-                        Text="{Binding ViewModel.CaptureInterval, Mode=TwoWay}" />
+                        Value="{Binding ViewModel.CaptureInterval, Mode=TwoWay}" />
                 </Grid>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <Grid Margin="16">
@@ -162,7 +162,7 @@
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                         Text="开启后，在截屏页面显示实时截屏，便于测试"
                         TextWrapping="Wrap" />
-                    <ui:ToggleSwitch
+                    <CheckBox
                         Grid.Row="0"
                         Grid.RowSpan="2"
                         Grid.Column="1"
@@ -229,7 +229,7 @@
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                         Text="勾选后日志窗口会输出DBG信息，便于调试任务运行。"
                         TextWrapping="Wrap" />
-                    <ui:ToggleSwitch
+                    <CheckBox
                         Grid.Row="0"
                         Grid.RowSpan="2"
                         Grid.Column="1"
