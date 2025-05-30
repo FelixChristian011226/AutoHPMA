@@ -20,26 +20,36 @@
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
     </Page.Resources>
 
-    <StackPanel>
-        <ui:TextBlock FontTypography="Subtitle" Text="个性化" />
+    <StackPanel Margin="40,30,40,30">
         <ui:TextBlock
-            Margin="0,12,0,0"
-            FontTypography="BodyStrong"
-            Text="Theme" />
-        <RadioButton
-            Margin="0,12,0,0"
-            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-            CommandParameter="theme_light"
-            Content="Light"
-            GroupName="themeSelect"
-            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
-        <RadioButton
-            Margin="0,8,0,0"
-            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-            CommandParameter="theme_dark"
-            Content="Dark"
-            GroupName="themeSelect"
-            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+            Margin="0,0,0,8"
+            FontWeight="Bold"
+            Text="应用设置" />
+        <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon DarkTheme24}" >
+            <ui:CardControl.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="切换主题"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="在浅色与暗色主题间进行切换"
+                                  TextWrapping="Wrap" />
+                </Grid>
+            </ui:CardControl.Header>
+            <ComboBox Width="100"
+                      Margin="0,0,36,0"
+                      ItemsSource="{Binding ViewModel.ThemeOptions}"
+                      SelectedItem="{Binding ViewModel.SelectedThemeOption, Mode=TwoWay}"
+                      DisplayMemberPath="Name"/>
+        </ui:CardControl>
 
         <ui:Button Content="重置设置" Command="{Binding ViewModel.ResetSettingsCommand}" 
                Margin="0,20,0,0" />

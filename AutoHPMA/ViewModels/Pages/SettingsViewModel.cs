@@ -6,6 +6,9 @@
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Win32;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -17,6 +20,22 @@ namespace AutoHPMA.ViewModels.Pages
         private string _appVersion = String.Empty;
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
+        [ObservableProperty]
+        private ThemeOption _selectedThemeOption;
+
+        public class ThemeOption
+        {
+            public ApplicationTheme Theme { get; set; }
+            public string Name { get; set; }
+        }
+
+        private readonly ThemeOption[] _themeOptions = new[]
+        {
+            new ThemeOption { Theme = ApplicationTheme.Light, Name = "浅色" },
+            new ThemeOption { Theme = ApplicationTheme.Dark, Name = "深色" }
+        };
+
+        public IEnumerable<ThemeOption> ThemeOptions => _themeOptions;
 
         public Task OnNavigatedToAsync()
         {
@@ -30,10 +49,40 @@ namespace AutoHPMA.ViewModels.Pages
 
         private void InitializeViewModel()
         {
-            CurrentTheme = ApplicationThemeManager.GetAppTheme();
+            var systemTheme = GetSystemTheme();
+            
+            SelectedThemeOption = _themeOptions.FirstOrDefault(t => t.Theme == systemTheme);
+            
+            CurrentTheme = systemTheme;
+            
+            ApplicationThemeManager.Apply(systemTheme);
+
             AppVersion = $"AutoHPMA - {GetAssemblyVersion()}";
 
             _isInitialized = true;
+        }
+
+        private ApplicationTheme GetSystemTheme()
+        {
+            try
+            {
+                using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    if (key != null)
+                    {
+                        var value = key.GetValue("AppsUseLightTheme");
+                        if (value != null)
+                        {
+                            return (int)value == 1 ? ApplicationTheme.Light : ApplicationTheme.Dark;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // 如果无法获取系统主题，默认使用浅色主题
+            }
+            return ApplicationTheme.Light;
         }
 
         private string GetAssemblyVersion()
@@ -42,28 +91,32 @@ namespace AutoHPMA.ViewModels.Pages
                 ?? String.Empty;
         }
 
-        [RelayCommand]
-        private void OnChangeTheme(string parameter)
+        partial void OnCurrentThemeChanged(ApplicationTheme value)
         {
-            switch (parameter)
+            SelectedThemeOption = _themeOptions.FirstOrDefault(t => t.Theme == value);
+        }
+
+        partial void OnSelectedThemeOptionChanged(ThemeOption value)
+        {
+            if (value != null)
             {
-                case "theme_light":
-                    if (CurrentTheme == ApplicationTheme.Light)
-                        break;
+                OnChangeTheme(value.Theme);
+            }
+        }
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light);
-                    CurrentTheme = ApplicationTheme.Light;
+        public void OnChangeTheme(ApplicationTheme theme)
+        {
+            if (CurrentTheme == theme)
+                return;
 
-                    break;
-
-                default:
-                    if (CurrentTheme == ApplicationTheme.Dark)
-                        break;
-
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark);
-                    CurrentTheme = ApplicationTheme.Dark;
-
-                    break;
+            try
+            {
+                ApplicationThemeManager.Apply(theme);
+                CurrentTheme = theme;
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"切换主题时发生错误: {ex.Message}");
             }
         }
 
