@@ -77,9 +77,64 @@
         </ui:CardControl>
 
         <ui:TextBlock
-            Margin="0,24,0,0"
-            FontTypography="Subtitle"
-            Text="About AutoHPMA" />
-        <TextBlock Margin="0,12,0,0" Text="{Binding ViewModel.AppVersion, Mode=OneWay}" />
+            Margin="0,0,0,8"
+            FontWeight="Bold"
+            Text="关于" />
+        <Border
+    Margin="0,0,0,12"
+    Background="{DynamicResource ControlFillColorDefaultBrush}"
+    CornerRadius="8"
+    Padding="16"
+    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+    BorderThickness="1">
+            <StackPanel>
+                <!-- 当前版本 -->
+                <ui:TextBlock TextWrapping="Wrap">
+                    <Run Text="当前版本: " />
+                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA/releases"
+                       RequestNavigate="Hyperlink_RequestNavigate">
+                        <Run Text="{Binding ViewModel.AppVersion}" />
+                    </Hyperlink>
+                </ui:TextBlock>
+
+                <Separator Margin="0,1"/>
+
+                <!-- 开源地址 -->
+                <ui:TextBlock TextWrapping="Wrap">
+                    <Run Text="开源地址: " />
+                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA"
+                       RequestNavigate="Hyperlink_RequestNavigate">
+                        https://github.com/FelixChristian011226/AutoHPMA
+                    </Hyperlink>
+                </ui:TextBlock>
+
+                <Separator Margin="0,1"/>
+
+                <!-- 使用教程 -->
+                <ui:TextBlock TextWrapping="Wrap">
+                    <Run Text="使用教程: " />
+                    <Hyperlink NavigateUri="https://www.felixchristian.top/2025/04/04/16-AutoHPMA/"
+                       RequestNavigate="Hyperlink_RequestNavigate">
+                        https://www.felixchristian.top/2025/04/04/16-AutoHPMA/
+                    </Hyperlink>
+                </ui:TextBlock>
+
+                <Separator Margin="0,1"/>
+
+                <!-- 作者 -->
+                <ui:TextBlock TextWrapping="Wrap">
+                    <Run Text="作者: " />
+                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226"
+                       RequestNavigate="Hyperlink_RequestNavigate">
+                        Felix Christian
+                    </Hyperlink>
+                </ui:TextBlock>
+
+                <Separator Margin="0,1"/>
+                
+                
+            </StackPanel>
+        </Border>
+
     </StackPanel>
 </Page>

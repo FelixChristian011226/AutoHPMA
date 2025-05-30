@@ -64,7 +64,7 @@ namespace AutoHPMA.ViewModels.Pages
             
             ApplicationThemeManager.Apply(systemTheme);
 
-            AppVersion = $"AutoHPMA - {GetAssemblyVersion()}";
+            AppVersion = $"v{GetAssemblyVersion()}";
 
             _isInitialized = true;
         }
