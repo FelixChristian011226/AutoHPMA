@@ -39,13 +39,15 @@ namespace AutoHPMA
         // https://docs.microsoft.com/dotnet/core/extensions/logging
         private static readonly IHost _host = Host
             .CreateDefaultBuilder()
-            .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)); })
+            .ConfigureAppConfiguration(c => 
+            { 
+                c.SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location));
+                c.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            })
             .ConfigureServices((context, services) =>
             {
-                // 提前初始化配置
-                //var configService = new ConfigService();
-                //services.AddSingleton<IConfigService>(sp => configService);
-                //var all = configService.Get();
+                // 注册配置服务
+                services.AddSingleton<AppSettings>(sp => AppSettings.Load());
 
                 var logWindow = new LogWindow();
                 services.AddSingleton(logWindow);
