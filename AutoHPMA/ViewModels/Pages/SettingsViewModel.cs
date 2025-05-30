@@ -3,13 +3,14 @@
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
+using AutoHPMA.Config;
+using Microsoft.Win32;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Win32;
-using AutoHPMA.Config;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -64,7 +65,9 @@ namespace AutoHPMA.ViewModels.Pages
             
             ApplicationThemeManager.Apply(systemTheme);
 
-            AppVersion = $"v{GetAssemblyVersion()}";
+            //AppVersion = $"v{GetAssemblyVersion()}";
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            AppVersion = $"v{version.Major}.{version.Minor}.{version.Build}";
 
             _isInitialized = true;
         }
