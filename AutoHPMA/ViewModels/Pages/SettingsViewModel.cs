@@ -9,12 +9,14 @@ using Wpf.Ui.Controls;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Win32;
+using AutoHPMA.Config;
 
 namespace AutoHPMA.ViewModels.Pages
 {
     public partial class SettingsViewModel : ObservableObject, INavigationAware
     {
         private bool _isInitialized = false;
+        private readonly AppSettings _settings;
 
         [ObservableProperty]
         private string _appVersion = String.Empty;
@@ -36,6 +38,11 @@ namespace AutoHPMA.ViewModels.Pages
         };
 
         public IEnumerable<ThemeOption> ThemeOptions => _themeOptions;
+
+        public SettingsViewModel(AppSettings settings)
+        {
+            _settings = settings;
+        }
 
         public Task OnNavigatedToAsync()
         {
@@ -123,8 +130,8 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         private void ResetSettings()
         {
-            Properties.Settings.Default.Reset();
-            Properties.Settings.Default.Save();
+            _settings.Reset();
+            Application.Current.Shutdown();
         }
     }
 }

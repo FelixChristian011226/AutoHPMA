@@ -11,19 +11,6 @@ namespace AutoHPMA.Config
             "AutoHPMA",
             "settings.json");
 
-        // Task
-        [JsonPropertyName("answerDelay")]
-        public int AnswerDelay { get; set; } = 0;
-
-        [JsonPropertyName("joinOthers")]
-        public bool JoinOthers { get; set; } = false;
-
-        [JsonPropertyName("autoForbiddenForestTimes")]
-        public int AutoForbiddenForestTimes { get; set; } = 30;
-
-        [JsonPropertyName("selectedTeamPosition")]
-        public string SelectedTeamPosition { get; set; } = "Leader";
-
         // Dashboard
         [JsonPropertyName("captureInterval")]
         public int CaptureInterval { get; set; } = 500;
@@ -39,6 +26,19 @@ namespace AutoHPMA.Config
 
         [JsonPropertyName("maskWindowEnabled")]
         public bool MaskWindowEnabled { get; set; } = true;
+
+        // Task
+        [JsonPropertyName("answerDelay")]
+        public int AnswerDelay { get; set; } = 0;
+
+        [JsonPropertyName("joinOthers")]
+        public bool JoinOthers { get; set; } = false;
+
+        [JsonPropertyName("autoForbiddenForestTimes")]
+        public int AutoForbiddenForestTimes { get; set; } = 30;
+
+        [JsonPropertyName("selectedTeamPosition")]
+        public string SelectedTeamPosition { get; set; } = "Leader";
 
         // Settings
         [JsonPropertyName("hasShownTermsOfUse")]
@@ -56,6 +56,7 @@ namespace AutoHPMA.Config
 
         [JsonPropertyName("isFirstRun")]
         public bool IsFirstRun { get; set; } = true;
+
 
         public static AppSettings Load()
         {
@@ -94,6 +95,33 @@ namespace AutoHPMA.Config
             {
                 // 处理保存失败的情况
             }
+        }
+
+        public void Reset()
+        {
+            // Dashboard
+            CaptureInterval = 500;
+            RealTimeScreenshotEnabled = true;
+            LogWindowEnabled = true;
+            DebugLogEnabled = false;
+            MaskWindowEnabled = true;
+
+            // Task
+            AnswerDelay = 0;
+            JoinOthers = false;
+            AutoForbiddenForestTimes = 30;
+            SelectedTeamPosition = "Leader";
+
+            // Settings
+            HasShownTermsOfUse = false;
+            Theme = "Light";
+            Language = "zh-CN";
+
+            // Other
+            LastUsedPath = string.Empty;
+            IsFirstRun = true;
+
+            Save();
         }
     }
 }

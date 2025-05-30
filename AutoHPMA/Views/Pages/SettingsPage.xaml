@@ -40,19 +40,41 @@
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="在浅色与暗色主题间进行切换"
+                                  Text="在浅色与暗色主题间进行切换，默认为系统主题"
                                   TextWrapping="Wrap" />
                 </Grid>
             </ui:CardControl.Header>
-            <ComboBox Width="100"
+            <ComboBox 
                       Margin="0,0,36,0"
                       ItemsSource="{Binding ViewModel.ThemeOptions}"
                       SelectedItem="{Binding ViewModel.SelectedThemeOption, Mode=TwoWay}"
                       DisplayMemberPath="Name"/>
         </ui:CardControl>
 
-        <ui:Button Content="重置设置" Command="{Binding ViewModel.ResetSettingsCommand}" 
-               Margin="0,20,0,0" />
+        <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon KeyReset24}" >
+            <ui:CardControl.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="恢复设置"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="恢复该应用程序的用户偏好设置，需要重启生效"
+                                  TextWrapping="Wrap" />
+                </Grid>
+            </ui:CardControl.Header>
+            <ui:Button 
+                Margin="0, 0, 36, 0"
+                Content="重置并退出" 
+                Command="{Binding ViewModel.ResetSettingsCommand}" />
+        </ui:CardControl>
 
         <ui:TextBlock
             Margin="0,24,0,0"
