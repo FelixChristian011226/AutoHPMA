@@ -206,6 +206,11 @@ namespace AutoHPMA.ViewModels.Pages
             _autoForbiddenForest = new AutoForbiddenForest(_displayHwnd, _gameHwnd);
             _autoForbiddenForest.SetAutoForbiddenForestTimes(AutoForbiddenForestTimes);
             _autoForbiddenForest.SetTeamPosition(SelectedTeamPosition);
+            _autoForbiddenForest.TaskCompleted += (s, e) =>
+            {
+                AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
+                AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
+            };
             _autoForbiddenForest.Start();
 
         }

@@ -61,6 +61,7 @@ public class AutoForbiddenForest
     private int round = 0;
 
     private CancellationTokenSource _cts;
+    public event EventHandler? TaskCompleted;
 
     public AutoForbiddenForest(IntPtr _displayHwnd, IntPtr _gameHwnd)
     {
@@ -110,6 +111,7 @@ public class AutoForbiddenForest
     public void Stop()
     {
         _cts.Cancel();
+        TaskCompleted?.Invoke(this, EventArgs.Empty);
     }
 
     public async void Start()
