@@ -122,10 +122,11 @@ public class AutoForbiddenForest
             while (!_cts.Token.IsCancellationRequested)
             {
                 GC.Collect();
-                if (round > _autoForbiddenForestTimes)
+                if (round >= _autoForbiddenForestTimes)
                 {
+                    Stop();
                     _logWindow?.AddLogMessage("INF", "[Aquamarine]---自动禁林任务已终止---[/Aquamarine]");
-                    break;
+                    continue;
                 }
                 FindState();
                 switch (_state)
