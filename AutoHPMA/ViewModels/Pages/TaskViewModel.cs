@@ -24,6 +24,7 @@ namespace AutoHPMA.ViewModels.Pages
     public partial class TaskViewModel : ObservableObject, INavigationAware
     {
         private readonly AppSettings _settings;
+        private bool _isAnyTaskRunning = false;
 
         #region Observable Properties
         [ObservableProperty] 
@@ -119,9 +120,25 @@ namespace AutoHPMA.ViewModels.Pages
 
         private bool CanAutoClubQuizStartTrigger() => AutoClubQuizStartButtonEnabled;
 
+        private bool CheckTaskRunningStatus()
+        {
+            if (_isAnyTaskRunning)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "⚠️ 提示",
+                    Content = "已有其他任务正在运行，请先停止当前任务！",
+                };
+                var result = uiMessageBox.ShowDialogAsync();
+                return true;
+            }
+            return false;
+        }
+
         [RelayCommand(CanExecute = nameof(CanAutoClubQuizStartTrigger))]
         private void OnAutoClubQuizStartTrigger()
         {
+            if (CheckTaskRunningStatus()) return;
 
             if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
             {
@@ -146,6 +163,7 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
+            _isAnyTaskRunning = true;
             AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
 
@@ -153,7 +171,6 @@ namespace AutoHPMA.ViewModels.Pages
             _autoClubQuiz.SetAnswerDelay(AnswerDelay);
             _autoClubQuiz.SetJoinOthers(JoinOthers);
             _autoClubQuiz.Start();
-
         }
 
         private bool CanAutoClubQuizStopTrigger() => AutoClubQuizStopButtonEnabled;
@@ -166,6 +183,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             _autoClubQuiz?.Stop();
             _autoClubQuiz = null;
+            _isAnyTaskRunning = false;
 
             GC.Collect();
         }
@@ -175,6 +193,7 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanAutoForbiddenForestStartTrigger))]
         private void OnAutoForbiddenForestStartTrigger()
         {
+            if (CheckTaskRunningStatus()) return;
 
             if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
             {
@@ -199,7 +218,7 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
-
+            _isAnyTaskRunning = true;
             AutoForbiddenForestStartButtonVisibility = Visibility.Collapsed;
             AutoForbiddenForestStopButtonVisibility = Visibility.Visible;
 
@@ -210,9 +229,9 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
                 AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
+                _isAnyTaskRunning = false;
             };
             _autoForbiddenForest.Start();
-
         }
 
         private bool CanAutoForbiddenForestStopTrigger() => AutoForbiddenForestStopButtonEnabled;
@@ -225,6 +244,8 @@ namespace AutoHPMA.ViewModels.Pages
 
             _autoForbiddenForest?.Stop();
             _autoForbiddenForest = null;
+            _isAnyTaskRunning = false;
+
             GC.Collect();
         }
 
@@ -233,6 +254,7 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStartTrigger))]
         private void OnAutoSweetAdventureStartTrigger()
         {
+            if (CheckTaskRunningStatus()) return;
 
             if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
             {
@@ -257,12 +279,12 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
+            _isAnyTaskRunning = true;
             AutoSweetAdventureStartButtonVisibility = Visibility.Collapsed;
             AutoSweetAdventureStopButtonVisibility = Visibility.Visible;
 
             _autoSweetAdventure = new AutoSweetAdventure(_displayHwnd, _gameHwnd);
             _autoSweetAdventure.Start();
-
         }
 
         private bool CanAutoSweetAdventureStopTrigger() => AutoSweetAdventureStopButtonEnabled;
@@ -275,6 +297,8 @@ namespace AutoHPMA.ViewModels.Pages
 
             _autoSweetAdventure?.Stop();
             _autoSweetAdventure = null;
+            _isAnyTaskRunning = false;
+
             GC.Collect();
         }
 
