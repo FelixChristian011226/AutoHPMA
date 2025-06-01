@@ -21,13 +21,19 @@
             Margin="0,0,0,8"
             FontWeight="Bold"
             Text="通知设置" />
-        <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon Alert24}">
-            <ui:CardControl.Header>
+        <ui:CardExpander Margin="0,0,0,12"
+                         ContentPadding="0"
+                         Icon="{ui:SymbolIcon Alert24}">
+            <ui:CardExpander.Header>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
                                   FontTypography="Body"
@@ -38,11 +44,43 @@
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                                   Text="开启或关闭Windows通知功能"
                                   TextWrapping="Wrap" />
+                    <ui:ToggleSwitch Grid.Row="0"
+                                    Grid.RowSpan="2"
+                                    Grid.Column="1"
+                                    Margin="0,0,36,0"
+                                    IsChecked="{Binding ViewModel.NotificationEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
-            </ui:CardControl.Header>
-            <ui:ToggleSwitch
-                Margin="0,0,36,0"
-                IsChecked="{Binding ViewModel.NotificationEnabled, Mode=TwoWay}" />
-        </ui:CardControl>
+            </ui:CardExpander.Header>
+            <StackPanel>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="测试通知"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="点击发送一条测试通知"
+                                  TextWrapping="Wrap" />
+                    <ui:Button Grid.Row="0"
+                              Grid.RowSpan="2"
+                              Grid.Column="1"
+                              Margin="0,0,36,0"
+                              Command="{Binding ViewModel.TestNotificationCommand}"
+                              Content="发送"
+                              Icon="{ui:SymbolIcon Send24}" />
+                </Grid>
+            </StackPanel>
+        </ui:CardExpander>
     </StackPanel>
 </Page> 

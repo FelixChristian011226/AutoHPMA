@@ -12,11 +12,35 @@ namespace AutoHPMA.Helpers;
 
 public class ToastNotificationHelper
 {
-    private static readonly AppSettings _settings = AppSettings.Load();
+    public static void ShowToast(string title, string content, string launchArgs = "")
+    {
+        var settings = AppSettings.Load();
+        if (!settings.NotificationEnabled)
+            return;
+
+        try
+        {
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string logoPath = Path.Combine(baseDir, "Assets", "logo.png");
+
+            new ToastContentBuilder()
+                .AddText(title)
+                .AddText(content)
+                .AddAppLogoOverride(new Uri(logoPath), ToastGenericAppLogoCrop.Circle)
+                .AddArgument("action", "viewImage")
+                .AddArgument("launchArgs", launchArgs)
+                .Show();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"发送通知失败: {ex.Message}");
+        }
+    }
 
     public static async void ShowToastWithImage(string title, string content, Mat image, string launchArgs = "")
     {
-        if (!_settings.NotificationEnabled)
+        var settings = AppSettings.Load();
+        if (!settings.NotificationEnabled)
             return;
 
         try
