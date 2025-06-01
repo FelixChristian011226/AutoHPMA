@@ -6,13 +6,19 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoHPMA.Config;
 
 namespace AutoHPMA.Helpers;
 
 public class ToastNotificationHelper
 {
+    private static readonly AppSettings _settings = AppSettings.Load();
+
     public static async void ShowToastWithImage(string title, string content, Mat image, string launchArgs = "")
     {
+        if (!_settings.NotificationEnabled)
+            return;
+
         try
         {
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -41,5 +47,4 @@ public class ToastNotificationHelper
             Console.WriteLine($"发送通知失败: {ex.Message}");
         }
     }
-
 }

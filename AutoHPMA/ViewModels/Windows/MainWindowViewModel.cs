@@ -40,6 +40,12 @@ namespace AutoHPMA.ViewModels.Windows
                 Icon = new SymbolIcon { Symbol = SymbolRegular.DesktopEdit24 },
                 TargetPageType = typeof(Views.Pages.TestPage)
             },
+            new NavigationViewItem()
+            {
+                Content = "通知",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Alert24 },
+                TargetPageType = typeof(Views.Pages.NotificationSettingsPage)
+            },
         };
 
         [ObservableProperty]

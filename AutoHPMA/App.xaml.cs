@@ -82,6 +82,8 @@ namespace AutoHPMA
                 services.AddSingleton<ScreenshotViewModel>();
                 services.AddSingleton<TestPage>();
                 services.AddSingleton<TestViewModel>();
+                services.AddSingleton<NotificationSettingsPage>();
+                services.AddSingleton<NotificationSettingsViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
             }).Build();

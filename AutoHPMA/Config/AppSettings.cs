@@ -40,6 +40,10 @@ namespace AutoHPMA.Config
         [JsonPropertyName("selectedTeamPosition")]
         public string SelectedTeamPosition { get; set; } = "Leader";
 
+        // Notification
+        [JsonPropertyName("notificationEnabled")]
+        public bool NotificationEnabled { get; set; } = true;
+
         // Settings
         [JsonPropertyName("hasShownTermsOfUse")]
         public bool HasShownTermsOfUse { get; set; }
@@ -120,6 +124,7 @@ namespace AutoHPMA.Config
             // Other
             LastUsedPath = string.Empty;
             IsFirstRun = true;
+            NotificationEnabled = true;
 
             Save();
         }
