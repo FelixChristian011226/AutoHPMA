@@ -135,6 +135,12 @@ namespace AutoHPMA.ViewModels.Pages
         {
             //_settings.Reset();
             _settings.Clear();
+            var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+            {
+                Title = "⚠️ 提示",
+                Content = "偏好设置已重置，程序即将退出。",
+            };
+            var result = uiMessageBox.ShowDialogAsync();
             Application.Current.Shutdown();
         }
     }
