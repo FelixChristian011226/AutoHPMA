@@ -60,10 +60,11 @@ namespace AutoHPMA
 
                 // 配置Serilog
                 var logWindowSink = new LogWindowSink();
+                var logFileSink = new LogFileSink();
                 Log.Logger = new LoggerConfiguration()
                     .MinimumLevel.Debug()
                     .WriteTo.Sink(logWindowSink)
-                    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+                    .WriteTo.Sink(logFileSink)
                     .CreateLogger();
 
                 services.AddLogging(c => c.AddSerilog());
