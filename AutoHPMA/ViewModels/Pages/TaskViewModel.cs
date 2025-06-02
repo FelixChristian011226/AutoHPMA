@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
+using Microsoft.Extensions.Logging;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -24,6 +25,7 @@ namespace AutoHPMA.ViewModels.Pages
     public partial class TaskViewModel : ObservableObject, INavigationAware
     {
         private readonly AppSettings _settings;
+        private readonly ILogger<TaskViewModel> _logger;
         private bool _isAnyTaskRunning = false;
 
         #region Observable Properties
@@ -90,9 +92,10 @@ namespace AutoHPMA.ViewModels.Pages
         private AutoSweetAdventure? _autoSweetAdventure;
         private AppContextService appContextService;
 
-        public TaskViewModel(AppSettings settings)
+        public TaskViewModel(AppSettings settings, ILogger<TaskViewModel> logger)
         {
             _settings = settings;
+            _logger = logger;
             
             // 获取单例实例
             appContextService = AppContextService.Instance;
@@ -167,7 +170,8 @@ namespace AutoHPMA.ViewModels.Pages
             AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
 
-            _autoClubQuiz = new AutoClubQuiz(_displayHwnd, _gameHwnd);
+            var logger = App.GetLogger<AutoClubQuiz>();
+            _autoClubQuiz = new AutoClubQuiz(logger, _displayHwnd, _gameHwnd);
             _autoClubQuiz.SetAnswerDelay(AnswerDelay);
             _autoClubQuiz.SetJoinOthers(JoinOthers);
             _autoClubQuiz.Start();
@@ -222,7 +226,8 @@ namespace AutoHPMA.ViewModels.Pages
             AutoForbiddenForestStartButtonVisibility = Visibility.Collapsed;
             AutoForbiddenForestStopButtonVisibility = Visibility.Visible;
 
-            _autoForbiddenForest = new AutoForbiddenForest(_displayHwnd, _gameHwnd);
+            var logger = App.GetLogger<AutoForbiddenForest>();
+            _autoForbiddenForest = new AutoForbiddenForest(logger, _displayHwnd, _gameHwnd);
             _autoForbiddenForest.SetAutoForbiddenForestTimes(AutoForbiddenForestTimes);
             _autoForbiddenForest.SetTeamPosition(SelectedTeamPosition);
             _autoForbiddenForest.TaskCompleted += (s, e) =>
@@ -283,7 +288,8 @@ namespace AutoHPMA.ViewModels.Pages
             AutoSweetAdventureStartButtonVisibility = Visibility.Collapsed;
             AutoSweetAdventureStopButtonVisibility = Visibility.Visible;
 
-            _autoSweetAdventure = new AutoSweetAdventure(_displayHwnd, _gameHwnd);
+            var logger = App.GetLogger<AutoSweetAdventure>();
+            _autoSweetAdventure = new AutoSweetAdventure(logger, _displayHwnd, _gameHwnd);
             _autoSweetAdventure.Start();
         }
 

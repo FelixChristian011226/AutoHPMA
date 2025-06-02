@@ -4,6 +4,7 @@ using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
 using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,7 @@ public class AutoForbiddenForest
     private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
     private static WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
 
+    private readonly ILogger<AutoForbiddenForest> _logger;
     private IntPtr _displayHwnd, _gameHwnd;
     private int offsetX, offsetY;
     private double scale;
@@ -63,8 +65,9 @@ public class AutoForbiddenForest
     private CancellationTokenSource _cts;
     public event EventHandler? TaskCompleted;
 
-    public AutoForbiddenForest(IntPtr _displayHwnd, IntPtr _gameHwnd)
+    public AutoForbiddenForest(ILogger<AutoForbiddenForest> logger, IntPtr _displayHwnd, IntPtr _gameHwnd)
     {
+        this._logger = logger;
         this._displayHwnd = _displayHwnd;
         this._gameHwnd = _gameHwnd;
         _cts = new CancellationTokenSource();
@@ -118,7 +121,7 @@ public class AutoForbiddenForest
     {
         _state = AutoForbiddenForestState.Outside;
         _logWindow?.SetGameState("禁林");
-        _logWindow?.AddLogMessage("INF", "[Aquamarine]---自动禁林任务已启动---[/Aquamarine]");
+        _logger.LogInformation("[Aquamarine]---自动禁林任务已启动---[/Aquamarine]");
         try
         {
             while (!_cts.Token.IsCancellationRequested)
@@ -127,7 +130,7 @@ public class AutoForbiddenForest
                 if (round >= _autoForbiddenForestTimes)
                 {
                     Stop();
-                    _logWindow?.AddLogMessage("INF", "[Aquamarine]---自动禁林任务已终止---[/Aquamarine]");
+                    _logger.LogInformation("[Aquamarine]---自动禁林任务已终止---[/Aquamarine]");
                     continue;
                 }
                 FindState();
@@ -148,7 +151,7 @@ public class AutoForbiddenForest
                     case AutoForbiddenForestState.Teaming:
                         if (FindAndClick(ref team_auto))
                         {
-                            _logWindow?.AddLogMessage("DBG", "点击自动战斗按钮。");
+                            _logger.LogDebug("点击自动战斗按钮。");
                         }
                         await Task.Delay(1000, _cts.Token);
                         switch (_autoForbiddenForestOption)
@@ -156,22 +159,21 @@ public class AutoForbiddenForest
                             case AutoForbiddenForestOption.Leader:
                                 if (FindAndClick(ref team_start))
                                 {
-                                    _logWindow?.AddLogMessage("DBG", "点击开始。");
+                                    _logger.LogDebug("点击开始。");
                                 }
                                 await Task.Delay(1500, _cts.Token);
                                 if (FindAndClick(ref team_confirm))
                                 {
-                                    _logWindow?.AddLogMessage("DBG", "点击是。");
+                                    _logger.LogDebug("点击是。");
                                 }
                                 break;
                             case AutoForbiddenForestOption.Member:
                                 if (FindAndClick(ref team_ready))
                                 {
-                                    _logWindow?.AddLogMessage("DBG", "点击准备。");
+                                    _logger.LogDebug("点击准备。");
                                 }
                                 await Task.Delay(1000, _cts.Token);
                                 break;
-
                         }
                         break;
 
@@ -185,25 +187,24 @@ public class AutoForbiddenForest
                         break;
 
                     case AutoForbiddenForestState.Summary:
-                        _logWindow?.AddLogMessage("DBG", "检测到点赞页面");
+                        _logger.LogDebug("检测到点赞页面");
                         await Task.Delay(3000, _cts.Token);
                         await FindAndClickMultiAsync(over_thumb);
                         await Task.Delay(1500, _cts.Token);
                         SendSpace(_gameHwnd);
-                        _logWindow?.AddLogMessage("INF", "第[Yellow]" + ++round + "/" + _autoForbiddenForestTimes + "[/Yellow]次禁林任务完成。");
+                        _logger.LogInformation("第[Yellow]{Round}[/Yellow]/[Yellow]{Total}[/Yellow]次禁林任务完成。", ++round, _autoForbiddenForestTimes);
                         await Task.Delay(2000, _cts.Token);
                         break;
-
                 }
             }
         }
         catch (TaskCanceledException)
         {
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---自动禁林任务已终止---[/Aquamarine]");
+            _logger.LogInformation("[Aquamarine]---自动禁林任务已终止---[/Aquamarine]");
         }
         catch (Exception ex)
         {
-            _logWindow?.AddLogMessage("ERR", "发生异常：" + ex.Message);
+            _logger.LogError(ex, "发生异常");
         }
         finally
         {

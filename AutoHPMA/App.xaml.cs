@@ -22,6 +22,7 @@ using System.Windows.Threading;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
 using AutoHPMA.Config;
+using AutoHPMA.Helpers;
 
 namespace AutoHPMA
 {
@@ -56,6 +57,14 @@ namespace AutoHPMA
                 services.AddSingleton(maskWindow);
 
                 services.AddNavigationViewPageProvider();
+
+                // 配置Serilog
+                var logWindowSink = new LogWindowSink();
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Debug()
+                    .WriteTo.Sink(logWindowSink)
+                    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+                    .CreateLogger();
 
                 services.AddLogging(c => c.AddSerilog());
                 services.AddHostedService<ApplicationHostService>();

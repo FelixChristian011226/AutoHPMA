@@ -3,6 +3,7 @@ using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
+using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
@@ -46,6 +47,7 @@ public class AutoClubQuiz
     private static ExcelHelper excelHelper;
     private static PaddleOCRHelper paddleOCRHelper;
 
+    private readonly ILogger<AutoClubQuiz> _logger;
     private IntPtr _displayHwnd, _gameHwnd;
     private int offsetX, offsetY;
     private double scale;
@@ -89,8 +91,9 @@ public class AutoClubQuiz
 
     private CancellationTokenSource _cts;
 
-    public AutoClubQuiz(IntPtr _displayHwnd, IntPtr _gameHwnd)
+    public AutoClubQuiz(ILogger<AutoClubQuiz> logger, IntPtr _displayHwnd, IntPtr _gameHwnd)
     {
+        this._logger = logger;
         this._displayHwnd = _displayHwnd;
         this._gameHwnd = _gameHwnd;
         _cts = new CancellationTokenSource();
@@ -183,7 +186,7 @@ public class AutoClubQuiz
     {
         _state = AutoClubQuizState.Outside;
         _logWindow?.SetGameState("社团答题");
-        _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
+        _logger.LogInformation("[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
         try
         {
             while (!_cts.Token.IsCancellationRequested)
@@ -220,10 +223,10 @@ public class AutoClubQuiz
                         break;
 
                     case AutoClubQuizState.ClubScene:
-                        _logWindow?.AddLogMessage("INF", "等待下一场答题...");
+                        _logger.LogInformation("等待下一场答题...");
                         for (int i = 5; i > 0; i--)
                         {
-                            _logWindow?.AddLogMessage("INF", "还剩[Yellow]" + i + "[/Yellow]秒...");
+                            _logger.LogInformation("还剩[Yellow]{Count}[/Yellow]秒...", i);
                             await Task.Delay(1000, _cts.Token);
                             _logWindow?.DeleteLastLogMessage();
                         }
@@ -324,14 +327,14 @@ public class AutoClubQuiz
                         _maskWindow.ShowLayer("Option");
                         if (_quiz_over)
                         {
-                            _logWindow?.AddLogMessage("INF", "第[Yellow]" + roundIndex + "[/Yellow]轮答题开始");
+                            _logger.LogInformation("第[Yellow]{ roundIndex} [/Yellow]轮答题开始", roundIndex);
                             _quiz_over = false;
                         }
                         if (_optionLocated == false)
                         {
                             if (!LocateOption())
                             {
-                                _logWindow?.AddLogMessage("WRN", "未定位到选项框位置！即将重新尝试定位。");
+                                _logger.LogWarning("未定位到选项框位置！即将重新尝试定位。");
                                 await Task.Delay(1000, _cts.Token);
                             }
                             continue;
@@ -340,7 +343,7 @@ public class AutoClubQuiz
                         {
                             if (!LocateQuestion())
                             {
-                                _logWindow?.AddLogMessage("WRN", "未定位到问题框位置！即将重新尝试定位。");
+                                _logger.LogWarning("未定位到选项框位置！即将重新尝试定位。");
                                 await Task.Delay(1000, _cts.Token);
                             }
                             continue;
@@ -385,11 +388,11 @@ public class AutoClubQuiz
         }
         catch (TaskCanceledException)
         {
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---社团答题任务已终止---[/Aquamarine]");
+            _logger.LogInformation("[Aquamarine]---社团答题任务已终止---[/Aquamarine]");
         }
         catch (Exception ex)
         {
-            _logWindow?.AddLogMessage("ERR", "发生异常：" + ex.Message);
+            _logger.LogError("发生异常：{{ex}", ex.Message);
         }
         finally
         {
@@ -411,7 +414,7 @@ public class AutoClubQuiz
         bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
         await Task.Delay(_answerDelay * 1000, _cts.Token);
         i = Regex.Match(i, @"\d+/\d+").Value;   //正则匹配去掉多余符号
-        _logWindow?.AddLogMessage("INF", "进度：[Yellow]" + i + "[/Yellow]。答案：[Lime]" + bestOption + "[/Lime]。");
+        _logger.LogInformation("进度：[Yellow]{i}[/Yellow]。答案：[Lime]{bestOption}[/Lime]。", i, bestOption);
         ClickOption();
     }
 
@@ -502,11 +505,11 @@ public class AutoClubQuiz
 
     private void PrintText()
     {
-        _logWindow?.AddLogMessage("DBG", "问题：" + q);
-        _logWindow?.AddLogMessage("DBG", "选项A：" + a);
-        _logWindow?.AddLogMessage("DBG", "选项B：" + b);
-        _logWindow?.AddLogMessage("DBG", "选项C：" + c);
-        _logWindow?.AddLogMessage("DBG", "选项D：" + d);
+        _logger.LogDebug("问题：{q}", q);
+        _logger.LogDebug("选项A：{a}", a);
+        _logger.LogDebug("选项B：{b}", b);
+        _logger.LogDebug("选项C：{c}", c);
+        _logger.LogDebug("选项D：{d}", d);
     }
 
 
@@ -627,14 +630,13 @@ public class AutoClubQuiz
 
         if (!match.Success)
         {
-            _logWindow?.AddLogMessage("WRN", "无法识别社团贡献分数，请检查OCR设置或截图质量。");
+            _logger.LogWarning("无法识别社团贡献分数，请检查OCR设置或截图质量。");
         }
         int addScore = int.Parse(match.Groups[1].Value);
         string weekTotal = match.Groups[2].Value;
 
-        _logWindow?.AddLogMessage("INF", "本次社团贡献：[Yellow]+" + addScore + "[/Yellow]。");
-        _logWindow?.AddLogMessage("INF", "本周社团贡献：[Yellow]" + weekTotal + "[/Yellow]。");
-
+        _logger.LogInformation("本次社团贡献：[Yellow]+{addScore}[/Yellow]。", addScore);
+        _logger.LogInformation("本周社团贡献：[Yellow]{weekTotal}[/Yellow]。", weekTotal);
         ToastNotificationHelper.ShowToastWithImage("答题结束", "本次社团贡献：+" + addScore + "。\n" + "本周社团贡献：" + weekTotal + "。", captureMat);
 
     }
@@ -738,11 +740,11 @@ public class AutoClubQuiz
     {
         if (answer_delay < 0)
         {
-            _logWindow?.AddLogMessage("WRN", "答题延迟不能小于0。已设置为默认值。");
+            _logger.LogWarning("答题延迟不能小于0。已设置为默认值。");
             return false;
         }
         _answerDelay = answer_delay;
-        _logWindow?.AddLogMessage("DBG", "答题延迟设置为：" + _answerDelay);
+        _logger.LogDebug("答题延迟设置为：{AnswerDelay}秒", _answerDelay);
         return true;
     }
 

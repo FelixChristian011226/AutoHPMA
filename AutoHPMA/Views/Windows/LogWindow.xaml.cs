@@ -111,6 +111,9 @@ namespace AutoHPMA.Views.Windows
             if (category == "DBG" && !_showDebugLogs)
                 return;
 
+            // 处理ILogger的格式化字符串
+            content = content.Replace("{", "").Replace("}", "");
+
             var message = new LogMessage
             {
                 Timestamp = DateTime.Now,
@@ -160,26 +163,6 @@ namespace AutoHPMA.Views.Windows
                     LogListBox.ScrollIntoView(LogListBox.Items[LogListBox.Items.Count - 1]);
                 }
             }
-        }
-
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            DragMove();
-        }
-
-        public void HideLogWindow()
-        {
-            this.Visibility = Visibility.Collapsed;
-        }
-
-        public void ShowLogWindow()
-        {
-            this.Visibility = Visibility.Visible;
-        }
-
-        public void ToggleLogWindowVisibility(bool isVisible)
-        {
-            this.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void FilterLogMessages()

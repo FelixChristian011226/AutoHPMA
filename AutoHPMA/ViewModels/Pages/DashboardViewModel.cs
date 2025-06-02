@@ -3,31 +3,32 @@
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
+using AutoHPMA.Config;
+using AutoHPMA.Helpers;
+using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Messages;
+using AutoHPMA.Services;
 using AutoHPMA.Views;
 using AutoHPMA.Views.Windows;
-using AutoHPMA.Helpers;
-using AutoHPMA.Config;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using System.Diagnostics;
-using Wpf.Ui.Controls;
 using Microsoft.Extensions.Logging;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Net.WebSockets;
-using System.Windows.Threading;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Collections.ObjectModel;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using AutoHPMA.Helpers.CaptureHelper;
-using AutoHPMA.Services;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using AutoHPMA.Messages;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Net.WebSockets;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using System.Windows.Threading;
+using Wpf.Ui.Controls;
 using Rect = OpenCvSharp.Rect;
 
 namespace AutoHPMA.ViewModels.Pages
@@ -37,6 +38,7 @@ namespace AutoHPMA.ViewModels.Pages
     {
 
         private readonly AppSettings _settings;
+        private readonly ILogger<DashboardViewModel> _logger;
         private DispatcherTimer _syncWindowTimer;
         private DispatcherTimer _captureTimer;
 
@@ -138,9 +140,10 @@ namespace AutoHPMA.ViewModels.Pages
             ScreenshotUpdated?.Invoke(bmp);
         }
 
-        public DashboardViewModel(AppSettings settings)
+        public DashboardViewModel(AppSettings settings, ILogger<DashboardViewModel> logger)
         {
             _settings = settings;
+            _logger = logger;
 
             // 初始化时从设置中加载数据
             CaptureInterval = _settings.CaptureInterval;
@@ -184,17 +187,17 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 if (NativeMethodsService.IsIconic(_gameHwnd)) // 最小化
                 {
-                    _logWindow?.HideLogWindow();
+                    _logWindow?.Hide();
                     _maskWindow?.Hide();
                 }
                 else if (NativeMethodsService.GetForegroundWindow()!= _displayHwnd) // 由于Mumu模拟器有两个句柄，真正的游戏窗口句柄是子句柄，而且不在顶层，所以需要父句柄
                 {
-                    _logWindow?.HideLogWindow();
+                    _logWindow?.Hide();
                     _maskWindow?.Hide();
                 }
                 else
                 {
-                    _logWindow?.ShowLogWindow();
+                    _logWindow?.Show();
                     _maskWindow?.Show();
                 }
                 _logWindow?.RefreshPosition(_gameHwnd);
@@ -267,7 +270,7 @@ namespace AutoHPMA.ViewModels.Pages
                 //_logWindow.Owner = GetWindow(_gameHwnd); // 将游戏窗口设置为LogWindow的Owner
                 _logWindow.RefreshPosition(_gameHwnd);
                 _logWindow.ShowDebugLogs = DebugLogEnabled;
-                _logWindow.AddLogMessage("INF", "检测到[Yellow]" + _startupOption+ "[/Yellow]已启动");
+                _logger.LogInformation("检测到[Yellow]{_startupOption}[/Yellow]已启动", _startupOption);
                 ShowGameWindowInfo();
             }
 
@@ -398,15 +401,15 @@ namespace AutoHPMA.ViewModels.Pages
                 int left, top, width, height;
                 int leftMumu, topMumu;
                 WindowInteractionHelper.GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
-                _logWindow.AddLogMessage("INF", "检测到游戏窗口分辨率 [Yellow]" + width+"*"+height+ "[/Yellow]");
-                _logWindow.AddLogMessage("DBG", "游戏窗口位置：左上角(" + left + "," + top + ")");
+                _logger.LogInformation("检测到游戏窗口分辨率 [Yellow]{Width}*{Height}[/Yellow]", width, height);
+                _logger.LogDebug("游戏窗口位置：左上角({Left},{Top})", left, top);
                 WindowInteractionHelper.GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
-                _logWindow.AddLogMessage("DBG", "检测到模拟器窗口分辨率" + width + "*" + height);
-                _logWindow.AddLogMessage("DBG", "模拟器窗口位置：左上角(" + leftMumu + "," + topMumu + ")");
+                _logger.LogDebug("检测到模拟器窗口分辨率{Width}*{Height}", width, height);
+                _logger.LogDebug("模拟器窗口位置：左上角({Left},{Top})", leftMumu, topMumu);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"获取窗口信息失败：{ex.Message}");
+                _logger.LogError(ex, "获取窗口信息失败");
             }
         }
 

@@ -2,6 +2,7 @@
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
+using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ public class AutoSweetAdventure
     private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
     private static WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
 
+    private readonly ILogger<AutoSweetAdventure> _logger;
     private IntPtr _displayHwnd, _gameHwnd;
     private int offsetX, offsetY;
     private double scale;
@@ -53,8 +55,9 @@ public class AutoSweetAdventure
     private CancellationTokenSource _cts;
 
 
-    public AutoSweetAdventure(IntPtr _displayHwnd, IntPtr _gameHwnd)
+    public AutoSweetAdventure(ILogger<AutoSweetAdventure> logger, IntPtr _displayHwnd, IntPtr _gameHwnd)
     {
+        this._logger = logger;
         this._displayHwnd = _displayHwnd;
         this._gameHwnd = _gameHwnd;
         _cts = new CancellationTokenSource();
@@ -112,7 +115,7 @@ public class AutoSweetAdventure
     {
         _state = AutoSweetAdventureState.Unknown;
         _logWindow?.SetGameState("甜蜜冒险");
-        _logWindow?.AddLogMessage("INF", "[Aquamarine]---甜蜜冒险任务已启动---[/Aquamarine]");
+        _logger.LogInformation("[Aquamarine]---甜蜜冒险任务已启动---[/Aquamarine]");
         try
         {
             while (!_cts.Token.IsCancellationRequested)
@@ -146,7 +149,7 @@ public class AutoSweetAdventure
                         round = FindRound();
                         if(round > prev_round)
                         {
-                            _logWindow?.AddLogMessage("INF", "当前回合数：[Yellow]" + round + "[/Yellow]。");
+                            _logger.LogInformation("当前回合数：[Yellow]{Round}[/Yellow]。", round);
                             step = 1;
                             prev_round = round;
                         }
@@ -155,14 +158,14 @@ public class AutoSweetAdventure
                             if (FindAndClickColored(ref gaming_forward, 0.96))
                             {
                                 step++;
-                                _logWindow?.AddLogMessage("INF", "第[Yellow]"+step+"[/Yellow]步：前进。");
+                                _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：前进。", step);
                                 await Task.Delay(1000, _cts.Token);
                                 continue;
                             }
                             if (FindAndClickColored(ref gaming_candy, 0.96))
                             {
                                 step++;
-                                _logWindow?.AddLogMessage("INF", "第[Yellow]" + step + "[/Yellow]步：预测糖果。");
+                                _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测糖果。", step);
                                 await Task.Delay(1000, _cts.Token);
                                 continue;
                             }
@@ -172,14 +175,14 @@ public class AutoSweetAdventure
                             if(FindAndClickColored(ref gaming_return, 0.96))
                             {
                                 step++;
-                                _logWindow?.AddLogMessage("INF", "第[Yellow]" + step + "[/Yellow]步：返回。");
+                                _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：返回。", step);
                                 await Task.Delay(1000, _cts.Token);
                                 continue;
                             }
                             if(FindAndClickColored(ref gaming_monster, 0.96))
                             {
                                 step++;
-                                _logWindow?.AddLogMessage("INF", "第[Yellow]" + step + "[/Yellow]步：预测怪物。");
+                                _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测怪物。", step);
                                 await Task.Delay(1000, _cts.Token);
                                 continue;
                             }
@@ -194,21 +197,20 @@ public class AutoSweetAdventure
                         round = 0;
                         prev_round = 0;
                         step = 1;
-                        _logWindow?.AddLogMessage("INF", "游戏结束，正在结算中...");
+                        _logger.LogInformation("游戏结束，正在结算中...");
                         SendSpace(_gameHwnd);
                         await Task.Delay(2000, _cts.Token);
                         break;
-
                 }
             }
         }
         catch (TaskCanceledException)
         {
-            _logWindow?.AddLogMessage("INF", "[Aquamarine]---甜蜜冒险任务已终止---[/Aquamarine]");
+            _logger.LogInformation("[Aquamarine]---甜蜜冒险任务已终止---[/Aquamarine]");
         }
         catch (Exception ex)
         {
-            _logWindow?.AddLogMessage("ERR", "发生异常：" + ex.Message);
+            _logger.LogError(ex, "发生异常");
         }
         finally
         {
