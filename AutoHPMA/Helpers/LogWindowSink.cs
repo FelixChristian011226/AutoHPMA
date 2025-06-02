@@ -29,12 +29,12 @@ namespace AutoHPMA.Helpers
         {
             return level switch
             {
-                LogEventLevel.Verbose => "DBG",
-                LogEventLevel.Debug => "DBG",
-                LogEventLevel.Information => "INF",
-                LogEventLevel.Warning => "WRN",
-                LogEventLevel.Error => "ERR",
-                LogEventLevel.Fatal => "ERR",
+                LogEventLevel.Verbose => "VRB",         //LogTrace
+                LogEventLevel.Debug => "DBG",           //LogDebug
+                LogEventLevel.Information => "INF",     //LogInformation
+                LogEventLevel.Warning => "WRN",         //LogWarning
+                LogEventLevel.Error => "ERR",           //LogError
+                LogEventLevel.Fatal => "FAT",           //LogCritical
                 _ => "INF"
             };
         }

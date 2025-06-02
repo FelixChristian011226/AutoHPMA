@@ -21,9 +21,13 @@ namespace AutoHPMA.Helpers
                 case "ERR":
                     return Brushes.Red;
                 case "INF":
-                    return Brushes.Cyan;
+                    return Brushes.LightBlue;
                 case "DBG":
-                    return Brushes.Orange;
+                    return Brushes.LightGreen;
+                case "VRB":
+                    return Brushes.LightGray;
+                case "FAT":
+                    return Brushes.DarkRed;
                 default:
                     return Brushes.Gray;
             }
