@@ -61,10 +61,12 @@ namespace AutoHPMA
                 // 配置Serilog
                 var logWindowSink = new LogWindowSink();
                 var logFileSink = new LogFileSink();
+                var logPageSink = new LogEventSink();
                 Log.Logger = new LoggerConfiguration()
                     .MinimumLevel.Debug()
                     .WriteTo.Sink(logWindowSink)
                     .WriteTo.Sink(logFileSink)
+                    .WriteTo.Sink(logPageSink)
                     .CreateLogger();
 
                 services.AddLogging(c => c.AddSerilog());
@@ -90,6 +92,8 @@ namespace AutoHPMA
                 services.AddSingleton<TaskViewModel>();
                 services.AddSingleton<ScreenshotPage>();
                 services.AddSingleton<ScreenshotViewModel>();
+                services.AddSingleton<LogPage>();
+                services.AddSingleton<LogViewModel>();
                 services.AddSingleton<TestPage>();
                 services.AddSingleton<TestViewModel>();
                 services.AddSingleton<NotificationSettingsPage>();

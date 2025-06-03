@@ -36,6 +36,12 @@ namespace AutoHPMA.ViewModels.Windows
             },
             new NavigationViewItem()
             {
+                Content = "日志",
+                Icon = new SymbolIcon {Symbol = SymbolRegular.DocumentText24},
+                TargetPageType = typeof(Views.Pages.LogPage)
+            },
+            new NavigationViewItem()
+            {
                 Content = "测试",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.DesktopEdit24 },
                 TargetPageType = typeof(Views.Pages.TestPage)
