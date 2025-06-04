@@ -47,6 +47,13 @@ namespace AutoHPMA.ViewModels.Pages
         {
             _logger = logger;
             Instance = this;
+            _logger.LogInformation("日志系统初始化完成");
+
+            // 处理之前暂存的日志
+            if (LogEventSink.Instance != null)
+            {
+                LogEventSink.Instance.ProcessPendingLogs();
+            }
         }
 
         public void AddLogEvent(LogEvent logEvent)
@@ -111,14 +118,37 @@ namespace AutoHPMA.ViewModels.Pages
 
     public class LogEventSink : ILogEventSink
     {
+        public static LogEventSink Instance { get; private set; }
+        private readonly Queue<LogEvent> _pendingLogEvents = new Queue<LogEvent>();
+
         public LogEventSink()
         {
+            Instance = this;
         }
 
         public void Emit(LogEvent logEvent)
         {
             if (LogViewModel.Instance != null)
             {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    LogViewModel.Instance.AddLogEvent(logEvent);
+                });
+            }
+            else
+            {
+                // 如果LogViewModel实例还不存在，将日志事件暂存
+                _pendingLogEvents.Enqueue(logEvent);
+            }
+        }
+
+        public void ProcessPendingLogs()
+        {
+            if (LogViewModel.Instance == null) return;
+
+            while (_pendingLogEvents.Count > 0)
+            {
+                var logEvent = _pendingLogEvents.Dequeue();
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     LogViewModel.Instance.AddLogEvent(logEvent);
