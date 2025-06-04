@@ -32,12 +32,24 @@
             <ui:Button Content="清除日志" Command="{Binding ViewModel.ClearLogsCommand}" Margin="12,0,0,0"/>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1">
-            <TextBox x:Name="LogTextBox" 
-                     IsReadOnly="True" 
-                     TextWrapping="Wrap"
-                     Text="{Binding ViewModel.LogText, Mode=OneWay}"
-                     FontFamily="Consolas"/>
-        </ScrollViewer>
+        <Border Grid.Row="1" 
+                CornerRadius="8" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1">
+            <DockPanel>
+                <ScrollViewer
+                            VerticalScrollBarVisibility="Auto" 
+                            VerticalAlignment="Stretch"
+                            MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=DockPanel}}" >
+                    <TextBox x:Name="LogTextBox" 
+                            IsReadOnly="True" 
+                            TextWrapping="Wrap"
+                            Text="{Binding ViewModel.LogText, Mode=OneWay}"
+                            FontFamily="Consolas"
+                            />
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
     </Grid>
 </Page> 
