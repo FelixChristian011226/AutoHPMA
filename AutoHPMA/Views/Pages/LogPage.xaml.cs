@@ -12,11 +12,15 @@ namespace AutoHPMA.Views.Pages
         public LogViewModel ViewModel { get; }
         private bool _isInitialFocus = true;
         private DispatcherTimer _focusTimer;
+        
+        // 添加静态实例
+        public static LogPage Instance { get; private set; }
 
         public LogPage(LogViewModel viewModel)
         {
             ViewModel = viewModel;
             DataContext = this;
+            Instance = this;  // 设置静态实例
 
             InitializeComponent();
             

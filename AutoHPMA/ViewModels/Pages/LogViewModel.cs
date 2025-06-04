@@ -9,6 +9,8 @@ using System.Text;
 using Serilog.Core;
 using System.Windows.Threading;
 using System.Windows;
+using System.Windows.Controls;
+using AutoHPMA.Views.Pages;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -45,7 +47,6 @@ namespace AutoHPMA.ViewModels.Pages
         {
             _logger = logger;
             Instance = this;
-            _logger.LogInformation("日志系统初始化完成");
         }
 
         public void AddLogEvent(LogEvent logEvent)
@@ -82,6 +83,15 @@ namespace AutoHPMA.ViewModels.Pages
                 }
             }
             LogText = _logBuilder.ToString();
+            
+            // 触发滚动到底部的事件
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (LogPage.Instance?.LogScrollViewer != null)
+                {
+                    LogPage.Instance.LogScrollViewer.ScrollToBottom();
+                }
+            }));
         }
 
         [RelayCommand]

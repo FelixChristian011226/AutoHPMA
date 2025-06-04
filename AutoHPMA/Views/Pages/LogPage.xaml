@@ -38,7 +38,7 @@
                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                 BorderThickness="1">
             <DockPanel>
-                <ScrollViewer
+                <ScrollViewer x:Name="LogScrollViewer"
                             VerticalScrollBarVisibility="Auto" 
                             VerticalAlignment="Stretch"
                             MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=DockPanel}}" >
