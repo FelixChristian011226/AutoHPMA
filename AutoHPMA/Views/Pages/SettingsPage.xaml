@@ -161,7 +161,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="当日志文件超过上限时自动清理"
+                        Text="当日志文件超过上限时自动清理(设置为0不清理）"
                         TextWrapping="Wrap" />
                     <ui:NumberBox
                         Grid.Row="0"

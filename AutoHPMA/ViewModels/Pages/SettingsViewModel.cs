@@ -28,7 +28,7 @@ namespace AutoHPMA.ViewModels.Pages
         private ThemeOption _selectedThemeOption;
 
         [ObservableProperty]
-        private int _logFileLimit = 100;
+        private int _logFileLimit = 10;
 
         public class ThemeOption
         {

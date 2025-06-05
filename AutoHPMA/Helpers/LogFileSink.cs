@@ -4,6 +4,8 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
+using AutoHPMA.Config;
 
 namespace AutoHPMA.Helpers
 {
@@ -12,13 +14,16 @@ namespace AutoHPMA.Helpers
         private readonly IFormatProvider _formatProvider;
         private readonly string _logDirectory;
         private string _currentLogFile;
+        private readonly AppSettings _settings;
 
         public LogFileSink(IFormatProvider formatProvider = null)
         {
             _formatProvider = formatProvider;
+            _settings = AppSettings.Load();
             _logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
             EnsureLogDirectoryExists();
             _currentLogFile = GenerateLogFileName();
+            CleanupOldLogs();
         }
 
         private void EnsureLogDirectoryExists()
@@ -44,6 +49,39 @@ namespace AutoHPMA.Helpers
                 var inputBytes = Encoding.UTF8.GetBytes(input);
                 var hashBytes = md5.ComputeHash(inputBytes);
                 return BitConverter.ToString(hashBytes).Replace("-", "").Substring(0, 8);
+            }
+        }
+
+        private void CleanupOldLogs()
+        {
+            if (_settings.LogFileLimit <= 0) return;
+
+            try
+            {
+                var logFiles = Directory.GetFiles(_logDirectory, "*.log")
+                    .Select(f => new FileInfo(f))
+                    .OrderByDescending(f => f.CreationTime)
+                    .ToList();
+
+                if (logFiles.Count > _settings.LogFileLimit)
+                {
+                    var filesToDelete = logFiles.Skip(_settings.LogFileLimit);
+                    foreach (var file in filesToDelete)
+                    {
+                        try
+                        {
+                            file.Delete();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"删除日志文件失败: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"清理日志文件时发生错误: {ex.Message}");
             }
         }
 

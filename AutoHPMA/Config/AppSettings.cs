@@ -55,7 +55,7 @@ namespace AutoHPMA.Config
         public string Language { get; set; } = "zh-CN";
 
         [JsonPropertyName("logFileLimit")]
-        public int LogFileLimit { get; set; } = 100;
+        public int LogFileLimit { get; set; } = 10;
 
         // Other
         [JsonPropertyName("lastUsedPath")]
