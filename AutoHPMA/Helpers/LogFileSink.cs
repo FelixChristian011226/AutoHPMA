@@ -65,7 +65,7 @@ namespace AutoHPMA.Helpers
 
                 if (logFiles.Count > _settings.LogFileLimit)
                 {
-                    var filesToDelete = logFiles.Skip(_settings.LogFileLimit);
+                    var filesToDelete = logFiles.Skip(_settings.LogFileLimit-1);
                     foreach (var file in filesToDelete)
                     {
                         try
