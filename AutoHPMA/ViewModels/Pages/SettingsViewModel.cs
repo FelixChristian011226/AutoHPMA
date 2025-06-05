@@ -6,6 +6,7 @@
 using AutoHPMA.Config;
 using Microsoft.Win32;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Wpf.Ui.Abstractions.Controls;
@@ -26,6 +27,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private ThemeOption _selectedThemeOption;
 
+        [ObservableProperty]
+        private int _logFileLimit = 100;
+
         public class ThemeOption
         {
             public ApplicationTheme Theme { get; set; }
@@ -43,6 +47,7 @@ namespace AutoHPMA.ViewModels.Pages
         public SettingsViewModel(AppSettings settings)
         {
             _settings = settings;
+            LogFileLimit = _settings.LogFileLimit;
         }
 
         public Task OnNavigatedToAsync()
@@ -142,6 +147,28 @@ namespace AutoHPMA.ViewModels.Pages
             };
             var result = uiMessageBox.ShowDialogAsync();
             Application.Current.Shutdown();
+        }
+
+        [RelayCommand]
+        private void OpenLogFolder()
+        {
+            var logFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+            if (!Directory.Exists(logFolderPath))
+            {
+                Directory.CreateDirectory(logFolderPath);
+            }
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = logFolderPath,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+
+        partial void OnLogFileLimitChanged(int value)
+        {
+            _settings.LogFileLimit = value;
+            _settings.Save();
         }
     }
 }
