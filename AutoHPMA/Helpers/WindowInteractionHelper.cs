@@ -168,5 +168,38 @@ public class WindowInteractionHelper
         }
     }
 
+    public static void SendMouseDrag(IntPtr hWnd, uint startX, uint startY, uint endX, uint endY, int duration = 500)
+    {
+        var startLParam = MakeLParam(startX, startY);
+        var endLParam = MakeLParam(endX, endY);
+
+        // 按下鼠标左键
+        SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, startLParam);
+        Thread.Sleep(50);
+
+        // 计算移动的步数和每步的延迟
+        int steps = 10;
+        int stepDelay = duration / steps;
+        double stepX = (endX - startX) / (double)steps;
+        double stepY = (endY - startY) / (double)steps;
+
+        // 逐步移动鼠标
+        for (int i = 1; i <= steps; i++)
+        {
+            uint currentX = (uint)(startX + (stepX * i));
+            uint currentY = (uint)(startY + (stepY * i));
+            var currentLParam = MakeLParam(currentX, currentY);
+            
+            // 发送鼠标移动消息
+            SendMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, currentLParam);
+            Thread.Sleep(stepDelay);
+        }
+
+        // 释放鼠标左键
+        SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, endLParam);
+    }
+
+    // 添加鼠标移动消息常量
+    private const uint WM_MOUSEMOVE = 0x0200;
 
 }

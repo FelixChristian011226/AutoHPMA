@@ -48,6 +48,17 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private int _clickTimes = 10;
 
+        [ObservableProperty]
+        private int _dragStartX = 200;
+        [ObservableProperty]
+        private int _dragStartY = 200;
+        [ObservableProperty]
+        private int _dragEndX = 400;
+        [ObservableProperty]
+        private int _dragEndY = 400;
+        [ObservableProperty]
+        private int _dragDuration = 500;
+
         // 文字识别
         [ObservableProperty]
         private string _ocrResult = string.Empty;
@@ -141,6 +152,24 @@ namespace AutoHPMA.ViewModels.Pages
             }
         }
 
+        [RelayCommand]
+        public async void OnDragTest(object sender)
+        {
+            IntPtr hWnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
+
+            if (hWndChild != IntPtr.Zero)
+            {
+                WindowInteractionHelper.SendMouseDrag(
+                    hWndChild,
+                    (uint)_dragStartX,
+                    (uint)_dragStartY,
+                    (uint)_dragEndX,
+                    (uint)_dragEndY,
+                    _dragDuration
+                );
+            }
+        }
 
         [RelayCommand]
         public async void OnOCRTest(object sender)
