@@ -23,7 +23,7 @@ using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
 
-namespace AutoHPMA.GameTask;
+namespace AutoHPMA.GameTask.Permanent;
 
 public enum AutoClubQuizState
 {
@@ -48,7 +48,7 @@ public class AutoClubQuiz
     private static PaddleOCRHelper paddleOCRHelper;
 
     private readonly ILogger<AutoClubQuiz> _logger;
-    private IntPtr _displayHwnd, _gameHwnd;
+    private nint _displayHwnd, _gameHwnd;
     private int offsetX, offsetY;
     private double scale;
     private AutoClubQuizState _state = AutoClubQuizState.Outside;
@@ -91,9 +91,9 @@ public class AutoClubQuiz
 
     private CancellationTokenSource _cts;
 
-    public AutoClubQuiz(ILogger<AutoClubQuiz> logger, IntPtr _displayHwnd, IntPtr _gameHwnd)
+    public AutoClubQuiz(ILogger<AutoClubQuiz> logger, nint _displayHwnd, nint _gameHwnd)
     {
-        this._logger = logger;
+        _logger = logger;
         this._displayHwnd = _displayHwnd;
         this._gameHwnd = _gameHwnd;
         _cts = new CancellationTokenSource();
@@ -449,7 +449,7 @@ public class AutoClubQuiz
         }
         option_d_rect = new Rect(matchpoint.X, matchpoint.Y, quiz_option_d.Width, quiz_option_d.Height);
 
-        _maskWindow?.SetLayerRects("Option", new List<OpenCvSharp.Rect>
+        _maskWindow?.SetLayerRects("Option", new List<Rect>
         {
             ScaleRect(option_a_rect, scale),
             ScaleRect(option_b_rect, scale),
@@ -654,7 +654,7 @@ public class AutoClubQuiz
         time_rects.Clear();
         time_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(quiz_time20.Width * scale), (int)(quiz_time20.Height * scale)));
         _maskWindow?.SetLayerRects("Time", time_rects);
-        index_rect = new Rect((int)(matchpoint.X), (int)(matchpoint.Y + quiz_time20.Height), (int)(quiz_time20.Width), (int)(quiz_time20.Height));
+        index_rect = new Rect(matchpoint.X, matchpoint.Y + quiz_time20.Height, quiz_time20.Width, quiz_time20.Height);
         return true;
     }
 

@@ -1,4 +1,4 @@
-﻿using AutoHPMA.GameTask;
+﻿using AutoHPMA.GameTask.Permanent;
 using AutoHPMA.GameTask.Temporary;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Messages;

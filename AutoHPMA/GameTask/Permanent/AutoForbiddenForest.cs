@@ -18,7 +18,7 @@ using static AutoHPMA.Helpers.WindowInteractionHelper;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
 
-namespace AutoHPMA.GameTask;
+namespace AutoHPMA.GameTask.Permanent;
 
 public enum AutoForbiddenForestState
 {
@@ -42,7 +42,7 @@ public class AutoForbiddenForest
     private static WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
 
     private readonly ILogger<AutoForbiddenForest> _logger;
-    private IntPtr _displayHwnd, _gameHwnd;
+    private nint _displayHwnd, _gameHwnd;
     private int offsetX, offsetY;
     private double scale;
     private AutoForbiddenForestState _state = AutoForbiddenForestState.Outside;
@@ -65,9 +65,9 @@ public class AutoForbiddenForest
     private CancellationTokenSource _cts;
     public event EventHandler? TaskCompleted;
 
-    public AutoForbiddenForest(ILogger<AutoForbiddenForest> logger, IntPtr _displayHwnd, IntPtr _gameHwnd)
+    public AutoForbiddenForest(ILogger<AutoForbiddenForest> logger, nint _displayHwnd, nint _gameHwnd)
     {
-        this._logger = logger;
+        _logger = logger;
         this._displayHwnd = _displayHwnd;
         this._gameHwnd = _gameHwnd;
         _cts = new CancellationTokenSource();
@@ -316,7 +316,7 @@ public class AutoForbiddenForest
     private async Task<bool> FindAndClickMultiAsync(Mat mat, double threshold = 0.9)
     {
         captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new OpenCvSharp.Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
 
         var matchrects = MatchTemplateHelper.MatchOnePicForOnePic(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
