@@ -1,4 +1,5 @@
-﻿using AutoHPMA.GameTask.Permanent;
+﻿using AutoHPMA.GameTask;
+using AutoHPMA.GameTask.Permanent;
 using AutoHPMA.GameTask.Temporary;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Messages;
@@ -87,9 +88,7 @@ namespace AutoHPMA.ViewModels.Pages
         private WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
 
 
-        private AutoClubQuiz? _autoClubQuiz;
-        private AutoForbiddenForest? _autoForbiddenForest;
-        private AutoSweetAdventure? _autoSweetAdventure;
+        private IGameTask? _currentTask;
         private AppContextService appContextService;
 
         public TaskViewModel(AppSettings settings, ILogger<TaskViewModel> logger)
@@ -171,10 +170,13 @@ namespace AutoHPMA.ViewModels.Pages
             AutoClubQuizStopButtonVisibility = Visibility.Visible;
 
             var logger = App.GetLogger<AutoClubQuiz>();
-            _autoClubQuiz = new AutoClubQuiz(logger, _displayHwnd, _gameHwnd);
-            _autoClubQuiz.SetAnswerDelay(AnswerDelay);
-            _autoClubQuiz.SetJoinOthers(JoinOthers);
-            _autoClubQuiz.Start();
+            _currentTask = new AutoClubQuiz(logger, _displayHwnd, _gameHwnd);
+            _currentTask.SetParameters(new Dictionary<string, object>
+            {
+                { "AnswerDelay", AnswerDelay },
+                { "JoinOthers", JoinOthers }
+            });
+            _currentTask.Start();
         }
 
         private bool CanAutoClubQuizStopTrigger() => AutoClubQuizStopButtonEnabled;
@@ -185,8 +187,8 @@ namespace AutoHPMA.ViewModels.Pages
             AutoClubQuizStartButtonVisibility = Visibility.Visible;
             AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
 
-            _autoClubQuiz?.Stop();
-            _autoClubQuiz = null;
+            _currentTask?.Stop();
+            _currentTask = null;
             _isAnyTaskRunning = false;
 
             GC.Collect();
@@ -227,16 +229,13 @@ namespace AutoHPMA.ViewModels.Pages
             AutoForbiddenForestStopButtonVisibility = Visibility.Visible;
 
             var logger = App.GetLogger<AutoForbiddenForest>();
-            _autoForbiddenForest = new AutoForbiddenForest(logger, _displayHwnd, _gameHwnd);
-            _autoForbiddenForest.SetAutoForbiddenForestTimes(AutoForbiddenForestTimes);
-            _autoForbiddenForest.SetTeamPosition(SelectedTeamPosition);
-            _autoForbiddenForest.TaskCompleted += (s, e) =>
+            _currentTask = new AutoForbiddenForest(logger, _displayHwnd, _gameHwnd);
+            _currentTask.SetParameters(new Dictionary<string, object>
             {
-                AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
-                AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
-                _isAnyTaskRunning = false;
-            };
-            _autoForbiddenForest.Start();
+                { "Times", AutoForbiddenForestTimes },
+                { "TeamPosition", SelectedTeamPosition }
+            });
+            _currentTask.Start();
         }
 
         private bool CanAutoForbiddenForestStopTrigger() => AutoForbiddenForestStopButtonEnabled;
@@ -247,8 +246,8 @@ namespace AutoHPMA.ViewModels.Pages
             AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
             AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
 
-            _autoForbiddenForest?.Stop();
-            _autoForbiddenForest = null;
+            _currentTask?.Stop();
+            _currentTask = null;
             _isAnyTaskRunning = false;
 
             GC.Collect();
@@ -289,8 +288,8 @@ namespace AutoHPMA.ViewModels.Pages
             AutoSweetAdventureStopButtonVisibility = Visibility.Visible;
 
             var logger = App.GetLogger<AutoSweetAdventure>();
-            _autoSweetAdventure = new AutoSweetAdventure(logger, _displayHwnd, _gameHwnd);
-            _autoSweetAdventure.Start();
+            _currentTask = new AutoSweetAdventure(logger, _displayHwnd, _gameHwnd);
+            _currentTask.Start();
         }
 
         private bool CanAutoSweetAdventureStopTrigger() => AutoSweetAdventureStopButtonEnabled;
@@ -301,8 +300,8 @@ namespace AutoHPMA.ViewModels.Pages
             AutoSweetAdventureStartButtonVisibility = Visibility.Visible;
             AutoSweetAdventureStopButtonVisibility = Visibility.Collapsed;
 
-            _autoSweetAdventure?.Stop();
-            _autoSweetAdventure = null;
+            _currentTask?.Stop();
+            _currentTask = null;
             _isAnyTaskRunning = false;
 
             GC.Collect();

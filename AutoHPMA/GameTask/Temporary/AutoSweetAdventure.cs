@@ -25,8 +25,7 @@ public enum AutoSweetAdventureState
     Endding,
 }
 
-
-public class AutoSweetAdventure
+public class AutoSweetAdventure : IGameTask
 {
     private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
     private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
@@ -54,6 +53,7 @@ public class AutoSweetAdventure
 
     private CancellationTokenSource _cts;
 
+    public event EventHandler? TaskCompleted;
 
     public AutoSweetAdventure(ILogger<AutoSweetAdventure> logger, IntPtr _displayHwnd, IntPtr _gameHwnd)
     {
@@ -109,6 +109,7 @@ public class AutoSweetAdventure
     public void Stop()
     {
         _cts.Cancel();
+        TaskCompleted?.Invoke(this, EventArgs.Empty);
     }
 
     public async void Start()
@@ -374,4 +375,9 @@ public class AutoSweetAdventure
         );
     }
 
+    public bool SetParameters(Dictionary<string, object> parameters)
+    {
+        // 甜蜜冒险目前没有需要设置的参数
+        return true;
+    }
 }

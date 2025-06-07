@@ -36,10 +36,9 @@ public enum AutoClubQuizState
     Quiz,
     Over,
     Victory,
-
 }
 
-public class AutoClubQuiz
+public class AutoClubQuiz : IGameTask
 {
     private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
     private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
@@ -90,6 +89,8 @@ public class AutoClubQuiz
     private int roundIndex = 1;
 
     private CancellationTokenSource _cts;
+
+    public event EventHandler? TaskCompleted;
 
     public AutoClubQuiz(ILogger<AutoClubQuiz> logger, nint _displayHwnd, nint _gameHwnd)
     {
@@ -180,6 +181,7 @@ public class AutoClubQuiz
     public void Stop()
     {
         _cts.Cancel();
+        TaskCompleted?.Invoke(this, EventArgs.Empty);
     }
 
     public async void Start()
@@ -327,7 +329,7 @@ public class AutoClubQuiz
                         _maskWindow.ShowLayer("Option");
                         if (_quiz_over)
                         {
-                            _logger.LogInformation("第[Yellow]{ roundIndex} [/Yellow]轮答题开始", roundIndex);
+                            _logger.LogInformation("第[Yellow]{roundIndex}[/Yellow]轮答题开始", roundIndex);
                             _quiz_over = false;
                         }
                         if (_optionLocated == false)
@@ -392,7 +394,7 @@ public class AutoClubQuiz
         }
         catch (Exception ex)
         {
-            _logger.LogError("发生异常：{{ex}", ex.Message);
+            _logger.LogError("发生异常：{ex}", ex.Message);
         }
         finally
         {
@@ -736,22 +738,34 @@ public class AutoClubQuiz
 
     #region SetParameter
 
-    public bool SetAnswerDelay(int answer_delay)
+    public bool SetParameters(Dictionary<string, object> parameters)
     {
-        if (answer_delay < 0)
+        try
         {
-            _logger.LogWarning("答题延迟不能小于0。已设置为默认值。");
+            if (parameters.ContainsKey("AnswerDelay"))
+            {
+                var answerDelay = Convert.ToInt32(parameters["AnswerDelay"]);
+                if (answerDelay < 0)
+                {
+                    _logger.LogWarning("答题延迟不能小于0。已设置为默认值。");
+                    return false;
+                }
+                _answerDelay = answerDelay;
+                _logger.LogDebug("答题延迟设置为：{AnswerDelay}秒", _answerDelay);
+            }
+
+            if (parameters.ContainsKey("JoinOthers"))
+            {
+                _joinOthers = Convert.ToBoolean(parameters["JoinOthers"]);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("设置参数时发生错误：{Message}", ex.Message);
             return false;
         }
-        _answerDelay = answer_delay;
-        _logger.LogDebug("答题延迟设置为：{AnswerDelay}秒", _answerDelay);
-        return true;
-    }
-
-    public bool SetJoinOthers(bool join_others)
-    {
-        _joinOthers = join_others;
-        return true;
     }
 
     #endregion

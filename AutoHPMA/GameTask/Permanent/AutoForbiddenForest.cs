@@ -35,7 +35,7 @@ public enum AutoForbiddenForestOption
     Member,
 }
 
-public class AutoForbiddenForest
+public class AutoForbiddenForest : IGameTask
 {
     private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
     private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
@@ -355,23 +355,47 @@ public class AutoForbiddenForest
 
     #region SetParameter
 
-    public bool SetAutoForbiddenForestTimes(int AutoForbiddenForestTimes)
+    public bool SetParameters(Dictionary<string, object> parameters)
     {
-        _autoForbiddenForestTimes = AutoForbiddenForestTimes;
-        return true;
-    }
+        try
+        {
+            if (parameters.ContainsKey("Times"))
+            {
+                var times = Convert.ToInt32(parameters["Times"]);
+                if (times <= 0)
+                {
+                    _logger.LogWarning("禁林次数必须大于0。已设置为默认值。");
+                    return false;
+                }
+                _autoForbiddenForestTimes = times;
+                _logger.LogDebug("禁林次数设置为：{Times}次", _autoForbiddenForestTimes);
+            }
 
-    public bool SetTeamPosition(string SelectedTeamPosition)
-    {
-        if (SelectedTeamPosition == "Leader")
-        {
-            _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
+            if (parameters.ContainsKey("TeamPosition"))
+            {
+                var teamPosition = parameters["TeamPosition"].ToString();
+                if (teamPosition == "Leader")
+                {
+                    _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
+                }
+                else if (teamPosition == "Member")
+                {
+                    _autoForbiddenForestOption = AutoForbiddenForestOption.Member;
+                }
+                else
+                {
+                    _logger.LogWarning("无效的队伍位置。已设置为默认值。");
+                    return false;
+                }
+            }
+
+            return true;
         }
-        else if (SelectedTeamPosition == "Member")
+        catch (Exception ex)
         {
-            _autoForbiddenForestOption = AutoForbiddenForestOption.Member;
+            _logger.LogError("设置参数时发生错误：{Message}", ex.Message);
+            return false;
         }
-        return true;
     }
 
     #endregion
