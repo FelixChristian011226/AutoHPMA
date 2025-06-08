@@ -112,6 +112,53 @@ namespace AutoHPMA.Helpers
             return list;
         }
 
+        /// <summary>
+        /// 从输入图像生成Mask，透明区域为黑色，非透明区域为白色
+        /// </summary>
+        /// <param name="inputMat">输入图像</param>
+        /// <returns>生成的Mask</returns>
+        public static Mat GenerateMask(Mat inputMat)
+        {
+            try
+            {
+                // 确保输入图像是BGRA格式
+                Mat bgraMat;
+                if (inputMat.Channels() == 4)
+                {
+                    bgraMat = inputMat.Clone();
+                }
+                else
+                {
+                    bgraMat = new Mat();
+                    Cv2.CvtColor(inputMat, bgraMat, ColorConversionCodes.BGR2BGRA);
+                }
+
+                // 创建Mask
+                var mask = new Mat(bgraMat.Size(), MatType.CV_8UC1, Scalar.Black);
+
+                // 遍历所有像素
+                for (int y = 0; y < bgraMat.Height; y++)
+                {
+                    for (int x = 0; x < bgraMat.Width; x++)
+                    {
+                        var pixel = bgraMat.Get<Vec4b>(y, x);
+                        // 如果Alpha通道值大于0，则在Mask中设置为白色
+                        if (pixel.Item3 > 0)
+                        {
+                            mask.Set(y, x, 255);
+                        }
+                    }
+                }
+
+                return mask;
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex.Message);
+                //_logger.LogDebug(ex, ex.Message);
+                return new Mat();
+            }
+        }
 
     }
 }
