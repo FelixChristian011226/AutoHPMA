@@ -16,61 +16,70 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <CollectionViewSource x:Key="GroupedHotkeys" 
+                            Source="{Binding ViewModel.HotkeyBindings}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="Group"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </Page.Resources>
+
     <StackPanel Margin="40,30,40,30">
         <ui:TextBlock
             Margin="0,0,0,8"
             FontWeight="Bold"
             Text="热键设置" />
-        <ui:CardExpander Margin="0,0,0,12"
-                         ContentPadding="0"
-                         Icon="{ui:SymbolIcon Keyboard24}">
-            <ui:CardExpander.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock Grid.Row="0"
-                                  Grid.Column="0"
-                                  FontTypography="Body"
-                                  Text="功能热键"
-                                  TextWrapping="Wrap" />
-                    <ui:TextBlock Grid.Row="1"
-                                  Grid.Column="0"
-                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="设置各项功能的热键绑定"
-                                  TextWrapping="Wrap" />
-                </Grid>
-            </ui:CardExpander.Header>
-            
-            <ItemsControl ItemsSource="{Binding ViewModel.HotkeyBindings}">
-                <ItemsControl.ItemTemplate>
+        
+        <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="16">
+            <ui:ListView ItemsSource="{Binding Source={StaticResource GroupedHotkeys}}"
+             Background="Transparent"
+             BorderThickness="0">
+                <ui:ListView.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <ui:TextBlock Text="{Binding Name}" 
+                                 FontWeight="Bold" 
+                                 Margin="0,10,0,5"
+                                 Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ui:ListView.GroupStyle>
+                <ui:ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Margin="16,8">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <ui:TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                <ui:TextBlock Text="{Binding Description}" 
-                                             Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                             TextWrapping="Wrap" />
-                            </StackPanel>
+
+                            <!-- 左侧：描述 -->
+                            <ui:TextBlock Grid.Column="0"
+                                Text="{Binding Description}" 
+                                TextWrapping="Wrap"
+                                VerticalAlignment="Center" />
+
+                            <!-- 右侧：热键输入框 -->
                             <ui:TextBox Grid.Column="1"
-                                      Width="50"
-                                      Text="{Binding Key, Converter={StaticResource KeyToStringConverter}}"
-                                      IsReadOnly="True"
-                                      PreviewKeyDown="HotkeyTextBox_PreviewKeyDown">
+                                        Width="100"
+                                        MinWidth="100"
+                                        MaxWidth="100"
+                                        Margin="10,0,0,0"
+                                        Text="{Binding Key, Converter={StaticResource KeyToStringConverter}}"
+                                        IsReadOnly="True"
+                                        PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"
+                                        HorizontalAlignment="Right"
+                                        TextAlignment="Center">
                                 <ui:TextBox.Style>
                                     <Style TargetType="ui:TextBox" BasedOn="{StaticResource {x:Type ui:TextBox}}">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding DataContext.ViewModel.IsWaitingForKey, 
-                                                                          RelativeSource={RelativeSource AncestorType=Page}}" 
-                                                         Value="True">
+                                                              RelativeSource={RelativeSource AncestorType=Page}}" 
+                                             Value="True">
                                                 <Setter Property="Text" Value="请按键..." />
                                                 <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
                                             </DataTrigger>
@@ -80,8 +89,8 @@
                             </ui:TextBox>
                         </Grid>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ui:CardExpander>
+                </ui:ListView.ItemTemplate>
+            </ui:ListView>
+        </Border>
     </StackPanel>
 </Page> 

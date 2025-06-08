@@ -64,6 +64,8 @@ namespace AutoHPMA.Config
         [JsonPropertyName("isFirstRun")]
         public bool IsFirstRun { get; set; } = true;
 
+        [JsonPropertyName("hotkeyBindings")]
+        public Dictionary<string, int> HotkeyBindings { get; set; } = new();
 
         public static AppSettings Load()
         {
