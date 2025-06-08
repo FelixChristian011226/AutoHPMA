@@ -98,6 +98,8 @@ namespace AutoHPMA
                 services.AddSingleton<TestViewModel>();
                 services.AddSingleton<NotificationSettingsPage>();
                 services.AddSingleton<NotificationSettingsViewModel>();
+                services.AddSingleton<HotkeySettingsPage>();
+                services.AddSingleton<HotkeySettingsViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
             }).Build();

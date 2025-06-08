@@ -48,6 +48,12 @@ namespace AutoHPMA.ViewModels.Windows
             },
             new NavigationViewItem()
             {
+                Content = "热键",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Keyboard24 },
+                TargetPageType = typeof(Views.Pages.HotkeySettingsPage)
+            },
+            new NavigationViewItem()
+            {
                 Content = "通知",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Alert24 },
                 TargetPageType = typeof(Views.Pages.NotificationSettingsPage)

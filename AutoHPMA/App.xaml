@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:converters="clr-namespace:AutoHPMA.Converters"
     DispatcherUnhandledException="OnDispatcherUnhandledException"
     Exit="OnExit"
     Startup="OnStartup">
@@ -12,6 +13,7 @@
                 <ui:ThemesDictionary Theme="Light" />
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
+            <converters:KeyToStringConverter x:Key="KeyToStringConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
