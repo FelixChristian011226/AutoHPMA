@@ -11,12 +11,14 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Abstractions.Controls;
+using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Services;
+using OpenCvSharp.Extensions;
 
 namespace AutoHPMA.ViewModels.Pages
 {
     public class ScreenshotViewModel : ObservableObject, INavigationAware
     {
-
         private bool _isInitialized = false;
         private ImageSource _imageSource;
         public ImageSource ImageSource
@@ -28,6 +30,29 @@ namespace AutoHPMA.ViewModels.Pages
         public ScreenshotViewModel()
         {
             
+        }
+
+        public static void TakeScreenshot()
+        {
+            var gameHwnd = AppContextService.Instance.GameHwnd;
+            if (gameHwnd == IntPtr.Zero) return;
+
+            var capture = new WindowsGraphicsCapture();
+            capture.Start(gameHwnd);
+            Task.Delay(100).Wait();
+            var frame = capture.Capture();
+            capture.Stop();
+            var bmp = frame.ToBitmap();
+
+            string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+            Directory.CreateDirectory(folderPath);
+            
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string filename = $"screenshot_{timestamp}.png";
+            string fullPath = Path.Combine(folderPath, filename);
+            
+            bmp.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
+            bmp.Dispose();
         }
 
         private void BitmapUpdated(Bitmap bmp)

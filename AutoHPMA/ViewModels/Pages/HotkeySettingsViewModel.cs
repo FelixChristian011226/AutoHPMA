@@ -6,12 +6,15 @@ using System.Windows;
 using System.Windows.Input;
 using System.Linq;
 using System.Collections.Generic;
+using AutoHPMA.ViewModels.Pages;
+using Microsoft.Extensions.Logging;
 
 namespace AutoHPMA.ViewModels.Pages
 {
     public partial class HotkeySettingsViewModel : ObservableObject
     {
         private readonly AppSettings _settings;
+        private readonly ILogger<HotkeySettingsViewModel> _logger;
 
         [ObservableProperty]
         private ObservableCollection<HotkeyBinding> _hotkeyBindings;
@@ -22,9 +25,10 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private bool _isWaitingForKey;
 
-        public HotkeySettingsViewModel(AppSettings settings)
+        public HotkeySettingsViewModel(AppSettings settings, ILogger<HotkeySettingsViewModel> logger)
         {
             _settings = settings;
+            _logger = logger;
             _hotkeyBindings = new ObservableCollection<HotkeyBinding>();
             LoadHotkeyBindings();
         }
@@ -46,6 +50,7 @@ namespace AutoHPMA.ViewModels.Pages
                 if (_settings.HotkeyBindings.TryGetValue(binding.Name, out int keyValue))
                 {
                     binding.Key = (Key)keyValue;
+                    _logger.LogDebug($"Loaded hotkey binding: {binding.Name} -> {binding.Key}");
                 }
             }
         }
@@ -60,6 +65,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             SelectedBinding = binding;
             IsWaitingForKey = true;
+            //_logger.LogDebug($"Waiting for key for binding: {binding.Name}");
         }
 
         public void OnKeyDown(Key key)
@@ -74,6 +80,7 @@ namespace AutoHPMA.ViewModels.Pages
                 IsWaitingForKey = false;
                 _settings.HotkeyBindings[SelectedBinding.Name] = (int)Key.None;
                 _settings.Save();
+                _logger.LogDebug($"Cancelled hotkey binding for: {SelectedBinding.Name}");
                 return;
             }
 
@@ -84,7 +91,6 @@ namespace AutoHPMA.ViewModels.Pages
                 {
                     Title = "⚠️ 热键冲突",
                     Content = "该热键已被其他功能使用，请选择其他按键。",
-
                 };
                 _ = uiMessageBox.ShowDialogAsync();
                 return;
@@ -94,6 +100,19 @@ namespace AutoHPMA.ViewModels.Pages
             IsWaitingForKey = false;
             _settings.HotkeyBindings[SelectedBinding.Name] = (int)key;
             _settings.Save();
+            _logger.LogInformation($"Set hotkey binding: {SelectedBinding.Name} -> {key}");
+        }
+
+        public void ExecuteHotkeyAction(string actionName)
+        {
+            //_logger.LogInformation($"Executing hotkey action: {actionName}");
+            switch (actionName)
+            {
+                case "截图":
+                    ScreenshotViewModel.TakeScreenshot();
+                    break;
+                // 其他热键动作可以在这里添加
+            }
         }
     }
 
