@@ -253,9 +253,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             Mat originalMat = Cv2.ImRead(SourceImagePath);
             Mat detectMat = originalMat.Clone();
-            Cv2.CvtColor(detectMat, detectMat, ColorConversionCodes.BGR2GRAY);
-            Mat templateMat = Cv2.ImRead(TemplateImagePath);
-            Cv2.CvtColor(templateMat, templateMat, ColorConversionCodes.BGR2GRAY);
+            Mat templateMat = Cv2.ImRead(TemplateImagePath, ImreadModes.Unchanged);
             Mat maskMat;
             if(!string.IsNullOrEmpty(MaskImagePath))
             {
@@ -264,8 +262,19 @@ namespace AutoHPMA.ViewModels.Pages
             }
             else
             {
-                maskMat = null;
+                if (templateMat.Channels() == 4)
+                {
+                    maskMat = MatchTemplateHelper.GenerateMask(templateMat);
+                    // 保存mask
+                    string maskPath = Path.ChangeExtension(TemplateImagePath, null) + "_mask.png";
+                    maskMat.SaveImage(maskPath);
+                }
+                else
+                {
+                    maskMat = null;
+                }
             }
+            templateMat = Cv2.ImRead(TemplateImagePath);
 
             var matches = MatchTemplateHelper.MatchOnePicForOnePic(
                 detectMat,
