@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="clr-namespace:AutoHPMA.Helpers"
+    xmlns:converters="clr-namespace:AutoHPMA.Converters"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="LogWindow"
     Width="400"
@@ -12,7 +13,7 @@
     WindowStyle="None"
     IsHitTestVisible="False">
     <Window.Resources>
-        <helpers:CategoryToColorConverter x:Key="CategoryToColorConverter" />
+        <converters:CategoryToColorConverter x:Key="CategoryToColorConverter" />
     </Window.Resources>
 
     <StackPanel>

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Converters
 {
     /// <summary>
     /// 颜色转换器

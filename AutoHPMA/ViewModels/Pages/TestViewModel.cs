@@ -97,7 +97,7 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public async void OnScreenshotTest(object sender)
         {
-            var _gameHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            var _gameHwnd = WindowHelper.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
             if (_gameHwnd != IntPtr.Zero)
             {
                 // 对子窗口截图会被屏蔽，只能截取父窗口
@@ -105,7 +105,7 @@ namespace AutoHPMA.ViewModels.Pages
             }
             else
             {
-                _gameHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+                _gameHwnd = WindowHelper.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
             }
 
             if (_gameHwnd != IntPtr.Zero)
@@ -136,8 +136,8 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public async void OnClickTest(object sender)
         {
-            IntPtr hWnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-            IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
+            IntPtr hWnd = WindowHelper.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            IntPtr hWndChild = WindowHelper.FindChildWindowByTitle(hWnd, "MuMuPlayer");
             //IntPtr hWndChild = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
             //IntPtr hWndChild = new IntPtr(Convert.ToInt32("004D078E", 16));
             //WindowInteractionHelper.SetForegroundWindow(hWndChild);
@@ -155,8 +155,8 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public async void OnDragTest(object sender)
         {
-            IntPtr hWnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-            IntPtr hWndChild = SystemControl.FindChildWindowByTitle(hWnd, "MuMuPlayer");
+            IntPtr hWnd = WindowHelper.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            IntPtr hWndChild = WindowHelper.FindChildWindowByTitle(hWnd, "MuMuPlayer");
 
             if (hWndChild != IntPtr.Zero)
             {

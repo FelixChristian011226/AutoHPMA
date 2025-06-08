@@ -369,15 +369,15 @@ namespace AutoHPMA.ViewModels.Pages
          */
         private void GetGameHwnd()
         {
-            _displayHwnd = SystemControl.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            _displayHwnd = WindowHelper.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
             if (_displayHwnd != IntPtr.Zero)
             {
                 _startupOption = StartupOption.MumuSimulator;
-                _gameHwnd = SystemControl.FindChildWindowByTitle(_displayHwnd, "MuMuPlayer");
+                _gameHwnd = WindowHelper.FindChildWindowByTitle(_displayHwnd, "MuMuPlayer");
             }
             else
             {
-                _gameHwnd = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
+                _gameHwnd = WindowHelper.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
                 if (_gameHwnd != IntPtr.Zero)
                 {
                     _startupOption = StartupOption.OfficialLauncher;

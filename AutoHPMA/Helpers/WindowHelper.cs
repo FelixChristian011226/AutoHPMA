@@ -10,7 +10,7 @@ using static Vanara.PInvoke.User32;
 
 namespace AutoHPMA.Helpers;
 
-public class SystemControl
+public class WindowHelper
 {
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
