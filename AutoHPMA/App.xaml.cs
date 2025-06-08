@@ -102,6 +102,8 @@ namespace AutoHPMA
                 services.AddSingleton<HotkeySettingsViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
+
+                services.AddSingleton<KeyboardHookService>();
             }).Build();
 
         public static ILogger<T> GetLogger<T>()
