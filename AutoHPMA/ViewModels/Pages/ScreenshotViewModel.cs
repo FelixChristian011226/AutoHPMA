@@ -37,11 +37,19 @@ namespace AutoHPMA.ViewModels.Pages
             var gameHwnd = AppContextService.Instance.GameHwnd;
             if (gameHwnd == IntPtr.Zero) return;
 
-            var capture = new WindowsGraphicsCapture();
-            capture.Start(gameHwnd);
+            var capture = AppContextService.Instance.Capture;
+            if (capture == null)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "⚠️ 错误",
+                    Content = "截图失败。请先启动截图器!",
+                };
+                var result = uiMessageBox.ShowDialogAsync();
+                return;
+            }
             Task.Delay(100).Wait();
             var frame = capture.Capture();
-            capture.Stop();
             var bmp = frame.ToBitmap();
 
             string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");

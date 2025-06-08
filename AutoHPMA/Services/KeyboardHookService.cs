@@ -98,7 +98,7 @@ namespace AutoHPMA.Services
             {
                 int vkCode = Marshal.ReadInt32(lParam);
                 Key key = KeyInterop.KeyFromVirtualKey(vkCode);
-                _logger.LogDebug($"Key pressed: {key}");
+                //_logger.LogDebug($"Key pressed: {key}");
 
                 if (_hotkeySettings != null)
                 {
