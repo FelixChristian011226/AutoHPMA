@@ -31,19 +31,14 @@ namespace AutoHPMA.ViewModels.Pages
 
         private void LoadHotkeyBindings()
         {
-            // 添加默认的热键绑定，按功能分组
             // 基础功能
-            HotkeyBindings.Add(new HotkeyBinding { Name = "开始/停止", Description = "开始或停止自动操作", Key = Key.F5, Group = "基础功能" });
-            HotkeyBindings.Add(new HotkeyBinding { Name = "暂停/继续", Description = "暂停或继续自动操作", Key = Key.F6, Group = "基础功能" });
-            HotkeyBindings.Add(new HotkeyBinding { Name = "截图", Description = "截取当前屏幕", Key = Key.F7, Group = "基础功能" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "截图", Description = "截图当前游戏页面", Key = Key.None, Group = "基础功能" });
 
-            // 社团功能
-            HotkeyBindings.Add(new HotkeyBinding { Name = "社团答题", Description = "开始或停止社团答题", Key = Key.F8, Group = "社团功能" });
-            HotkeyBindings.Add(new HotkeyBinding { Name = "社团活动", Description = "开始或停止社团活动", Key = Key.F9, Group = "社团功能" });
-
-            // 禁林功能
-            HotkeyBindings.Add(new HotkeyBinding { Name = "禁林探索", Description = "开始或停止禁林探索", Key = Key.F10, Group = "禁林功能" });
-            HotkeyBindings.Add(new HotkeyBinding { Name = "禁林战斗", Description = "开始或停止禁林战斗", Key = Key.F11, Group = "禁林功能" });
+            // 任务启动
+            HotkeyBindings.Add(new HotkeyBinding { Name = "AutoHPMA", Description = "开始/停止 AutoHPMA", Key = Key.None, Group = "任务启动" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "社团答题", Description = "开始/停止 社团答题", Key = Key.None, Group = "任务启动" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "禁林探索", Description = "开始/停止 禁林探索", Key = Key.None, Group = "任务启动" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "甜蜜冒险", Description = "开始/停止 甜蜜冒险", Key = Key.None, Group = "任务启动" });
 
             // 从设置中加载保存的热键
             foreach (var binding in HotkeyBindings)
@@ -85,7 +80,13 @@ namespace AutoHPMA.ViewModels.Pages
             // 检查是否与其他热键冲突
             if (HotkeyBindings.Any(b => b != SelectedBinding && b.Key == key))
             {
-                MessageBox.Show("该热键已被其他功能使用，请选择其他按键。", "热键冲突", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "⚠️ 热键冲突",
+                    Content = "该热键已被其他功能使用，请选择其他按键。",
+
+                };
+                _ = uiMessageBox.ShowDialogAsync();
                 return;
             }
 
