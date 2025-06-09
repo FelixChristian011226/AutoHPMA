@@ -89,11 +89,13 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty] private int _maxGap = 10;
         [ObservableProperty] private int _angleThresh = 1;
 
-        [ObservableProperty] private int _minRadius = 10;
-        [ObservableProperty] private int _maxRadius = 50;
+        [ObservableProperty] private int _minRadius = 0;
+        [ObservableProperty] private int _maxRadius = 0;
 
         [ObservableProperty] private string? _detectImagePath;
         [ObservableProperty] private System.Windows.Media.ImageSource? _detectResultImage;
+
+        [ObservableProperty] private double _progressPercentage;
 
         #endregion
 
@@ -368,12 +370,28 @@ namespace AutoHPMA.ViewModels.Pages
             // 在原图上绘制检测到的圆
             foreach (var circle in circles)
             {
-                Cv2.Circle(src, (int)circle.Center.X, (int)circle.Center.Y, (int)circle.Radius, Scalar.Green, 2);
+                Cv2.Circle(src, (int)circle.Center.X, (int)circle.Center.Y, (int)circle.Radius, Scalar.Green, 1);
                 // 绘制圆心
-                Cv2.Circle(src, (int)circle.Center.X, (int)circle.Center.Y, 2, Scalar.Red, 3);
+                Cv2.Circle(src, (int)circle.Center.X, (int)circle.Center.Y, 2, Scalar.Red, 2);
             }
 
             var bmp = BitmapSourceConverter.ToBitmapSource(src);
+            bmp.Freeze();
+            DetectResultImage = bmp;
+        }
+
+        [RelayCommand]
+        private void DetectProgressCircle()
+        {
+            if (string.IsNullOrEmpty(DetectImagePath))
+                return;
+
+            Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
+            var (progress, resultImage) = ProgressCircleDetector.DetectProgressCircle(src, MinRadius, MaxRadius);
+            
+            ProgressPercentage = progress;
+
+            var bmp = BitmapSourceConverter.ToBitmapSource(resultImage);
             bmp.Freeze();
             DetectResultImage = bmp;
         }
