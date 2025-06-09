@@ -42,6 +42,10 @@ namespace AutoHPMA.ViewModels.Pages
         private Visibility _autoSweetAdventureStartButtonVisibility = Visibility.Visible;
         [ObservableProperty]
         private Visibility _autoSweetAdventureStopButtonVisibility = Visibility.Collapsed;
+        [ObservableProperty]
+        private Visibility _autoCookingStartButtonVisibility = Visibility.Visible;
+        [ObservableProperty]
+        private Visibility _autoCookingStopButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStartTriggerCommand))]
@@ -61,6 +65,12 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AutoSweetAdventureStopTriggerCommand))]
         private bool _autoSweetAdventureStopButtonEnabled = true;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AutoCookingStartTriggerCommand))]
+        private bool _autoCookingStartButtonEnabled = true;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AutoCookingStopTriggerCommand))]
+        private bool _autoCookingStopButtonEnabled = true;
 
         [ObservableProperty]
         private int _answerDelay = 0;
@@ -70,6 +80,8 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private int _autoForbiddenForestTimes = 30;
+        [ObservableProperty]
+        private int _autoCookingTimes = 2;
 
         [ObservableProperty]
         private ObservableCollection<string> _teamPositions =
@@ -106,6 +118,7 @@ namespace AutoHPMA.ViewModels.Pages
             JoinOthers = _settings.JoinOthers;
             AutoForbiddenForestTimes = _settings.AutoForbiddenForestTimes;
             SelectedTeamPosition = _settings.SelectedTeamPosition;
+            AutoCookingTimes = _settings.AutoCookingTimes;
         }
 
         private void AppContextService_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -307,6 +320,63 @@ namespace AutoHPMA.ViewModels.Pages
             GC.Collect();
         }
 
+        private bool CanAutoCookingStartTrigger() => AutoCookingStartButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoCookingStartTrigger))]
+        private void OnAutoCookingStartTrigger()
+        {
+            if (CheckTaskRunningStatus()) return;
+
+            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "⚠️ 错误",
+                    Content = "任务启动失败。请先启动截图器!",
+                };
+                var result = uiMessageBox.ShowDialogAsync();
+                return;
+            }
+            else
+            {
+                var snackbarInfo = new SnackbarInfo
+                {
+                    Title = "启动成功",
+                    Message = "自动烹饪已启动。",
+                    Appearance = ControlAppearance.Success,
+                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
+                    Duration = TimeSpan.FromSeconds(3)
+                };
+                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
+            }
+
+            _isAnyTaskRunning = true;
+            AutoCookingStartButtonVisibility = Visibility.Collapsed;
+            AutoCookingStopButtonVisibility = Visibility.Visible;
+
+            var logger = App.GetLogger<AutoCooking>();
+            _currentTask = new AutoCooking(logger, _displayHwnd, _gameHwnd);
+            _currentTask.SetParameters(new Dictionary<string, object>
+            {
+                { "Times", AutoCookingTimes }
+            });
+            _currentTask.Start();
+        }
+
+        private bool CanAutoCookingStopTrigger() => AutoCookingStopButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoCookingStopTrigger))]
+        private void OnAutoCookingStopTrigger()
+        {
+            AutoCookingStartButtonVisibility = Visibility.Visible;
+            AutoCookingStopButtonVisibility = Visibility.Collapsed;
+
+            _currentTask?.Stop();
+            _currentTask = null;
+            _isAnyTaskRunning = false;
+
+            GC.Collect();
+        }
 
         [RelayCommand]
         private void OnOpenQuestionBank(object sender)
@@ -355,6 +425,12 @@ namespace AutoHPMA.ViewModels.Pages
         partial void OnSelectedTeamPositionChanged(string value)
         {
             _settings.SelectedTeamPosition = value;
+            _settings.Save();
+        }
+
+        partial void OnAutoCookingTimesChanged(int value)
+        {
+            _settings.AutoCookingTimes = value;
             _settings.Save();
         }
     }

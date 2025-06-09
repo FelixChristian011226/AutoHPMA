@@ -40,6 +40,9 @@ namespace AutoHPMA.Config
         [JsonPropertyName("selectedTeamPosition")]
         public string SelectedTeamPosition { get; set; } = "Leader";
 
+        [JsonPropertyName("autoCookingTimes")]
+        public int AutoCookingTimes { get; set; } = 2;
+
         // Notification
         [JsonPropertyName("notificationEnabled")]
         public bool NotificationEnabled { get; set; } = true;
@@ -120,6 +123,7 @@ namespace AutoHPMA.Config
             JoinOthers = false;
             AutoForbiddenForestTimes = 30;
             SelectedTeamPosition = "Leader";
+            AutoCookingTimes = 1;
 
             // Settings
             HasShownTermsOfUse = false;
