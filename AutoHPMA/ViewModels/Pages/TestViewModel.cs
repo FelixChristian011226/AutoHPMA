@@ -89,6 +89,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty] private int _maxGap = 10;
         [ObservableProperty] private int _angleThresh = 1;
 
+        [ObservableProperty] private int _minRadius = 10;
+        [ObservableProperty] private int _maxRadius = 50;
+
         [ObservableProperty] private string? _detectImagePath;
         [ObservableProperty] private System.Windows.Media.ImageSource? _detectResultImage;
 
@@ -319,8 +322,8 @@ namespace AutoHPMA.ViewModels.Pages
             if (string.IsNullOrEmpty(DetectImagePath))
                 return;
             Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
-            Mat src_binary = RectangleDetectHelper.Binarize(src);
-            Mat src_line  = RectangleDetectHelper.DetectBlackWhiteBordersWithMorph(src_binary, minLen: MinLen, maxGap: MaxGap, angleThresh:AngleThresh);
+            Mat src_binary = ContourDetectHelper.Binarize(src);
+            Mat src_line  = ContourDetectHelper.DetectBlackWhiteBordersWithMorph(src_binary, minLen: MinLen, maxGap: MaxGap, angleThresh:AngleThresh);
 
             var bmp = BitmapSourceConverter.ToBitmapSource(src_line);
             bmp.Freeze();
@@ -335,9 +338,9 @@ namespace AutoHPMA.ViewModels.Pages
 
             Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
 
-            Mat src_binary = RectangleDetectHelper.Binarize(src, 200);
+            Mat src_binary = ContourDetectHelper.Binarize(src, 200);
 
-            var rect = RectangleDetectHelper.DetectApproxRectangle(src_binary);
+            var rect = ContourDetectHelper.DetectApproxRectangle(src_binary);
 
             Cv2.Rectangle(src, rect, Scalar.Red, 2);
 
@@ -347,6 +350,28 @@ namespace AutoHPMA.ViewModels.Pages
             //);
             //Cv2.ImWrite(resultPath, output);
 
+
+            var bmp = BitmapSourceConverter.ToBitmapSource(src);
+            bmp.Freeze();
+            DetectResultImage = bmp;
+        }
+
+        [RelayCommand]
+        private void DetectCircles()
+        {
+            if (string.IsNullOrEmpty(DetectImagePath))
+                return;
+
+            Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
+            var circles = ContourDetectHelper.DetectCircles(src, MinRadius, MaxRadius);
+
+            // 在原图上绘制检测到的圆
+            foreach (var circle in circles)
+            {
+                Cv2.Circle(src, (int)circle.Center.X, (int)circle.Center.Y, (int)circle.Radius, Scalar.Green, 2);
+                // 绘制圆心
+                Cv2.Circle(src, (int)circle.Center.X, (int)circle.Center.Y, 2, Scalar.Red, 3);
+            }
 
             var bmp = BitmapSourceConverter.ToBitmapSource(src);
             bmp.Freeze();

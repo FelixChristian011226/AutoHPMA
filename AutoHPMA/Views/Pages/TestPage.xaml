@@ -637,8 +637,72 @@
                             
                             <ui:Button Content="选择图像" Command="{Binding ViewModel.SelectDetectImageCommand}" Margin="0,0,10,0" />
                             <ui:Button Content="检测线段" Command="{Binding ViewModel.DetectLinesCommand}" Margin="0,0,10,0" />
-                            <ui:Button Content="检测矩形" Command="{Binding ViewModel.DetectRectangleCommand}" />
+                            <ui:Button Content="检测矩形" Command="{Binding ViewModel.DetectRectangleCommand}" Margin="0,0,10,0" />
+                            <ui:Button Content="检测圆形" Command="{Binding ViewModel.DetectCirclesCommand}" />
                         </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="10,10,0,10">
+                            <Grid Margin="0,0,20,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    FontTypography="BodyStrong"
+                                    Text="MinRadius"
+                                    TextWrapping="Wrap" />
+                                <ui:TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                    Text="最小圆半径"
+                                    TextWrapping="Wrap" />
+                                <ui:NumberBox
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Value="{Binding ViewModel.MinRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="1"
+                                    Maximum="1000"
+                                    SpinButtonPlacementMode="Compact" />
+                            </Grid>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    FontTypography="BodyStrong"
+                                    Text="MaxRadius"
+                                    TextWrapping="Wrap" />
+                                <ui:TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                    Text="最大圆半径"
+                                    TextWrapping="Wrap" />
+                                <ui:NumberBox
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Value="{Binding ViewModel.MaxRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="1"
+                                    Maximum="1000"
+                                    SpinButtonPlacementMode="Compact" />
+                            </Grid>
+                        </StackPanel>
+
                         <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="4">
                             <Image Source="{Binding ViewModel.DetectResultImage}" Stretch="Uniform" Height="Auto" MinHeight="300" />
                         </Border>

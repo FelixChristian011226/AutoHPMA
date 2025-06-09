@@ -469,8 +469,8 @@ public class AutoClubQuiz : IGameTask
     {
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Mat captureMat_binary = RectangleDetectHelper.Binarize(captureMat, 200);
-        question_rect = RectangleDetectHelper.DetectApproxRectangle(captureMat_binary);
+        Mat captureMat_binary = ContourDetectHelper.Binarize(captureMat, 200);
+        question_rect = ContourDetectHelper.DetectApproxRectangle(captureMat_binary);
         if (question_rect == default)
         {
             return false;

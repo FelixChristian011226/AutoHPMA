@@ -10,7 +10,7 @@ using Size = OpenCvSharp.Size;
 
 namespace AutoHPMA.Helpers
 {
-    public class RectangleDetectHelper
+    public class ContourDetectHelper
     {
         /// <summary>
         /// 对彩色图像进行二值化处理。
@@ -123,6 +123,38 @@ namespace AutoHPMA.Helpers
             return bestRect;
         }
 
+        /// <summary>
+        /// 检测图像中的圆形
+        /// </summary>
+        /// <param name="inputImage">输入的彩色图像</param>
+        /// <param name="minRadius">最小圆半径</param>
+        /// <param name="maxRadius">最大圆半径</param>
+        /// <returns>检测到的圆形列表，每个元素包含圆心和半径</returns>
+        public static List<CircleSegment> DetectCircles(Mat inputImage, int minRadius = 20, int maxRadius = 100)
+        {
+            // 转换为灰度图
+            Mat gray = new Mat();
+            Cv2.CvtColor(inputImage, gray, ColorConversionCodes.BGR2GRAY);
+            
+            // 高斯模糊去噪
+            Mat blurred = new Mat();
+            blurred = gray;
+            //Cv2.GaussianBlur(gray, blurred, new Size(9, 9), 2, 2);
+            
+            // 霍夫圆变换检测圆形
+            var circles = Cv2.HoughCircles(
+                blurred,
+                HoughModes.Gradient,
+                dp: 1,
+                minDist: blurred.Rows / 8,
+                param1: 100,
+                param2: 30,
+                minRadius: minRadius,
+                maxRadius: maxRadius
+            );
+            
+            return circles.ToList();
+        }
 
     }
 }
