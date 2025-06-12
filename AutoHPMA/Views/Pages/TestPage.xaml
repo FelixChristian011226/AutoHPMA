@@ -632,18 +632,9 @@
                             </Grid>
 
                         </StackPanel>
-                        
-                        <StackPanel Orientation="Horizontal" Margin="10,10,0,10">
-                            
-                            <ui:Button Content="选择图像" Command="{Binding ViewModel.SelectDetectImageCommand}" Margin="0,0,10,0" />
-                            <ui:Button Content="检测线段" Command="{Binding ViewModel.DetectLinesCommand}" Margin="0,0,10,0" />
-                            <ui:Button Content="检测矩形" Command="{Binding ViewModel.DetectRectangleCommand}" Margin="0,0,10,0" />
-                            <ui:Button Content="检测圆形" Command="{Binding ViewModel.DetectCirclesCommand}" Margin="0,0,10,0"/>
-                            <ui:Button Content="检测进度条" Command="{Binding ViewModel.DetectProgressCircleCommand}" Margin="0,0,10,0"/>
-                        </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="10,10,0,10">
-                            <Grid Margin="0,0,20,0">
+                        <StackPanel Margin="10,10,0,0" Orientation="Horizontal">
+                            <Grid  Cursor="">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
@@ -667,13 +658,16 @@
                                 <ui:NumberBox
                                     Grid.Row="0"
                                     Grid.Column="1"
+                                    Grid.RowSpan="2"
+                                    Width="150"
+                                    Margin="5,0,10,0"
                                     Value="{Binding ViewModel.MinRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Minimum="0"
                                     Maximum="1000"
-                                    SpinButtonPlacementMode="Compact" />
+                                    />
                             </Grid>
 
-                            <Grid>
+                            <Grid  Cursor="">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
@@ -697,15 +691,24 @@
                                 <ui:NumberBox
                                     Grid.Row="0"
                                     Grid.Column="1"
+                                    Grid.RowSpan="2"
+                                    Width="150"
+                                    Margin="5,0,10,0"
                                     Value="{Binding ViewModel.MaxRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Minimum="0"
                                     Maximum="1000"
-                                    SpinButtonPlacementMode="Compact" />
+                                    />
                             </Grid>
                         </StackPanel>
 
+                        <StackPanel Orientation="Horizontal" Margin="10,10,0,10">
+                            <ui:Button Content="选择图像" Command="{Binding ViewModel.SelectDetectImageCommand}" Margin="0,0,10,0" />
+                            <ui:Button Content="检测线段" Command="{Binding ViewModel.DetectLinesCommand}" Margin="0,0,10,0" />
+                            <ui:Button Content="检测矩形" Command="{Binding ViewModel.DetectRectangleCommand}" Margin="0,0,10,0" />
+                            <ui:Button Content="检测圆形" Command="{Binding ViewModel.DetectCirclesCommand}" Margin="0,0,10,0"/>
+                        </StackPanel>
+
                         <TextBlock Margin="10,10,0,0" Text="检测结果：" />
-                        <TextBlock Margin="10,5,0,0" Text="{Binding ViewModel.ProgressPercentage, StringFormat=进度：{0:F1}%}" />
                         <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="4">
                             <Image Source="{Binding ViewModel.DetectResultImage}" Stretch="Uniform" Height="Auto" MinHeight="300" />
                         </Border>

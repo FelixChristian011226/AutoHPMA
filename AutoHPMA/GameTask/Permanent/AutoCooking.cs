@@ -56,28 +56,6 @@ public class AutoCooking : IGameTask
         AddLayersForMaskWindow();
     }
 
-    private void AddLayersForMaskWindow()
-    {
-        _maskWindow.AddLayer("Match");
-    }
-
-    public void LoadAssets()
-    {
-        string image_folder = "Assets/Cooking/Image/";
-
-    }
-
-    private void CalOffset()
-    {
-        int left, top, width, height;
-        int leftMumu, topMumu;
-        GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
-        GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
-        offsetX = left - leftMumu;
-        offsetY = top - topMumu;
-        scale = width / 1280.0;
-    }
-
     public void Stop()
     {
         _cts.Cancel();
@@ -113,6 +91,34 @@ public class AutoCooking : IGameTask
             _cts.Dispose();
             _cts = new CancellationTokenSource();
         }
+    }
+
+    private bool LocateKitchenWare()
+    {
+        return true;
+    }
+
+    private void AddLayersForMaskWindow()
+    {
+        _maskWindow.AddLayer("Match");
+        _maskWindow.AddLayer("Kitchenware");
+    }
+
+    public void LoadAssets()
+    {
+        string image_folder = "Assets/Cooking/Image/";
+
+    }
+
+    private void CalOffset()
+    {
+        int left, top, width, height;
+        int leftMumu, topMumu;
+        GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
+        GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
+        offsetX = left - leftMumu;
+        offsetY = top - topMumu;
+        scale = width / 1280.0;
     }
 
     #region SetParameter

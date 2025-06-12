@@ -95,8 +95,6 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty] private string? _detectImagePath;
         [ObservableProperty] private System.Windows.Media.ImageSource? _detectResultImage;
 
-        [ObservableProperty] private double _progressPercentage;
-
         #endregion
 
         [RelayCommand]
@@ -379,22 +377,5 @@ namespace AutoHPMA.ViewModels.Pages
             bmp.Freeze();
             DetectResultImage = bmp;
         }
-
-        [RelayCommand]
-        private void DetectProgressCircle()
-        {
-            if (string.IsNullOrEmpty(DetectImagePath))
-                return;
-
-            Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
-            var (progress, resultImage) = ProgressCircleDetector.DetectProgressCircle(src, MinRadius, MaxRadius);
-            
-            ProgressPercentage = progress;
-
-            var bmp = BitmapSourceConverter.ToBitmapSource(resultImage);
-            bmp.Freeze();
-            DetectResultImage = bmp;
-        }
- 
     }
 }
