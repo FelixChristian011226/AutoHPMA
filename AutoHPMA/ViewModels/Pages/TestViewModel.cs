@@ -27,7 +27,6 @@ namespace AutoHPMA.ViewModels.Pages
 {
     public partial class TestViewModel : ObservableObject
     {
-
         #region Observable Properties
         // 截屏测试
         [ObservableProperty]
@@ -130,6 +129,7 @@ namespace AutoHPMA.ViewModels.Pages
 
         #endregion
 
+        #region 截屏测试
         [RelayCommand]
         public async void OnScreenshotTest(object sender)
         {
@@ -166,9 +166,9 @@ namespace AutoHPMA.ViewModels.Pages
                 ImageProcessingHelper.SaveBitmapAs(croppedBmp, folderPath, _screenshotFilename + ".png", ImageFormat.Png);
             }
         }
+        #endregion
 
-
-
+        #region 模拟点击
         [RelayCommand]
         public async void OnClickTest(object sender)
         {
@@ -206,7 +206,9 @@ namespace AutoHPMA.ViewModels.Pages
                 );
             }
         }
+        #endregion
 
+        #region 文字识别
         [RelayCommand]
         public async void OnOCRTest(object sender)
         {
@@ -240,8 +242,9 @@ namespace AutoHPMA.ViewModels.Pages
                 }
             }
         }
+        #endregion
 
-        // 模板匹配
+        #region 模板匹配
         [RelayCommand]
         private void OnSelectSourceImage()
         {
@@ -377,9 +380,9 @@ namespace AutoHPMA.ViewModels.Pages
             }
             return;
         }
+        #endregion
 
-        //轮廓检测
-
+        #region 轮廓检测
         [RelayCommand]
         private void SelectDetectImage()
         {
@@ -452,8 +455,9 @@ namespace AutoHPMA.ViewModels.Pages
             bmp.Freeze();
             DetectResultImage = bmp;
         }
+        #endregion
 
-        // 色彩过滤
+        #region 色彩过滤
         [RelayCommand]
         private void SelectColorFilterSource()
         {
@@ -575,6 +579,6 @@ namespace AutoHPMA.ViewModels.Pages
                 _ = uiMessageBox.ShowDialogAsync();
             }
         }
-
+        #endregion
     }
 }
