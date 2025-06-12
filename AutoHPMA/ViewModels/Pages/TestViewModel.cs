@@ -1,10 +1,13 @@
 ﻿using AutoHPMA.Helpers;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
+using AutoHPMA.Messages;
 using AutoHPMA.Views.Windows;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using OpenCvSharp.WpfExtensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,7 +19,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Vanara.PInvoke;
-using OpenCvSharp.WpfExtensions;
+using Wpf.Ui.Controls;
 using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
 
@@ -83,6 +86,12 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private System.Windows.Media.ImageSource? _resultImage;
+
+        [ObservableProperty]
+        private string _matchRectInfo = string.Empty;
+
+        [ObservableProperty]
+        private List<Rect> _matchRects = new();
 
         //轮廓检测
         [ObservableProperty] private int _minLen = 60;
@@ -287,6 +296,9 @@ namespace AutoHPMA.ViewModels.Pages
                 threshold: Threshold
             );
 
+            MatchRects = matches;
+            MatchRectInfo = string.Join("\n", matches.Select(r => $"X: {r.X}, Y: {r.Y}, Width: {r.Width}, Height: {r.Height}"));
+
             foreach (var rect in matches)
             {
                 Cv2.Rectangle(
@@ -301,6 +313,45 @@ namespace AutoHPMA.ViewModels.Pages
             var bitmapSource = BitmapSourceConverter.ToBitmapSource(originalMat);
             bitmapSource.Freeze();
             ResultImage = bitmapSource;
+        }
+
+        [RelayCommand]
+        private void OnCropImage()
+        {
+            if (string.IsNullOrEmpty(SourceImagePath) || MatchRects.Count == 0)
+                return;
+
+            try
+            {
+                Mat originalMat = Cv2.ImRead(SourceImagePath);
+                string directory = Path.GetDirectoryName(SourceImagePath)!;
+                string fileName = Path.GetFileNameWithoutExtension(SourceImagePath);
+                string extension = Path.GetExtension(SourceImagePath);
+
+                for (int i = 0; i < MatchRects.Count; i++)
+                {
+                    var rect = MatchRects[i];
+                    var croppedMat = new Mat(originalMat, rect);
+                    string outputPath = Path.Combine(directory, $"{fileName}_cropped_{i + 1}{extension}");
+                    croppedMat.SaveImage(outputPath);
+                }
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "✅ 成功",
+                    Content = "已成功裁切 " + MatchRects.Count + "个区域",
+                };
+                _ = uiMessageBox.ShowDialogAsync();
+            }
+            catch (Exception ex)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "❎ 错误",
+                    Content = "裁切失败："+ex.Message,
+                };
+                _ = uiMessageBox.ShowDialogAsync();
+            }
+            return;
         }
 
         //轮廓检测
