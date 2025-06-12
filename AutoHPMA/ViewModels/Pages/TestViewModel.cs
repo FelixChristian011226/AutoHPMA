@@ -104,6 +104,30 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty] private string? _detectImagePath;
         [ObservableProperty] private System.Windows.Media.ImageSource? _detectResultImage;
 
+        // 色彩过滤
+        [ObservableProperty] private string? _colorFilterSourcePath;
+        [ObservableProperty] private string? _colorFilterMaskPath;
+        [ObservableProperty] private string _targetColorHex = "ffffff";
+        [ObservableProperty] private int _colorThreshold = 30;
+        [ObservableProperty] private System.Windows.Media.ImageSource? _colorFilterResultImage;
+
+        private System.Windows.Media.Color GetColorFromHex(string hex)
+        {
+            try
+            {
+                // 确保hex是6位
+                hex = hex.PadRight(6, '0');
+                // 添加FF作为Alpha通道
+                hex = "FF" + hex;
+                return (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#" + hex);
+            }
+            catch
+            {
+                // 如果转换失败，返回红色
+                return System.Windows.Media.Colors.Red;
+            }
+        }
+
         #endregion
 
         [RelayCommand]
@@ -428,5 +452,129 @@ namespace AutoHPMA.ViewModels.Pages
             bmp.Freeze();
             DetectResultImage = bmp;
         }
+
+        // 色彩过滤
+        [RelayCommand]
+        private void SelectColorFilterSource()
+        {
+            var dlg = new OpenFileDialog
+            {
+                Filter = "Image Files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                ColorFilterSourcePath = dlg.FileName;
+            }
+        }
+
+        [RelayCommand]
+        private void SelectColorFilterMask()
+        {
+            var dlg = new OpenFileDialog
+            {
+                Filter = "Image Files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                ColorFilterMaskPath = dlg.FileName;
+            }
+        }
+
+        [RelayCommand]
+        private void StartColorFilter()
+        {
+            if (string.IsNullOrEmpty(ColorFilterSourcePath))
+                return;
+
+            try
+            {
+                // 读取源图像
+                Mat sourceMat = Cv2.ImRead(ColorFilterSourcePath);
+                Mat resultMat = sourceMat.Clone();
+
+                // 如果有遮罩，应用遮罩
+                if (!string.IsNullOrEmpty(ColorFilterMaskPath))
+                {
+                    Mat maskMat = Cv2.ImRead(ColorFilterMaskPath);
+                    Cv2.CvtColor(maskMat, maskMat, ColorConversionCodes.BGR2GRAY);
+                    Cv2.BitwiseAnd(sourceMat, sourceMat, resultMat, maskMat);
+                }
+
+                // 获取选中的颜色（目标颜色）
+                var targetColor = GetColorFromHex(TargetColorHex);
+
+                // 创建1x1目标颜色图像
+                Mat targetBGR = new Mat(1, 1, MatType.CV_8UC3, new Scalar(targetColor.B, targetColor.G, targetColor.R));
+                Mat targetHSV = new Mat();
+                Cv2.CvtColor(targetBGR, targetHSV, ColorConversionCodes.BGR2HSV);
+                var targetHSVValue = targetHSV.Get<Vec3b>(0, 0); // H, S, V
+
+                // 转换源图像为HSV
+                Mat hsvMat = new Mat();
+                Cv2.CvtColor(resultMat, hsvMat, ColorConversionCodes.BGR2HSV);
+
+                // 构造HSV范围（Hue ±阈值, S/V较宽容）
+                Scalar lowerBound = new Scalar(
+                    Math.Max(0, targetHSVValue.Item0 - ColorThreshold),   // H
+                    Math.Max(50, targetHSVValue.Item1 - 50),              // S
+                    Math.Max(50, targetHSVValue.Item2 - 50));             // V
+
+                Scalar upperBound = new Scalar(
+                    Math.Min(180, targetHSVValue.Item0 + ColorThreshold),
+                    255,
+                    255);
+
+                // 创建掩码
+                Mat mask = new Mat();
+                Cv2.InRange(hsvMat, lowerBound, upperBound, mask);
+
+                // 创建黑色背景图像
+                Mat blackBackground = new Mat(resultMat.Size(), resultMat.Type(), Scalar.Black);
+
+                // 创建结果图像
+                Mat filteredImage = new Mat();
+                Cv2.BitwiseAnd(resultMat, resultMat, filteredImage, mask);
+
+                // 创建反掩码
+                Mat inverseMask = new Mat();
+                Cv2.BitwiseNot(mask, inverseMask);
+
+                // 将非目标颜色区域设为黑色
+                Mat blackAreas = new Mat();
+                Cv2.BitwiseAnd(blackBackground, blackBackground, blackAreas, inverseMask);
+
+                // 合并结果
+                Cv2.Add(filteredImage, blackAreas, resultMat);
+
+                // 显示结果图像
+                var bitmapSource = BitmapSourceConverter.ToBitmapSource(resultMat);
+                bitmapSource.Freeze();
+                ColorFilterResultImage = bitmapSource;
+
+                // 显示调试信息
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "调试信息",
+                    Content = $"目标颜色: {TargetColorHex}\n" +
+                             $"RGB值: R={targetColor.R}, G={targetColor.G}, B={targetColor.B}\n" +
+                             $"HSV值: H={targetHSVValue.Item0}, S={targetHSVValue.Item1}, V={targetHSVValue.Item2}\n" +
+                             $"HSV范围:\n" +
+                             $"    Lower: H={lowerBound.Val0}, S={lowerBound.Val1}, V={lowerBound.Val2}\n" +
+                             $"    Upper: H={upperBound.Val0}, S={upperBound.Val1}, V={upperBound.Val2}\n" +
+                             $"阈值: ±{ColorThreshold}",
+                };
+                _ = uiMessageBox.ShowDialogAsync();
+            }
+            catch (Exception ex)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "❎ 错误",
+                    Content = "色彩过滤失败：" + ex.Message,
+                };
+                _ = uiMessageBox.ShowDialogAsync();
+            }
+        }
+
     }
 }

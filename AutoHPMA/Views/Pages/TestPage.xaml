@@ -521,7 +521,7 @@
                                       ItemsSource="{Binding ViewModel.MatchModes}"
                                       SelectedItem="{Binding ViewModel.SelectedMatchMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
- 
+
                             <ui:Button Grid.Row="3" Grid.Column="1" Content="开始匹配" Command="{Binding ViewModel.TemplateMatchCommand}" Margin="4" HorizontalAlignment="Center" Grid.ColumnSpan="1"/>
                         </Grid>
 
@@ -741,6 +741,68 @@
                         </Border>
                     </StackPanel>
                 </TabItem>
+                <!-- 色彩过滤 -->
+                <TabItem MaxWidth="100">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Margin="0,0,6,0" Symbol="Color24" />
+                            <TextBlock Text="色彩过滤" FontWeight="Bold" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <StackPanel Margin="0,10,0,0" Orientation="Vertical">
+                        <Grid Margin="0,0,0,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox 
+                                Grid.Row="0" 
+                                Grid.Column="0" 
+                                Text="{Binding ViewModel.ColorFilterSourcePath, TargetNullValue='请点击按钮选择源图→'}" 
+                                VerticalAlignment="Center" 
+                                Margin="4"
+                                IsReadOnly="True"/>
+                            <ui:Button Grid.Row="0" Grid.Column="1" Content="选择源图" Command="{Binding ViewModel.SelectColorFilterSourceCommand}" Margin="4"/>
+
+                            <TextBox 
+                                Grid.Row="1" 
+                                Grid.Column="0" 
+                                Text="{Binding ViewModel.ColorFilterMaskPath, TargetNullValue='请点击按钮选择遮罩→'}" 
+                                VerticalAlignment="Center" 
+                                Margin="4"
+                                IsReadOnly="True"/>
+                            <ui:Button Grid.Row="1" Grid.Column="1" Content="选择遮罩" Command="{Binding ViewModel.SelectColorFilterMaskCommand}" Margin="4"/>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="4">
+                                <ui:TextBlock Text="目标颜色：" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBox Width="120" Margin="0,0,20,0" 
+                                        Text="{Binding ViewModel.TargetColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        MaxLength="6"
+                                        />
+                                <ui:TextBlock Text="阈值：" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <ui:NumberBox Value="{Binding ViewModel.ColorThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" Width="200"/>
+                            </StackPanel>
+
+                            <ui:Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" 
+                                     Content="开始过滤" 
+                                     Command="{Binding ViewModel.StartColorFilterCommand}" 
+                                     Margin="4"/>
+                        </Grid>
+
+                        <Image Source="{Binding ViewModel.ColorFilterResultImage}" 
+                               Margin="0,10,0,0" 
+                               Stretch="Uniform" 
+                               MaxHeight="500"/>
+                    </StackPanel>
+                </TabItem>
+                
             </TabControl>
         </Border>
     </StackPanel>
