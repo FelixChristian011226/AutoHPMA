@@ -526,7 +526,7 @@
                         </Grid>
 
                         <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="4">
-                            <Image Source="{Binding ViewModel.ResultImage}" Stretch="Uniform" Height="300"/>
+                            <Image Source="{Binding ViewModel.ResultImage}" Stretch="Uniform" Height="Auto" MinHeight="300" />
                         </Border>
                     </StackPanel>
                 </TabItem>

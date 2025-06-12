@@ -138,9 +138,8 @@ namespace AutoHPMA.Helpers
             
             // 高斯模糊去噪
             Mat blurred = new Mat();
-            blurred = gray;
-            //Cv2.GaussianBlur(gray, blurred, new Size(9, 9), 2, 2);
-            
+            Cv2.GaussianBlur(gray, blurred, new Size(9, 9), 2, 2);
+
             // 霍夫圆变换检测圆形
             var circles = Cv2.HoughCircles(
                 blurred,
