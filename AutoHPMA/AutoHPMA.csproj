@@ -78,6 +78,8 @@
     <None Remove="Assets\Cooking\Image\Ingredients\rice.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\oven.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\pot.png" />
+    <None Remove="Assets\Cooking\Image\Order\order.png" />
+    <None Remove="Assets\Cooking\Image\Order\red_order.png" />
     <None Remove="Assets\ForbiddenForest\auto.png" />
     <None Remove="Assets\ForbiddenForest\Image\ui_clock.png" />
     <None Remove="Assets\ForbiddenForest\Image\ui_explore.png" />
@@ -200,6 +202,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Kitchenware\pot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Order\order.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Order\red_order.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ForbiddenForest\Image\team_auto.png">

@@ -8,8 +8,10 @@ using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using static AutoHPMA.Helpers.WindowInteractionHelper;
+using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
 
@@ -39,8 +41,10 @@ public class AutoCooking : IGameTask
     private Mat? captureMat;
     private Mat oven, pot;
     private Mat rice, fish;
+    private Mat order, red_order;
 
     private List<Rect> detect_rects = new List<Rect>();
+    private List<Rect> order_rects = new List<Rect>();
 
     private bool initialized = false;
     private int _autoCookingTimes;
@@ -48,6 +52,10 @@ public class AutoCooking : IGameTask
 
     private Rect oven_rect, pot_rect;
     private Rect rice_rect, fish_rect;
+
+    private Point oven_center, pot_center;
+    private Point rice_center, fish_center;
+    private Point next_order;
 
     private CancellationTokenSource _cts;
     public event EventHandler? TaskCompleted;
@@ -83,6 +91,14 @@ public class AutoCooking : IGameTask
                 if(!initialized)
                 {
                     Initialize();
+                }
+                if (LocateOrders())
+                {
+                    _logger.LogDebug("订单提交坐标：（" + next_order.X + "," + next_order.Y + "）。");
+                }
+                else
+                {
+                    _logger.LogDebug("未定位到订单，即将尝试重新定位。");
                 }
                 
             }
@@ -132,7 +148,7 @@ public class AutoCooking : IGameTask
 
     private bool LocateKitchenWare()
     {
-        double threshold = 0.9;
+        double threshold = 0.85;
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
@@ -167,7 +183,7 @@ public class AutoCooking : IGameTask
 
     private bool LocateIngredients()
     {
-        double threshold = 0.9;
+        double threshold = 0.85;
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
@@ -199,12 +215,76 @@ public class AutoCooking : IGameTask
         return true;
     }
 
+    private bool LocateOrders()
+    {
+        double threshold = 0.9;
+        next_order = default;
+        detect_rects.Clear();
+        captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
+        Mat maskMat;
+
+        using (var red_orderBGR = red_order.Clone())
+        {
+            Cv2.CvtColor(red_orderBGR, red_orderBGR, ColorConversionCodes.BGRA2BGR);
+            maskMat = MatchTemplateHelper.GenerateMask(red_order);
+            var matches = MatchTemplateHelper.MatchOnePicForOnePic(
+                captureMat,
+                red_orderBGR,
+                TemplateMatchModes.SqDiffNormed,
+                maskMat,
+                threshold
+            );
+
+            if(matches.Count != 0)
+            {
+                next_order = new Point(matches[0].X + order.Width / 2, matches[0].Y + order.Height / 2);
+                foreach (var rect in matches)
+                {
+                    detect_rects.Add(ScaleRect(rect, scale));
+                }
+            }
+        }
+
+        using (var orderBGR = order.Clone())
+        {
+            Cv2.CvtColor(orderBGR, orderBGR, ColorConversionCodes.BGRA2BGR);
+            maskMat = MatchTemplateHelper.GenerateMask(order);
+            var matches = MatchTemplateHelper.MatchOnePicForOnePic(
+                captureMat,
+                orderBGR,
+                TemplateMatchModes.SqDiffNormed,
+                maskMat,
+                threshold
+            );
+
+            if (matches.Count != 0)
+            {
+                if(next_order == default)
+                    next_order = new Point(matches[0].X + order.Width / 2, matches[0].Y + order.Height / 2);
+                foreach (var rect in matches)
+                {
+                    detect_rects.Add(ScaleRect(rect, scale));
+                }
+            }
+
+        }
+
+        _maskWindow.SetLayerRects("Orders", detect_rects);
+        if (next_order != default)
+            return true;
+        return false;
+
+    }
+
     private void AddLayersForMaskWindow()
     {
         _maskWindow.AddLayer("Match");
         _maskWindow.AddLayer("Kitchenware");
         _maskWindow.AddLayer("Condiments");
         _maskWindow.AddLayer("Ingredients");
+        _maskWindow.AddLayer("Orders");
     }
 
     public void LoadAssets()
@@ -218,6 +298,10 @@ public class AutoCooking : IGameTask
         //Ingredients
         rice = Cv2.ImRead(image_folder + "Ingredients/rice.png", ImreadModes.Unchanged);
         fish = Cv2.ImRead(image_folder + "Ingredients/fish.png", ImreadModes.Unchanged);
+
+        //Orders
+        order = Cv2.ImRead(image_folder + "Order/order.png", ImreadModes.Unchanged);
+        red_order = Cv2.ImRead(image_folder + "Order/red_order.png", ImreadModes.Unchanged);
 
     }
 
