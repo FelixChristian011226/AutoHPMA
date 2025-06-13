@@ -22,7 +22,7 @@ using System.Windows.Threading;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
 using AutoHPMA.Config;
-using AutoHPMA.Helpers;
+using AutoHPMA.Helpers.LogHelper;
 
 namespace AutoHPMA
 {

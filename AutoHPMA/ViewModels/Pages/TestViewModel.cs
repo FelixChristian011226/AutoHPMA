@@ -1,5 +1,6 @@
 ﻿using AutoHPMA.Helpers;
 using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Helpers.ImageHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Messages;
 using AutoHPMA.Views.Windows;

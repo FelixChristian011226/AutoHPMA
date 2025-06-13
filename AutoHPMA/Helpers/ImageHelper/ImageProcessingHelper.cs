@@ -4,7 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Helpers.ImageHelper
 {
     /// <summary>
     /// 图像处理

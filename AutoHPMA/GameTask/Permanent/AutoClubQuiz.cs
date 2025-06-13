@@ -1,5 +1,7 @@
 ﻿using AutoHPMA.Helpers;
 using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Helpers.DataHelper;
+using AutoHPMA.Helpers.ImageHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;

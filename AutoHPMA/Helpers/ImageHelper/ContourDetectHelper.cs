@@ -8,7 +8,7 @@ using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
 
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Helpers.ImageHelper
 {
     public class ContourDetectHelper
     {

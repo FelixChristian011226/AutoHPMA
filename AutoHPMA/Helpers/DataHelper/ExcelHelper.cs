@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using OfficeOpenXml;
 
-namespace AutoHPMA.Helpers;
+namespace AutoHPMA.Helpers.DataHelper;
 
 public class ExcelHelper
 {

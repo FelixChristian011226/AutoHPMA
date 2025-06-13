@@ -3,7 +3,7 @@ using Serilog.Events;
 using AutoHPMA.Views.Windows;
 using AutoHPMA.Services;
 
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Helpers.LogHelper
 {
     public class LogWindowSink : ILogEventSink
     {

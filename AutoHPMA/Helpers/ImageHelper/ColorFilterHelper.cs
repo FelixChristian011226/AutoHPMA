@@ -2,7 +2,7 @@ using OpenCvSharp;
 using System;
 using System.Windows.Media;
 
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Helpers.ImageHelper
 {
     public class ColorFilterHelper
     {
@@ -11,7 +11,7 @@ namespace AutoHPMA.Helpers
         /// </summary>
         /// <param name="hex">十六进制颜色字符串（如"ffffff"）</param>
         /// <returns>Color对象</returns>
-        public static System.Windows.Media.Color GetColorFromHex(string hex)
+        public static Color GetColorFromHex(string hex)
         {
             try
             {
@@ -19,12 +19,12 @@ namespace AutoHPMA.Helpers
                 hex = hex.PadRight(6, '0');
                 // 添加FF作为Alpha通道
                 hex = "FF" + hex;
-                return (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#" + hex);
+                return (Color)ColorConverter.ConvertFromString("#" + hex);
             }
             catch
             {
                 // 如果转换失败，返回红色
-                return System.Windows.Media.Colors.Red;
+                return Colors.Red;
             }
         }
 

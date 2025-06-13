@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
 
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Helpers.ImageHelper
 {
     /// <summary>
     /// 模板匹配

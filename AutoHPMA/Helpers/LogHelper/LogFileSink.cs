@@ -7,7 +7,7 @@ using System.Text;
 using System.Linq;
 using AutoHPMA.Config;
 
-namespace AutoHPMA.Helpers
+namespace AutoHPMA.Helpers.LogHelper
 {
     public class LogFileSink : ILogEventSink
     {

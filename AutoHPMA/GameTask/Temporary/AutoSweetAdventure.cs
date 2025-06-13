@@ -1,5 +1,5 @@
-﻿using AutoHPMA.Helpers;
-using AutoHPMA.Helpers.CaptureHelper;
+﻿using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Helpers.ImageHelper;
 using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
 using Microsoft.Extensions.Logging;
