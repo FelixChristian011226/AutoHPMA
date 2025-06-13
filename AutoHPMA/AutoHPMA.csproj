@@ -74,6 +74,10 @@
     <None Remove="Assets\ClubQuiz\question_LT.png" />
     <None Remove="Assets\ClubQuiz\question_RB.png" />
     <None Remove="Assets\club_question_bank.xlsx" />
+    <None Remove="Assets\Cooking\Image\Ingredients\fish.png" />
+    <None Remove="Assets\Cooking\Image\Ingredients\rice.png" />
+    <None Remove="Assets\Cooking\Image\Kitchenware\oven.png" />
+    <None Remove="Assets\Cooking\Image\Kitchenware\pot.png" />
     <None Remove="Assets\ForbiddenForest\auto.png" />
     <None Remove="Assets\ForbiddenForest\Image\ui_clock.png" />
     <None Remove="Assets\ForbiddenForest\Image\ui_explore.png" />
@@ -186,6 +190,18 @@
     <Content Include="Assets\ClubQuiz\Image\ui_club_symbol.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Image\Ingredients\fish.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Ingredients\rice.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Kitchenware\oven.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Kitchenware\pot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\ForbiddenForest\Image\team_auto.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -268,6 +284,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Assets\Cooking\Image\Condiment\" />
     <Folder Include="Config\" />
     <Folder Include="Views\Controls\Style\" />
   </ItemGroup>
