@@ -494,61 +494,25 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 // 读取源图像
                 Mat sourceMat = Cv2.ImRead(ColorFilterSourcePath);
-                Mat resultMat = sourceMat.Clone();
+                if (sourceMat.Empty())
+                    throw new Exception("无法读取源图像");
 
-                // 如果有遮罩，应用遮罩
+                // 读取遮罩图像（如果有）
+                Mat? maskMat = null;
                 if (!string.IsNullOrEmpty(ColorFilterMaskPath))
                 {
-                    Mat maskMat = Cv2.ImRead(ColorFilterMaskPath);
-                    Cv2.CvtColor(maskMat, maskMat, ColorConversionCodes.BGR2GRAY);
-                    Cv2.BitwiseAnd(sourceMat, sourceMat, resultMat, maskMat);
+                    maskMat = Cv2.ImRead(ColorFilterMaskPath);
+                    if (maskMat.Empty())
+                        throw new Exception("无法读取遮罩图像");
                 }
 
-                // 获取选中的颜色（目标颜色）
-                var targetColor = GetColorFromHex(TargetColorHex);
-
-                // 创建1x1目标颜色图像
-                Mat targetBGR = new Mat(1, 1, MatType.CV_8UC3, new Scalar(targetColor.B, targetColor.G, targetColor.R));
-                Mat targetHSV = new Mat();
-                Cv2.CvtColor(targetBGR, targetHSV, ColorConversionCodes.BGR2HSV);
-                var targetHSVValue = targetHSV.Get<Vec3b>(0, 0); // H, S, V
-
-                // 转换源图像为HSV
-                Mat hsvMat = new Mat();
-                Cv2.CvtColor(resultMat, hsvMat, ColorConversionCodes.BGR2HSV);
-
-                // 构造HSV范围（Hue ±阈值, S/V较宽容）
-                Scalar lowerBound = new Scalar(
-                    Math.Max(0, targetHSVValue.Item0 - ColorThreshold),   // H
-                    Math.Max(50, targetHSVValue.Item1 - 50),              // S
-                    Math.Max(50, targetHSVValue.Item2 - 50));             // V
-
-                Scalar upperBound = new Scalar(
-                    Math.Min(180, targetHSVValue.Item0 + ColorThreshold),
-                    255,
-                    255);
-
-                // 创建掩码
-                Mat mask = new Mat();
-                Cv2.InRange(hsvMat, lowerBound, upperBound, mask);
-
-                // 创建黑色背景图像
-                Mat blackBackground = new Mat(resultMat.Size(), resultMat.Type(), Scalar.Black);
-
-                // 创建结果图像
-                Mat filteredImage = new Mat();
-                Cv2.BitwiseAnd(resultMat, resultMat, filteredImage, mask);
-
-                // 创建反掩码
-                Mat inverseMask = new Mat();
-                Cv2.BitwiseNot(mask, inverseMask);
-
-                // 将非目标颜色区域设为黑色
-                Mat blackAreas = new Mat();
-                Cv2.BitwiseAnd(blackBackground, blackBackground, blackAreas, inverseMask);
-
-                // 合并结果
-                Cv2.Add(filteredImage, blackAreas, resultMat);
+                // 使用ColorFilterHelper进行颜色过滤
+                var resultMat = ColorFilterHelper.FilterColor(
+                    sourceMat,
+                    maskMat,
+                    TargetColorHex,
+                    ColorThreshold
+                );
 
                 // 显示结果图像
                 var bitmapSource = BitmapSourceConverter.ToBitmapSource(resultMat);
@@ -556,15 +520,12 @@ namespace AutoHPMA.ViewModels.Pages
                 ColorFilterResultImage = bitmapSource;
 
                 // 显示调试信息
+                var targetColor = ColorFilterHelper.GetColorFromHex(TargetColorHex);
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
                     Title = "调试信息",
                     Content = $"目标颜色: {TargetColorHex}\n" +
                              $"RGB值: R={targetColor.R}, G={targetColor.G}, B={targetColor.B}\n" +
-                             $"HSV值: H={targetHSVValue.Item0}, S={targetHSVValue.Item1}, V={targetHSVValue.Item2}\n" +
-                             $"HSV范围:\n" +
-                             $"    Lower: H={lowerBound.Val0}, S={lowerBound.Val1}, V={lowerBound.Val2}\n" +
-                             $"    Upper: H={upperBound.Val0}, S={upperBound.Val1}, V={upperBound.Val2}\n" +
                              $"阈值: ±{ColorThreshold}",
                 };
                 _ = uiMessageBox.ShowDialogAsync();
