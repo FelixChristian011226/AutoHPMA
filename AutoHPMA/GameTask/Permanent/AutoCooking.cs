@@ -39,7 +39,7 @@ public class AutoCooking : IGameTask
     private AutoCookingState _state = AutoCookingState.Outside;
 
     private Mat? captureMat;
-    private Mat oven, pot;
+    private Mat board, oven, pot;
     private Mat rice, fish;
     private Mat order, red_order;
 
@@ -50,10 +50,10 @@ public class AutoCooking : IGameTask
     private int _autoCookingTimes;
     private int round = 0;
 
-    private Rect oven_rect, pot_rect;
+    private Rect board_rect, oven_rect, pot_rect;
     private Rect rice_rect, fish_rect;
 
-    private Point oven_center, pot_center;
+    private Point board_center, oven_center, pot_center;
     private Point rice_center, fish_center;
     private Point next_order;
 
@@ -91,6 +91,7 @@ public class AutoCooking : IGameTask
                 if(!initialized)
                 {
                     Initialize();
+                    continue;
                 }
                 if (LocateOrders())
                 {
@@ -98,7 +99,7 @@ public class AutoCooking : IGameTask
                 }
                 else
                 {
-                    _logger.LogDebug("未定位到订单，即将尝试重新定位。");
+                    //_logger.LogDebug("未定位到订单，即将尝试重新定位。");
                 }
                 
             }
@@ -129,7 +130,7 @@ public class AutoCooking : IGameTask
         }
         else
         {
-            _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) });
+            _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(board_rect, scale), ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) });
         }
         if(!LocateIngredients())
         {
@@ -152,32 +153,47 @@ public class AutoCooking : IGameTask
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
+
+        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, board, TemplateMatchModes.CCoeffNormed, null, threshold);
+        if (matchpoint == default)
+        {
+            return false;
+        }
+        else
+        {
+            board_rect = new Rect(matchpoint.X, matchpoint.Y, board.Width, board.Height);
+            board_center = new Point(matchpoint.X + board.Width/2, matchpoint.Y + board.Height/2);
+        }
+
         Mat maskMat;
         using (var ovenBGR = oven.Clone())
         {
             Cv2.CvtColor(ovenBGR, ovenBGR, ColorConversionCodes.BGRA2BGR);
             maskMat = MatchTemplateHelper.GenerateMask(oven);
-            var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, ovenBGR, TemplateMatchModes.CCoeffNormed, maskMat, threshold);
+            matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, ovenBGR, TemplateMatchModes.CCoeffNormed, maskMat, threshold);
             if(matchpoint == default)
             {
                 //_logger.LogDebug("未定位到烤箱，即将重试。");
                 return false;
             }
             oven_rect = new Rect(matchpoint.X, matchpoint.Y, oven.Width, oven.Height);
+            oven_center = new Point(matchpoint.X + oven.Width / 2, matchpoint.Y + oven.Height / 2);
         }
 
         using (var potBGR = pot.Clone())
         {
             Cv2.CvtColor(potBGR, potBGR, ColorConversionCodes.BGRA2BGR);
             maskMat = MatchTemplateHelper.GenerateMask(pot);
-            var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, potBGR, TemplateMatchModes.CCoeffNormed, maskMat, threshold);
+            matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, potBGR, TemplateMatchModes.CCoeffNormed, maskMat, threshold);
             if(matchpoint == default) 
             {
                 //_logger.LogDebug("未定位到锅，即将重试。");
                 return false;
             }
             pot_rect = new Rect(matchpoint.X, matchpoint.Y, pot.Width, pot.Height);
+            pot_center = new Point(matchpoint.X + pot.Width / 2, matchpoint.Y + pot.Height / 2);
         }
+
         return true;
     }
 
@@ -199,6 +215,7 @@ public class AutoCooking : IGameTask
                 return false;
             }
             rice_rect = new Rect(matchpoint.X, matchpoint.Y, rice.Width, rice.Height);
+            rice_center = new Point(matchpoint.X + rice.Width / 2, matchpoint.Y + rice.Height / 2);
         }
         using (var fishBGR = fish.Clone())
         {
@@ -211,6 +228,7 @@ public class AutoCooking : IGameTask
                 return false;
             }
             fish_rect = new Rect(matchpoint.X, matchpoint.Y, fish.Width, fish.Height);
+            fish_center = new Point(matchpoint.X + fish.Width / 2, matchpoint.Y + fish.Height / 2);
         }
         return true;
     }
@@ -291,6 +309,7 @@ public class AutoCooking : IGameTask
     {
         string image_folder = "Assets/Cooking/Image/";
         //Kitchenware
+        board = Cv2.ImRead(image_folder + "Kitchenware/board.png");
         oven = Cv2.ImRead(image_folder + "Kitchenware/oven.png", ImreadModes.Unchanged);
         pot = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
         //Condiments
