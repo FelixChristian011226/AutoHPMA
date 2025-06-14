@@ -80,6 +80,7 @@
     <None Remove="Assets\Cooking\Image\Kitchenware\oven.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\oven_ring.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\pot.png" />
+    <None Remove="Assets\Cooking\Image\Kitchenware\pot_ring.png" />
     <None Remove="Assets\Cooking\Image\Order\order.png" />
     <None Remove="Assets\Cooking\Image\Order\red_order.png" />
     <None Remove="Assets\ForbiddenForest\auto.png" />
@@ -210,6 +211,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Kitchenware\pot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Kitchenware\pot_ring.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Order\order.png">

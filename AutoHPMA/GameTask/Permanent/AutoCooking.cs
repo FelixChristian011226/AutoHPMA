@@ -50,7 +50,7 @@ public class AutoCooking : IGameTask
     private Mat board, oven, pot;
     private Mat rice, fish;
     private Mat order, red_order;
-    private Mat oven_ring;
+    private Mat oven_ring, pot_ring;
 
     private List<Rect> detect_rects = new List<Rect>();
     private List<Rect> order_rects = new List<Rect>();
@@ -65,6 +65,9 @@ public class AutoCooking : IGameTask
     private Point board_center, oven_center, pot_center;
     private Point rice_center, fish_center;
     private Point next_order;
+
+    private (CookingStatus status, double progress) _ovenStatus = (CookingStatus.Idle, 0);
+    private (CookingStatus status, double progress) _potStatus = (CookingStatus.Idle, 0);
 
     private CancellationTokenSource _cts;
     public event EventHandler? TaskCompleted;
@@ -103,7 +106,9 @@ public class AutoCooking : IGameTask
                     continue;
                 }
 
-                UpdateOvenStatus();
+                _ovenStatus = GetOvenStatus();
+                _potStatus = GetPotStatus();
+                UpdateKitchenwareStatus();
                 //DragMove(ref fish_center, ref oven_center, 250 );
                 //DragMove(ref rice_center, ref pot_center, 250 );
                 //await Task.Delay(3000, _cts.Token);
@@ -143,7 +148,7 @@ public class AutoCooking : IGameTask
         }
         else
         {
-            UpdateOvenStatus();
+            _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) });
         }
         if(!LocateIngredients())
         {
@@ -350,6 +355,7 @@ public class AutoCooking : IGameTask
         oven = Cv2.ImRead(image_folder + "Kitchenware/oven.png", ImreadModes.Unchanged);
         pot = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
         oven_ring = Cv2.ImRead(image_folder + "Kitchenware/oven_ring.png");
+        pot_ring = Cv2.ImRead(image_folder + "Kitchenware/pot_ring.png");
         //Condiments
 
         //Ingredients
@@ -407,20 +413,58 @@ public class AutoCooking : IGameTask
         return (CookingStatus.Idle, 0);
     }
 
-    private void UpdateOvenStatus()
+    private (CookingStatus status, double progress) GetPotStatus()
     {
-        var (status, progress) = GetOvenStatus();
-        string displayText = status switch
+        captureMat = _capture.Capture();
+        using var potRegion = new Mat(captureMat, pot_rect);
+        using var mask = pot_ring.Clone();
+        Cv2.Resize(mask, mask, new Size(pot_rect.Width, pot_rect.Height));
+
+        // 检查烹饪进度（f6b622颜色）
+        double cookingPercentage = ColorFilterHelper.CalculateColorMatchPercentage(potRegion, mask, "f6b622", 5);
+        if (cookingPercentage > 0)
+        {
+            return (CookingStatus.Cooking, cookingPercentage);
+        }
+
+        // 检查是否完成（ed5432颜色）
+        double completedPercentage = ColorFilterHelper.CalculateColorMatchPercentage(potRegion, mask, "ed5432", 5);
+        if (completedPercentage > 0)
+        {
+            if (completedPercentage > 95)
+                return (CookingStatus.Overcooked, completedPercentage);
+            return (CookingStatus.Cooked, completedPercentage);
+        }
+
+        return (CookingStatus.Idle, 0);
+    }
+
+    private void UpdateKitchenwareStatus()
+    {
+        var textContents = new Dictionary<Rect, string>();
+        
+        // 更新烤箱状态
+        string ovenText = _ovenStatus.status switch
         {
             CookingStatus.Idle => "空闲",
-            CookingStatus.Cooking => $"烹饪中：{progress:F1}%",
-            CookingStatus.Cooked => $"已完成：{progress:F1}%",
+            CookingStatus.Cooking => $"烹饪中：{_ovenStatus.progress:F1}%",
+            CookingStatus.Cooked => $"已完成：{_ovenStatus.progress:F1}%",
             CookingStatus.Overcooked => "糊了！",
             _ => "未知状态"
         };
+        textContents[oven_rect] = ovenText;
 
-        var textContents = new Dictionary<Rect, string>();
-        textContents[oven_rect] = displayText;
+        // 更新锅状态
+        string potText = _potStatus.status switch
+        {
+            CookingStatus.Idle => "空闲",
+            CookingStatus.Cooking => $"烹饪中：{_potStatus.progress:F1}%",
+            CookingStatus.Cooked => $"已完成：{_potStatus.progress:F1}%",
+            CookingStatus.Overcooked => "糊了！",
+            _ => "未知状态"
+        };
+        textContents[pot_rect] = potText;
+
         _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(board_rect, scale), ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) }, textContents);
     }
 
