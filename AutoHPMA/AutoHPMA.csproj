@@ -78,6 +78,7 @@
     <None Remove="Assets\Cooking\Image\Ingredients\rice.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\board.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\oven.png" />
+    <None Remove="Assets\Cooking\Image\Kitchenware\oven_ring.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\pot.png" />
     <None Remove="Assets\Cooking\Image\Order\order.png" />
     <None Remove="Assets\Cooking\Image\Order\red_order.png" />
@@ -203,6 +204,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Kitchenware\oven.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Kitchenware\oven_ring.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Kitchenware\pot.png">

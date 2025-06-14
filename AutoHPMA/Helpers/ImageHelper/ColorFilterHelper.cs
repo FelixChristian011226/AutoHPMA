@@ -157,5 +157,69 @@ namespace AutoHPMA.Helpers.ImageHelper
 
             return FilterColor(sourceMat, maskMat, targetColorHex, colorThreshold);
         }
+
+        /// <summary>
+        /// 计算指定颜色在遮罩区域内的匹配百分比
+        /// </summary>
+        /// <param name="sourceMat">源图像</param>
+        /// <param name="maskMat">遮罩图像</param>
+        /// <param name="targetColorHex">目标颜色的十六进制值</param>
+        /// <param name="colorThreshold">颜色阈值</param>
+        /// <returns>匹配百分比（0-100）</returns>
+        public static double CalculateColorMatchPercentage(Mat sourceMat, Mat maskMat, string targetColorHex, int colorThreshold)
+        {
+            if (sourceMat == null || sourceMat.Empty())
+                throw new ArgumentException("源图像不能为空");
+            if (maskMat == null || maskMat.Empty())
+                throw new ArgumentException("遮罩图像不能为空");
+
+            // 将遮罩转换为灰度图并二值化
+            Mat grayMask = new Mat();
+            Cv2.CvtColor(maskMat, grayMask, ColorConversionCodes.BGR2GRAY);
+            Cv2.Threshold(grayMask, grayMask, 127, 255, ThresholdTypes.Binary);
+            
+            // 统计遮罩中的白色像素数量
+            int maskWhitePixels = Cv2.CountNonZero(grayMask);
+            if (maskWhitePixels == 0)
+                return 0;
+
+            // 获取目标颜色
+            var targetColor = GetColorFromHex(targetColorHex);
+
+            // 创建1x1目标颜色图像
+            Mat targetBGR = new Mat(1, 1, MatType.CV_8UC3, new Scalar(targetColor.B, targetColor.G, targetColor.R));
+            Mat targetHSV = new Mat();
+            Cv2.CvtColor(targetBGR, targetHSV, ColorConversionCodes.BGR2HSV);
+            var targetHSVValue = targetHSV.Get<Vec3b>(0, 0);
+
+            // 转换源图像为HSV
+            Mat hsvMat = new Mat();
+            Cv2.CvtColor(sourceMat, hsvMat, ColorConversionCodes.BGR2HSV);
+
+            // 构造HSV范围
+            Scalar lowerBound = new Scalar(
+                Math.Max(0, targetHSVValue.Item0 - colorThreshold),
+                Math.Max(50, targetHSVValue.Item1 - 50),
+                Math.Max(50, targetHSVValue.Item2 - 50));
+
+            Scalar upperBound = new Scalar(
+                Math.Min(180, targetHSVValue.Item0 + colorThreshold),
+                255,
+                255);
+
+            // 创建掩码
+            Mat colorMask = new Mat();
+            Cv2.InRange(hsvMat, lowerBound, upperBound, colorMask);
+
+            // 将颜色掩码与遮罩进行与运算，只保留遮罩区域内的匹配结果
+            Mat finalMask = new Mat();
+            Cv2.BitwiseAnd(colorMask, grayMask, finalMask);
+
+            // 统计匹配的像素数量
+            int matchedPixels = Cv2.CountNonZero(finalMask);
+
+            // 计算百分比
+            return (double)matchedPixels / maskWhitePixels * 100;
+        }
     }
 } 

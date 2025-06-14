@@ -42,6 +42,7 @@ public class AutoCooking : IGameTask
     private Mat board, oven, pot;
     private Mat rice, fish;
     private Mat order, red_order;
+    private Mat oven_ring;
 
     private List<Rect> detect_rects = new List<Rect>();
     private List<Rect> order_rects = new List<Rect>();
@@ -93,17 +94,18 @@ public class AutoCooking : IGameTask
                     Initialize();
                     continue;
                 }
-                    
-                DragMove(ref fish_center, ref oven_center, 250 );
-                DragMove(ref rice_center, ref pot_center, 250 );
-                await Task.Delay(3000, _cts.Token);
-                DragMove(ref oven_center, ref board_center, 250 );
-                DragMove(ref pot_center, ref board_center, 250 );
-                await Task.Delay(500, _cts.Token);
 
-                LocateOrders();
-                _logger.LogDebug("订单提交坐标：（" + next_order.X + "," + next_order.Y + "）。");
-                DragMove(ref board_center, ref next_order, 250 );
+                _logger.LogInformation("烤箱进度：" + CalculateOvenColorMatchPercentage());
+                //DragMove(ref fish_center, ref oven_center, 250 );
+                //DragMove(ref rice_center, ref pot_center, 250 );
+                //await Task.Delay(3000, _cts.Token);
+                //DragMove(ref oven_center, ref board_center, 250 );
+                //DragMove(ref pot_center, ref board_center, 250 );
+                //await Task.Delay(500, _cts.Token);
+
+                //LocateOrders();
+                //_logger.LogDebug("订单提交坐标：（" + next_order.X + "," + next_order.Y + "）。");
+                //DragMove(ref board_center, ref next_order, 250 );
 
             }
         }
@@ -133,6 +135,7 @@ public class AutoCooking : IGameTask
         }
         else
         {
+            _logger.LogInformation("Oven_Rect: {x} {y} {w} {h}", oven_rect.X, oven_rect.Y, oven_rect.Width, oven_rect.Height);
             _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(board_rect, scale), ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) });
         }
         if(!LocateIngredients())
@@ -339,6 +342,7 @@ public class AutoCooking : IGameTask
         board = Cv2.ImRead(image_folder + "Kitchenware/board.png");
         oven = Cv2.ImRead(image_folder + "Kitchenware/oven.png", ImreadModes.Unchanged);
         pot = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
+        oven_ring = Cv2.ImRead(image_folder + "Kitchenware/oven_ring.png");
         //Condiments
 
         //Ingredients
@@ -348,7 +352,6 @@ public class AutoCooking : IGameTask
         //Orders
         order = Cv2.ImRead(image_folder + "Order/order.png", ImreadModes.Unchanged);
         red_order = Cv2.ImRead(image_folder + "Order/red_order.png", ImreadModes.Unchanged);
-
     }
 
     private void CalOffset()
@@ -369,6 +372,21 @@ public class AutoCooking : IGameTask
             (int)(rect.Width * scale),
             (int)(rect.Height * scale)
         );
+    }
+
+    private double CalculateOvenColorMatchPercentage()
+    {
+        captureMat = _capture.Capture();
+
+        // 获取烤箱区域的图像
+        using var ovenRegion = new Mat(captureMat, oven_rect);
+        
+        // 确保mask尺寸与烤箱区域匹配
+        using var mask = oven_ring.Clone();
+        Cv2.Resize(mask, mask, new Size(oven_rect.Width, oven_rect.Height));
+        
+        // 计算色彩匹配百分比，目标颜色为f6b622，阈值为5
+        return ColorFilterHelper.CalculateColorMatchPercentage(ovenRegion, mask, "f6b622", 5);
     }
 
     #region SetParameter
