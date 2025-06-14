@@ -110,6 +110,7 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty] private string _targetColorHex = "ffffff";
         [ObservableProperty] private int _colorThreshold = 30;
         [ObservableProperty] private System.Windows.Media.ImageSource? _colorFilterResultImage;
+        [ObservableProperty] private string _colorFilterStats = string.Empty;
 
         private System.Windows.Media.Color GetColorFromHex(string hex)
         {
@@ -520,6 +521,16 @@ namespace AutoHPMA.ViewModels.Pages
                 bitmapSource.Freeze();
                 ColorFilterResultImage = bitmapSource;
 
+                // 获取统计结果
+                int maskWhitePixels = resultMat.Get<int>(ColorFilterHelper.KEY_MASK_WHITE_PIXELS);
+                int filteredPixels = resultMat.Get<int>(ColorFilterHelper.KEY_FILTERED_PIXELS);
+                double percentage = maskWhitePixels > 0 ? (double)filteredPixels / maskWhitePixels * 100 : 0;
+
+                // 更新统计信息
+                ColorFilterStats = $"遮罩白色像素数: {maskWhitePixels}\n" +
+                                 $"过滤后像素数: {filteredPixels}\n" +
+                                 $"占比: {percentage:F2}%";
+
                 // 显示调试信息
                 var targetColor = ColorFilterHelper.GetColorFromHex(TargetColorHex);
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
@@ -527,7 +538,8 @@ namespace AutoHPMA.ViewModels.Pages
                     Title = "调试信息",
                     Content = $"目标颜色: {TargetColorHex}\n" +
                              $"RGB值: R={targetColor.R}, G={targetColor.G}, B={targetColor.B}\n" +
-                             $"阈值: ±{ColorThreshold}",
+                             $"阈值: ±{ColorThreshold}\n\n" +
+                             ColorFilterStats,
                 };
                 _ = uiMessageBox.ShowDialogAsync();
             }

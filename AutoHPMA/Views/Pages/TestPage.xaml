@@ -756,6 +756,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -794,6 +795,12 @@
                                      Content="开始过滤" 
                                      Command="{Binding ViewModel.StartColorFilterCommand}" 
                                      Margin="4"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                     Text="{Binding ViewModel.ColorFilterStats}"
+                                     TextWrapping="Wrap"
+                                     Margin="4"
+                                     Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </Grid>
 
                         <Image Source="{Binding ViewModel.ColorFilterResultImage}" 
