@@ -48,6 +48,19 @@ namespace AutoHPMA.Helpers.ImageHelper
             {
                 Mat grayMask = new Mat();
                 Cv2.CvtColor(maskMat, grayMask, ColorConversionCodes.BGR2GRAY);
+                // 将遮罩二值化
+                Cv2.Threshold(grayMask, grayMask, 127, 255, ThresholdTypes.Binary);
+                // 创建反遮罩
+                Mat maskInverse = new Mat();
+                Cv2.BitwiseNot(grayMask, maskInverse);
+                
+                // 创建黑色背景
+                Mat blackBg = new Mat(sourceMat.Size(), sourceMat.Type(), Scalar.Black);
+                
+                // 将遮罩区域设为黑色
+                Cv2.BitwiseAnd(blackBg, blackBg, resultMat, maskInverse);
+                
+                // 将非遮罩区域保留原图
                 Cv2.BitwiseAnd(sourceMat, sourceMat, resultMat, grayMask);
             }
 
