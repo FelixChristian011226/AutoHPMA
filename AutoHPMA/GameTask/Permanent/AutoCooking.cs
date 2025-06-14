@@ -93,15 +93,18 @@ public class AutoCooking : IGameTask
                     Initialize();
                     continue;
                 }
-                if (LocateOrders())
-                {
-                    _logger.LogDebug("订单提交坐标：（" + next_order.X + "," + next_order.Y + "）。");
-                }
-                else
-                {
-                    //_logger.LogDebug("未定位到订单，即将尝试重新定位。");
-                }
-                
+                    
+                DragMove(ref fish_center, ref oven_center, 250 );
+                DragMove(ref rice_center, ref pot_center, 250 );
+                await Task.Delay(3000, _cts.Token);
+                DragMove(ref oven_center, ref board_center, 250 );
+                DragMove(ref pot_center, ref board_center, 250 );
+                await Task.Delay(500, _cts.Token);
+
+                LocateOrders();
+                _logger.LogDebug("订单提交坐标：（" + next_order.X + "," + next_order.Y + "）。");
+                DragMove(ref board_center, ref next_order, 250 );
+
             }
         }
         catch (TaskCanceledException)
@@ -280,7 +283,18 @@ public class AutoCooking : IGameTask
             if (matches.Count != 0)
             {
                 if(next_order == default)
-                    next_order = new Point(matches[0].X + order.Width / 2, matches[0].Y + order.Height / 2);
+                {
+                    int min_X = matches[0].X;
+                    // 选择X最小的match
+                    foreach (var rect in matches)
+                    {
+                        if(rect.X <= min_X)
+                        {
+                            next_order.X = rect.X + order.Width/2;
+                            next_order.Y = rect.Y + order.Height/2;
+                        }
+                    }
+                }
                 foreach (var rect in matches)
                 {
                     detect_rects.Add(ScaleRect(rect, scale));
@@ -294,6 +308,19 @@ public class AutoCooking : IGameTask
             return true;
         return false;
 
+    }
+
+    private bool DragMove(ref Point start, ref Point end, int duration = 500)
+    {
+        SendMouseDragWithNoise(
+            _gameHwnd,
+            (uint)(start.X * scale - offsetX),
+            (uint)(start.Y * scale - offsetY),
+            (uint)(end.X * scale - offsetX),
+            (uint)(end.Y * scale - offsetY),
+            duration
+        );
+        return true;
     }
 
     private void AddLayersForMaskWindow()
