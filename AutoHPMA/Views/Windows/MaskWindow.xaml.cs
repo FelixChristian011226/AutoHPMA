@@ -22,6 +22,7 @@ namespace AutoHPMA.Views.Windows
         {
             public Canvas Canvas { get; }
             public List<Rect> Rects { get; } = new List<Rect>();
+            public Dictionary<Rect, string> TextContents { get; } = new Dictionary<Rect, string>();
             public Layer(string name)
             {
                 Canvas = new Canvas { Name = name, Background = Brushes.Transparent };
@@ -58,14 +59,22 @@ namespace AutoHPMA.Views.Windows
         }
 
         /// <summary>
-        /// 设置指定图层的矩形列表（覆盖式更新）
+        /// 设置指定图层的矩形列表和文字内容（覆盖式更新）
         /// </summary>
-        public void SetLayerRects(string layerName, List<Rect> rects)
+        public void SetLayerRects(string layerName, List<Rect> rects, Dictionary<Rect, string> textContents = null)
         {
             EnsureLayer(layerName);
             var layer = _layers[layerName];
             layer.Rects.Clear();
             layer.Rects.AddRange(rects);
+            if (textContents != null)
+            {
+                layer.TextContents.Clear();
+                foreach (var kvp in textContents)
+                {
+                    layer.TextContents[kvp.Key] = kvp.Value;
+                }
+            }
             RedrawLayer(layer);
         }
 
@@ -151,6 +160,21 @@ namespace AutoHPMA.Views.Windows
                 Canvas.SetLeft(shape, rect.X * dpiX);
                 Canvas.SetTop(shape, rect.Y * dpiY);
                 canvas.Children.Add(shape);
+
+                // 如果有对应的文字内容，添加TextBlock
+                if (layer.TextContents.TryGetValue(rect, out string text))
+                {
+                    var textBlock = new TextBlock
+                    {
+                        Text = text,
+                        Foreground = Brushes.White,
+                        FontSize = 14,
+                        FontWeight = FontWeights.Bold
+                    };
+                    Canvas.SetLeft(textBlock, rect.X * dpiX + 5);
+                    Canvas.SetTop(textBlock, rect.Y * dpiY + 5);
+                    canvas.Children.Add(textBlock);
+                }
             }
         }
 

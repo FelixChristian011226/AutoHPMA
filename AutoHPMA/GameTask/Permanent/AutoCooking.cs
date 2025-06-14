@@ -26,6 +26,14 @@ public enum AutoCookingState
     Summary,
 }
 
+public enum CookingStatus
+{
+    Idle,       // 空闲
+    Cooking,    // 烹饪中
+    Cooked,     // 已完成
+    Overcooked  // 糊了
+}
+
 public class AutoCooking : IGameTask
 {
     private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
@@ -95,7 +103,7 @@ public class AutoCooking : IGameTask
                     continue;
                 }
 
-                _logger.LogInformation("烤箱进度：" + CalculateOvenColorMatchPercentage());
+                UpdateOvenStatus();
                 //DragMove(ref fish_center, ref oven_center, 250 );
                 //DragMove(ref rice_center, ref pot_center, 250 );
                 //await Task.Delay(3000, _cts.Token);
@@ -135,8 +143,7 @@ public class AutoCooking : IGameTask
         }
         else
         {
-            _logger.LogInformation("Oven_Rect: {x} {y} {w} {h}", oven_rect.X, oven_rect.Y, oven_rect.Width, oven_rect.Height);
-            _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(board_rect, scale), ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) });
+            UpdateOvenStatus();
         }
         if(!LocateIngredients())
         {
@@ -374,19 +381,47 @@ public class AutoCooking : IGameTask
         );
     }
 
-    private double CalculateOvenColorMatchPercentage()
+    private (CookingStatus status, double progress) GetOvenStatus()
     {
         captureMat = _capture.Capture();
-
-        // 获取烤箱区域的图像
         using var ovenRegion = new Mat(captureMat, oven_rect);
-        
-        // 确保mask尺寸与烤箱区域匹配
         using var mask = oven_ring.Clone();
         Cv2.Resize(mask, mask, new Size(oven_rect.Width, oven_rect.Height));
-        
-        // 计算色彩匹配百分比，目标颜色为f6b622，阈值为5
-        return ColorFilterHelper.CalculateColorMatchPercentage(ovenRegion, mask, "f6b622", 5);
+
+        // 检查烹饪进度（f6b622颜色）
+        double cookingPercentage = ColorFilterHelper.CalculateColorMatchPercentage(ovenRegion, mask, "f6b622", 5);
+        if (cookingPercentage > 0)
+        {
+            return (CookingStatus.Cooking, cookingPercentage);
+        }
+
+        // 检查是否完成（ed5432颜色）
+        double completedPercentage = ColorFilterHelper.CalculateColorMatchPercentage(ovenRegion, mask, "ed5432", 5);
+        if (completedPercentage > 0)
+        {
+            if (completedPercentage > 95)
+                return (CookingStatus.Overcooked, completedPercentage);
+            return (CookingStatus.Cooked, completedPercentage);
+        }
+
+        return (CookingStatus.Idle, 0);
+    }
+
+    private void UpdateOvenStatus()
+    {
+        var (status, progress) = GetOvenStatus();
+        string displayText = status switch
+        {
+            CookingStatus.Idle => "空闲",
+            CookingStatus.Cooking => $"烹饪中：{progress:F1}%",
+            CookingStatus.Cooked => $"已完成：{progress:F1}%",
+            CookingStatus.Overcooked => "糊了！",
+            _ => "未知状态"
+        };
+
+        var textContents = new Dictionary<Rect, string>();
+        textContents[oven_rect] = displayText;
+        _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(board_rect, scale), ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) }, textContents);
     }
 
     #region SetParameter
