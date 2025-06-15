@@ -49,6 +49,7 @@ public class AutoCooking : IGameTask
     private Mat? captureMat;
     private Mat board, oven, pot;
     private Mat rice, fish;
+    private Mat cream, onion;
     private Mat order, red_order;
     private Mat oven_ring, pot_ring;
 
@@ -61,9 +62,11 @@ public class AutoCooking : IGameTask
 
     private Rect board_rect, oven_rect, pot_rect;
     private Rect rice_rect, fish_rect;
+    private Rect cream_rect, onion_rect;
 
-    private Point board_center, oven_center, pot_center;
+    private Point board_center, oven_center, pot_center; 
     private Point rice_center, fish_center;
+    private Point cream_center, onion_center;
     private Point next_order;
 
     private (CookingStatus status, double progress) _ovenStatus = (CookingStatus.Idle, 0);
@@ -159,6 +162,15 @@ public class AutoCooking : IGameTask
         {
             _maskWindow?.SetLayerRects("Ingredients", new List<Rect>{ ScaleRect(rice_rect, scale), ScaleRect(fish_rect, scale) });
         }
+        if(!LocateCondiment())
+        {
+            //_logger.LogDebug("未定位到调料，即将开始重新定位。");
+            return false;
+        }
+        else
+        {
+            _maskWindow?.SetLayerRects("Condiments", new List<Rect>{ ScaleRect(cream_rect, scale), ScaleRect(onion_rect, scale) });
+        }
 
         _logger.LogInformation("自动烹饪初始化完成。");
         initialized = true;
@@ -247,6 +259,42 @@ public class AutoCooking : IGameTask
             }
             fish_rect = new Rect(matchpoint.X, matchpoint.Y, fish.Width, fish.Height);
             fish_center = new Point(matchpoint.X + fish.Width / 2, matchpoint.Y + fish.Height / 2);
+        }
+        return true;
+    }
+
+    private bool LocateCondiment()
+    {
+        double threshold = 0.85;
+        captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
+        Mat maskMat;
+        using (var creamBGR = cream.Clone())
+        {
+            Cv2.CvtColor(creamBGR, creamBGR, ColorConversionCodes.BGRA2BGR);
+            maskMat = MatchTemplateHelper.GenerateMask(cream);
+            var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, creamBGR, TemplateMatchModes.SqDiffNormed, maskMat, threshold);
+            if (matchpoint == default)
+            {
+                //_logger.LogDebug("未定位到奶油，即将重试。");
+                return false;
+            }
+            cream_rect = new Rect(matchpoint.X, matchpoint.Y, cream.Width, cream.Height);
+            cream_center = new Point(matchpoint.X + cream.Width / 2, matchpoint.Y + cream.Height / 2);
+        }
+        using (var onionBGR = onion.Clone())
+        {
+            Cv2.CvtColor(onionBGR, onionBGR, ColorConversionCodes.BGRA2BGR);
+            maskMat = MatchTemplateHelper.GenerateMask(onion);
+            var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, onionBGR, TemplateMatchModes.SqDiffNormed, maskMat, threshold);
+            if (matchpoint == default)
+            {
+                //_logger.LogDebug("未定位到洋葱，即将重试。");
+                return false;
+            }
+            onion_rect = new Rect(matchpoint.X, matchpoint.Y, onion.Width, onion.Height);
+            onion_center = new Point(matchpoint.X + onion.Width / 2, matchpoint.Y + onion.Height / 2);
         }
         return true;
     }
@@ -357,7 +405,8 @@ public class AutoCooking : IGameTask
         oven_ring = Cv2.ImRead(image_folder + "Kitchenware/oven_ring.png");
         pot_ring = Cv2.ImRead(image_folder + "Kitchenware/pot_ring.png");
         //Condiments
-
+        cream = Cv2.ImRead(image_folder + "Condiment/cream.png", ImreadModes .Unchanged);
+        onion = Cv2.ImRead(image_folder + "Condiment/onion.png", ImreadModes.Unchanged);
         //Ingredients
         rice = Cv2.ImRead(image_folder + "Ingredients/rice.png", ImreadModes.Unchanged);
         fish = Cv2.ImRead(image_folder + "Ingredients/fish.png", ImreadModes.Unchanged);

@@ -74,6 +74,8 @@
     <None Remove="Assets\ClubQuiz\question_LT.png" />
     <None Remove="Assets\ClubQuiz\question_RB.png" />
     <None Remove="Assets\club_question_bank.xlsx" />
+    <None Remove="Assets\Cooking\Image\Condiment\cream.png" />
+    <None Remove="Assets\Cooking\Image\Condiment\onion.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\fish.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\rice.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\board.png" />
@@ -195,6 +197,12 @@
     <Content Include="Assets\ClubQuiz\Image\ui_club_symbol.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Image\Condiment\cream.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Condiment\onion.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\fish.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -304,7 +312,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\Cooking\Image\Condiment\" />
     <Folder Include="Config\" />
     <Folder Include="Views\Controls\Style\" />
   </ItemGroup>
