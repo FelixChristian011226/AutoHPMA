@@ -92,6 +92,16 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private string _selectedTeamPosition = "Leader";
 
+        [ObservableProperty]
+        private ObservableCollection<string> _dishes =
+            [
+                "黄金海鱼焗饭",
+                "果香烤乳猪",
+                "奶油蘑菇炖饭"
+            ];
+        [ObservableProperty]
+        private string _autoCookingSelectedDish = "黄金海鱼焗饭";
+
         #endregion
 
         private IntPtr _displayHwnd => AppContextService.Instance.DisplayHwnd;
@@ -119,6 +129,7 @@ namespace AutoHPMA.ViewModels.Pages
             AutoForbiddenForestTimes = _settings.AutoForbiddenForestTimes;
             SelectedTeamPosition = _settings.SelectedTeamPosition;
             AutoCookingTimes = _settings.AutoCookingTimes;
+            AutoCookingSelectedDish = _settings.AutoCookingSelectedDish;
         }
 
         private void AppContextService_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -343,7 +354,8 @@ namespace AutoHPMA.ViewModels.Pages
             _currentTask = new AutoCooking(logger, _displayHwnd, _gameHwnd);
             _currentTask.SetParameters(new Dictionary<string, object>
             {
-                { "Times", AutoCookingTimes }
+                { "Times", AutoCookingTimes },
+                { "Dish", GetDishEnumValue(AutoCookingSelectedDish) }
             });
 
             // 订阅任务完成事件，当任务完成时更新按钮状态
@@ -467,6 +479,23 @@ namespace AutoHPMA.ViewModels.Pages
         {
             _settings.AutoCookingTimes = value;
             _settings.Save();
+        }
+
+        partial void OnAutoCookingSelectedDishChanged(string value)
+        {
+            _settings.AutoCookingSelectedDish = value;
+            _settings.Save();
+        }
+
+        private string GetDishEnumValue(string dishName)
+        {
+            return dishName switch
+            {
+                "黄金海鱼焗饭" => "FishRice",
+                "果香烤乳猪" => "RoastedPig",
+                "奶油蘑菇炖饭" => "MushroomRisotto",
+                _ => "FishRice"
+            };
         }
     }
 }

@@ -38,7 +38,9 @@ public enum CookingStatus
 
 public enum Dishes
 {
-    FishRice, // 海鱼黄金焗饭
+    FishRice,       // 黄金海鱼焗饭
+    RoastedPig,     // 果香烤乳猪
+    MushroomRisotto // 奶油蘑菇炖饭
 }
 
 public class AutoCooking : IGameTask
@@ -844,6 +846,21 @@ public class AutoCooking : IGameTask
                 }
                 _autoCookingTimes = times;
                 _logger.LogDebug("烹饪次数设置为：{Times}次", _autoCookingTimes);
+            }
+
+            if (parameters.ContainsKey("Dish"))
+            {
+                var dish = parameters["Dish"].ToString();
+                if (Enum.TryParse<Dishes>(dish, out var selectedDish))
+                {
+                    _autoCookingDish = selectedDish;
+                    _logger.LogDebug("菜品设置为：{Dish}", _autoCookingDish);
+                }
+                else
+                {
+                    _logger.LogWarning("无效的菜品选择。已设置为默认值。");
+                    return false;
+                }
             }
 
             return true;

@@ -1,3 +1,4 @@
+using AutoHPMA.GameTask.Permanent;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -42,6 +43,9 @@ namespace AutoHPMA.Config
 
         [JsonPropertyName("autoCookingTimes")]
         public int AutoCookingTimes { get; set; } = 2;
+
+        [JsonPropertyName("autoCookingSelectedDish")]
+        public string AutoCookingSelectedDish { get; set; } = "黄金海鱼焗饭";
 
         // Notification
         [JsonPropertyName("notificationEnabled")]
@@ -109,34 +113,6 @@ namespace AutoHPMA.Config
             }
         }
 
-        public void Reset()
-        {
-            // Dashboard
-            CaptureInterval = 500;
-            RealTimeScreenshotEnabled = true;
-            LogWindowEnabled = true;
-            DebugLogEnabled = false;
-            MaskWindowEnabled = true;
-
-            // Task
-            AnswerDelay = 0;
-            JoinOthers = false;
-            AutoForbiddenForestTimes = 30;
-            SelectedTeamPosition = "Leader";
-            AutoCookingTimes = 1;
-
-            // Settings
-            HasShownTermsOfUse = false;
-            Theme = "Light";
-            Language = "zh-CN";
-
-            // Other
-            LastUsedPath = string.Empty;
-            IsFirstRun = true;
-            NotificationEnabled = true;
-
-            Save();
-        }
 
         public void Clear()
         {
