@@ -58,8 +58,9 @@ public class AutoCooking : IGameTask
     private AutoCookingState _state = AutoCookingState.Unknown;
 
     private Mat? captureMat;
-    private Mat bin, board, oven, pot;
-    private Mat oven_ring, pot_ring;
+    private Mat bin, board;  // 不需要进度条的厨具
+    private Dictionary<string, Mat> kitchenwares = new();  // 需要进度条的厨具
+    private Dictionary<string, Mat> kitchenwareRings = new();  // 厨具进度条
     private Dictionary<string, Mat> ingredients = new();
     private Dictionary<string, Mat> condiments = new();
     private Mat order, red_order;
@@ -596,9 +597,9 @@ public class AutoCooking : IGameTask
         {
             "bin" => bin,
             "board" => board,
-            "oven" => oven,
-            "pot" => pot,
-            _ => throw new ArgumentException($"未知的厨具：{kitchenware}")
+            _ => kitchenwares.ContainsKey(kitchenware) 
+                ? kitchenwares[kitchenware] 
+                : throw new ArgumentException($"未知的厨具：{kitchenware}")
         };
     }
 
@@ -751,10 +752,10 @@ public class AutoCooking : IGameTask
         //Kitchenware
         bin = Cv2.ImRead(image_folder + "Kitchenware/bin.png");
         board = Cv2.ImRead(image_folder + "Kitchenware/board.png");
-        oven = Cv2.ImRead(image_folder + "Kitchenware/oven.png", ImreadModes.Unchanged);
-        pot = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
-        oven_ring = Cv2.ImRead(image_folder + "Kitchenware/oven_ring.png");
-        pot_ring = Cv2.ImRead(image_folder + "Kitchenware/pot_ring.png");
+        kitchenwares["oven"] = Cv2.ImRead(image_folder + "Kitchenware/oven.png", ImreadModes.Unchanged);
+        kitchenwares["pot"] = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
+        kitchenwareRings["oven"] = Cv2.ImRead(image_folder + "Kitchenware/oven_ring.png");
+        kitchenwareRings["pot"] = Cv2.ImRead(image_folder + "Kitchenware/pot_ring.png");
         _logger.LogDebug("已加载厨具图片：bin, board, oven, pot");
 
         //Condiments
@@ -808,16 +809,16 @@ public class AutoCooking : IGameTask
 
         var rect = kitchenwareRects[kitchenware];
         var region = new Mat(captureMat, rect);
-        var mask = kitchenware == "oven" ? oven_ring : pot_ring;
+        var mask = kitchenwareRings[kitchenware];
 
         // 检查是否在烹饪中（黄色）
-        double cookingPercentage = ColorFilterHelper.CalculateColorMatchPercentage(region, mask, "ffd700", 5);
+        double cookingPercentage = ColorFilterHelper.CalculateColorMatchPercentage(region, mask, "f6b622", 5);
         if (cookingPercentage > 0)
         {
             return (CookingStatus.Cooking, cookingPercentage);
         }
 
-        // 检查是否完成（ed5432颜色）
+        // 检查是否完成（红色）
         double completedPercentage = ColorFilterHelper.CalculateColorMatchPercentage(region, mask, "ed5432", 5);
         if (completedPercentage > 0)
         {
