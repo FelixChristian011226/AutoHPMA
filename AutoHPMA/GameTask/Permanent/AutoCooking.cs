@@ -91,7 +91,9 @@ public class AutoCooking : IGameTask
     private Dictionary<string, (CookingStatus status, double progress)> kitchenwareStatus = new();
 
     private Dictionary<string, int> condimentCounts = new();
-    private static PaddleOCRHelper paddleOCRHelper;
+    private static PaddleOCRHelper? paddleOCRHelper;
+    private static TesseractOCRHelper? tesseractOCRHelper;
+    private string _autoCookingSelectedOCR = "Tesseract";
 
     private CancellationTokenSource _cts;
     public event EventHandler? TaskCompleted;
@@ -103,7 +105,6 @@ public class AutoCooking : IGameTask
         this._displayHwnd = _displayHwnd;
         this._gameHwnd = _gameHwnd;
         _cts = new CancellationTokenSource();
-        paddleOCRHelper = new PaddleOCRHelper();
         LoadAssets();
         CalOffset();
         AddLayersForMaskWindow();
@@ -693,7 +694,7 @@ public class AutoCooking : IGameTask
                         40
                     );
                     var condimentMat = new Mat(captureMat, condimentRect);
-                    var condimentText = paddleOCRHelper.Ocr(condimentMat);
+                    var condimentText = OcrText(condimentMat);
                     if (int.TryParse(condimentText, out int count))
                     {
                         condimentCounts[condiment] = count;
@@ -902,6 +903,22 @@ public class AutoCooking : IGameTask
                 }
             }
 
+            if (parameters.ContainsKey("OCR"))
+            {
+                var ocr = parameters["OCR"].ToString();
+                if (ocr != null)
+                {
+                    _autoCookingSelectedOCR = ocr;
+                    InitializeOCR();
+                    _logger.LogDebug("OCR引擎设置为：{OCR}", _autoCookingSelectedOCR);
+                }
+                else
+                {
+                    _logger.LogWarning("无效的OCR选择。已设置为默认值。");
+                    return false;
+                }
+            }
+
             return true;
         }
         catch (Exception ex)
@@ -909,6 +926,37 @@ public class AutoCooking : IGameTask
             _logger.LogError("设置参数时发生错误：{Message}", ex.Message);
             return false;
         }
+    }
+
+    private void InitializeOCR()
+    {
+        // 清理旧的OCR实例
+        paddleOCRHelper = null;
+        tesseractOCRHelper = null;
+
+        // 根据选择初始化对应的OCR引擎
+        if (_autoCookingSelectedOCR == "PaddleOCR")
+        {
+            paddleOCRHelper = new PaddleOCRHelper();
+        }
+        else
+        {
+            tesseractOCRHelper = new TesseractOCRHelper();
+        }
+    }
+
+    private string OcrText(Mat mat)
+    {
+        if (_autoCookingSelectedOCR == "PaddleOCR" && paddleOCRHelper != null)
+        {
+            return paddleOCRHelper.Ocr(mat);
+        }
+        else if (tesseractOCRHelper != null)
+        {
+            using var bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(mat);
+            return TesseractOCRHelper.TesseractTextRecognition(TesseractOCRHelper.PreprocessImage(bitmap));
+        }
+        return string.Empty;
     }
 
     #endregion

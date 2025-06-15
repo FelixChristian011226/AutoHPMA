@@ -47,6 +47,9 @@ namespace AutoHPMA.Config
         [JsonPropertyName("autoCookingSelectedDish")]
         public string AutoCookingSelectedDish { get; set; } = "黄金海鱼焗饭";
 
+        [JsonPropertyName("autoCookingSelectedOCR")]
+        public string AutoCookingSelectedOCR { get; set; } = "Tesseract";
+
         // Notification
         [JsonPropertyName("notificationEnabled")]
         public bool NotificationEnabled { get; set; } = true;

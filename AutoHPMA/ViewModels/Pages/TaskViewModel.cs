@@ -98,6 +98,11 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private string _autoCookingSelectedDish = "黄金海鱼焗饭";
 
+        [ObservableProperty]
+        private string _autoCookingSelectedOCR = "Tesseract";
+
+        public ObservableCollection<string> OCRs { get; } = new ObservableCollection<string> { "Tesseract", "PaddleOCR" };
+
         #endregion
 
         private IntPtr _displayHwnd => AppContextService.Instance.DisplayHwnd;
@@ -127,6 +132,7 @@ namespace AutoHPMA.ViewModels.Pages
             SelectedTeamPosition = _settings.SelectedTeamPosition;
             AutoCookingTimes = _settings.AutoCookingTimes;
             AutoCookingSelectedDish = _settings.AutoCookingSelectedDish;
+            AutoCookingSelectedOCR = _settings.AutoCookingSelectedOCR;
 
             // 加载菜品列表
             LoadDishes();
@@ -373,7 +379,8 @@ namespace AutoHPMA.ViewModels.Pages
             _currentTask.SetParameters(new Dictionary<string, object>
             {
                 { "Times", AutoCookingTimes },
-                { "Dish", AutoCookingSelectedDish }
+                { "Dish", AutoCookingSelectedDish },
+                { "OCR", AutoCookingSelectedOCR }
             });
 
             // 订阅任务完成事件，当任务完成时更新按钮状态
@@ -502,6 +509,12 @@ namespace AutoHPMA.ViewModels.Pages
         partial void OnAutoCookingSelectedDishChanged(string value)
         {
             _settings.AutoCookingSelectedDish = value;
+            _settings.Save();
+        }
+
+        partial void OnAutoCookingSelectedOCRChanged(string value)
+        {
+            _settings.AutoCookingSelectedOCR = value;
             _settings.Save();
         }
 
