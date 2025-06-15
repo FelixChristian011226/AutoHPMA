@@ -200,11 +200,15 @@ public class AutoCooking : IGameTask
 
                             //移出烹饪好的食材
                             DragMove(ref oven_center, ref board_center, 100);
+                            if (CheckOver()) continue;
+
                             DragMove(ref pot_center, ref board_center, 100);
                             if (CheckOver()) continue;
 
                             //继续补充食材
                             DragMove(ref fish_center, ref oven_center, 100);
+                            if (CheckOver()) continue;
+
                             DragMove(ref rice_center, ref pot_center, 100);
                             if (CheckOver()) continue;
 
@@ -212,13 +216,13 @@ public class AutoCooking : IGameTask
                             for (int i = 0; i < _creamCount; i++)
                             {
                                 DragMove(ref cream_center, ref board_center, 100);
+                                if (CheckOver()) continue;
                             }
-                            if (CheckOver()) continue;
                             for (int i = 0; i < _onionCount; i++)
                             {
                                 DragMove(ref onion_center, ref board_center, 100);
+                                if (CheckOver()) continue;
                             }
-                            if (CheckOver()) continue;
 
                             //提交订单
                             DragMove(ref board_center, ref next_order, 100);
