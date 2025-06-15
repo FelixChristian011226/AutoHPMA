@@ -74,6 +74,7 @@ public class AutoCooking : IGameTask
 
     private int _autoCookingTimes;
     private string _autoCookingDish = "黄金海鱼焗饭";
+    private int _autoCookingGap = 100;
     private DishConfig? _currentDishConfig;
 
     private bool initialized = false;
@@ -182,20 +183,10 @@ public class AutoCooking : IGameTask
                         {
                             if (kitchenwareStatus.TryGetValue(kitchenware, out var status) && status.status == CookingStatus.Overcooked)
                             {
-                                // 把糊了的厨具和食材都扔进垃圾桶
-                                var kitchenwareCenter = kitchenwareCenters[kitchenware];
-                                var binCenter = kitchenwareCenters["bin"];
-                                DragMove(ref kitchenwareCenter, ref binCenter, 100);
-                                kitchenwareCenters[kitchenware] = kitchenwareCenter;
-                                kitchenwareCenters["bin"] = binCenter;
-
-                                var boardCenter = kitchenwareCenters["board"];
-                                DragMove(ref boardCenter, ref binCenter, 100);
-                                kitchenwareCenters["board"] = boardCenter;
-                                kitchenwareCenters["bin"] = binCenter;
-
-                                await Task.Delay(500, _cts.Token);
-                                continue;
+                                // 把所有厨具和砧板上的食物都丢到垃圾桶
+                                DisgardAllFood();
+                                await Task.Delay(_autoCookingGap, _cts.Token);
+                                break ;
                             }
                         }
 
@@ -220,7 +211,7 @@ public class AutoCooking : IGameTask
                                 DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
                                 ingredientCenters[step.Ingredient] = ingredientCenter;
                                 kitchenwareCenters[step.TargetKitchenware] = kitchenwareCenter;
-                                await Task.Delay(500, _cts.Token);
+                                await Task.Delay(_autoCookingGap, _cts.Token);
                             }
                             continue;
                         }
@@ -238,56 +229,11 @@ public class AutoCooking : IGameTask
 
                         if (allCooked)
                         {
-                            LocateOrders();
-
-                            // 移出烹饪好的食材
-                            foreach (var step in _currentDishConfig.CookingSteps)
-                            {
-                                var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
-                                var boardCenter = kitchenwareCenters["board"];
-                                DragMove(ref kitchenwareCenter, ref boardCenter, 100);
-                                kitchenwareCenters[step.TargetKitchenware] = kitchenwareCenter;
-                                kitchenwareCenters["board"] = boardCenter;
-                                if (CheckOver()) continue;
-                            }
-
-                            // 继续补充食材
-                            foreach (var step in _currentDishConfig.CookingSteps)
-                            {
-                                var ingredientCenter = ingredientCenters[step.Ingredient];
-                                var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
-                                DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
-                                ingredientCenters[step.Ingredient] = ingredientCenter;
-                                kitchenwareCenters[step.TargetKitchenware] = kitchenwareCenter;
-                                if (CheckOver()) continue;
-                            }
-
-                            // 补充调料
-                            foreach (var condiment in _currentDishConfig.RequiredCondiments)
-                            {
-                                if (condimentCounts.TryGetValue(condiment, out var count))
-                                {
-                                    for (int i = 0; i < count; i++)
-                                    {
-                                        var condimentCenter = condimentCenters[condiment];
-                                        var boardCenter = kitchenwareCenters["board"];
-                                        DragMove(ref condimentCenter, ref boardCenter, 100);
-                                        condimentCenters[condiment] = condimentCenter;
-                                        kitchenwareCenters["board"] = boardCenter;
-                                        if (CheckOver()) continue;
-                                    }
-                                }
-                            }
-
-                            // 提交订单
-                            var finalBoardCenter = kitchenwareCenters["board"];
-                            DragMove(ref finalBoardCenter, ref next_order, 100);
-                            kitchenwareCenters["board"] = finalBoardCenter;
-
-                            await Task.Delay(500, _cts.Token);
+                            HandleCookedFood();
+                            await Task.Delay(_autoCookingGap, _cts.Token);
                             continue;
                         }
-                        await Task.Delay(500, _cts.Token);
+                        await Task.Delay(_autoCookingGap, _cts.Token);
                         break;
 
                     case AutoCookingState.Summary:
@@ -608,6 +554,16 @@ public class AutoCooking : IGameTask
         };
     }
 
+    private bool DefaultOrder()
+    {
+        next_order = new Point(400, 130);
+        foreach (var condiment in _currentDishConfig.RequiredCondiments)
+        {
+            condimentCounts[condiment] = 1;
+        }
+        return true;
+    }
+
     private bool LocateOrders()
     {
         if (_currentDishConfig == null) return false;
@@ -821,13 +777,6 @@ public class AutoCooking : IGameTask
         var region = new Mat(captureMat, rect);
         var mask = kitchenwareRings[kitchenware];
 
-        // 检查是否在烹饪中（黄色）
-        double cookingPercentage = ColorFilterHelper.CalculateColorMatchPercentage(region, mask, "f6b622", 5);
-        if (cookingPercentage > 0)
-        {
-            return (CookingStatus.Cooking, cookingPercentage);
-        }
-
         // 检查是否完成（红色）
         double completedPercentage = ColorFilterHelper.CalculateColorMatchPercentage(region, mask, "ed5432", 5);
         if (completedPercentage > 0)
@@ -835,6 +784,13 @@ public class AutoCooking : IGameTask
             if (completedPercentage > 95)
                 return (CookingStatus.Overcooked, completedPercentage);
             return (CookingStatus.Cooked, completedPercentage);
+        }
+
+        // 检查是否在烹饪中（黄色）
+        double cookingPercentage = ColorFilterHelper.CalculateColorMatchPercentage(region, mask, "f6b622", 5);
+        if (cookingPercentage > 0)
+        {
+            return (CookingStatus.Cooking, cookingPercentage);
         }
 
         return (CookingStatus.Idle, 0);
@@ -960,5 +916,67 @@ public class AutoCooking : IGameTask
     }
 
     #endregion
+
+    private void HandleCookedFood()
+    {
+        //LocateOrders();
+        DefaultOrder();
+
+        // 移出烹饪好的食材
+        foreach (var step in _currentDishConfig.CookingSteps)
+        {
+            var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
+            var boardCenter = kitchenwareCenters["board"];
+            DragMove(ref kitchenwareCenter, ref boardCenter, 100);
+            if (CheckOver()) return;
+        }
+
+        // 继续补充食材
+        foreach (var step in _currentDishConfig.CookingSteps)
+        {
+            var ingredientCenter = ingredientCenters[step.Ingredient];
+            var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
+            DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
+            if (CheckOver()) return;
+        }
+
+        // 补充调料
+        foreach (var condiment in _currentDishConfig.RequiredCondiments)
+        {
+            if (condimentCounts.TryGetValue(condiment, out var count))
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    var condimentCenter = condimentCenters[condiment];
+                    var boardCenter = kitchenwareCenters["board"];
+                    DragMove(ref condimentCenter, ref boardCenter, 100);
+                    if (CheckOver()) return;
+                }
+            }
+        }
+
+        // 提交订单
+        var finalBoardCenter = kitchenwareCenters["board"];
+        DragMove(ref finalBoardCenter, ref next_order, 100);
+    }
+
+    private void DisgardAllFood()
+    {
+        var binCenter = kitchenwareCenters["bin"];
+
+        // 将所有厨具中的食物丢到垃圾桶
+        foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
+        {
+            if (kitchenware == "bin" || kitchenware == "board") continue;
+            
+            var kitchenwareCenter = kitchenwareCenters[kitchenware];
+            DragMove(ref kitchenwareCenter, ref binCenter, 100);
+            if (CheckOver()) return;
+        }
+
+        // 将砧板上的食物丢到垃圾桶
+        var boardCenter = kitchenwareCenters["board"];
+        DragMove(ref boardCenter, ref binCenter, 100);
+    }
 
 }
