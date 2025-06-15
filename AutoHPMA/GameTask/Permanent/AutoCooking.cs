@@ -156,10 +156,11 @@ public class AutoCooking : IGameTask
                         break;
 
                     case AutoCookingState.Cooking:
-                        await Task.Delay(500, _cts.Token);
+                        
                         if (!initialized)
                         {
                             Initialize();
+                            await Task.Delay(500, _cts.Token);
                             continue;
                         }
 
@@ -172,11 +173,15 @@ public class AutoCooking : IGameTask
                         {
                             DragMove(ref oven_center, ref bin_center, 100);
                             DragMove(ref board_center, ref bin_center, 100);
+                            await Task.Delay(500, _cts.Token);
+                            continue;
                         }
                         if (_potStatus.status == CookingStatus.Overcooked)
                         {
                             DragMove(ref pot_center, ref bin_center, 100);
                             DragMove(ref board_center, ref bin_center, 100);
+                            await Task.Delay(500, _cts.Token);
+                            continue;
                         }
 
                         //厨具都为空
@@ -184,6 +189,7 @@ public class AutoCooking : IGameTask
                         {
                             DragMove(ref fish_center, ref oven_center, 100);
                             DragMove(ref rice_center, ref pot_center, 100);
+                            await Task.Delay(500, _cts.Token);
                             continue;
                         }
 
@@ -191,23 +197,36 @@ public class AutoCooking : IGameTask
                         if (_ovenStatus.status == CookingStatus.Cooked && _potStatus.status == CookingStatus.Cooked)
                         {
                             LocateOrders();
+
+                            //移出烹饪好的食材
                             DragMove(ref oven_center, ref board_center, 100);
                             DragMove(ref pot_center, ref board_center, 100);
+                            if (CheckOver()) continue;
+
                             //继续补充食材
                             DragMove(ref fish_center, ref oven_center, 100);
                             DragMove(ref rice_center, ref pot_center, 100);
+                            if (CheckOver()) continue;
+
                             //补充调料
                             for (int i = 0; i < _creamCount; i++)
                             {
                                 DragMove(ref cream_center, ref board_center, 100);
                             }
+                            if (CheckOver()) continue;
                             for (int i = 0; i < _onionCount; i++)
                             {
                                 DragMove(ref onion_center, ref board_center, 100);
                             }
+                            if (CheckOver()) continue;
+
                             //提交订单
                             DragMove(ref board_center, ref next_order, 100);
+
+                            await Task.Delay(500, _cts.Token);
+                            continue;
                         }
+                        await Task.Delay(500, _cts.Token);
                         break;
 
                     case AutoCookingState.Summary:
@@ -280,7 +299,17 @@ public class AutoCooking : IGameTask
         return true;
     }
 
-    public void FindState()
+    private bool CheckOver()
+    {
+        FindState();
+        if(_state == AutoCookingState.Summary)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void FindState()
     {
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
