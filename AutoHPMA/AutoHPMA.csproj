@@ -76,9 +76,14 @@
     <None Remove="Assets\club_question_bank.xlsx" />
     <None Remove="Assets\Cooking\Image\click_challenge.png" />
     <None Remove="Assets\Cooking\Image\click_start.png" />
+    <None Remove="Assets\Cooking\Image\Condiment\coconut.png" />
     <None Remove="Assets\Cooking\Image\Condiment\cream.png" />
+    <None Remove="Assets\Cooking\Image\Condiment\lemon.png" />
     <None Remove="Assets\Cooking\Image\Condiment\onion.png" />
+    <None Remove="Assets\Cooking\Image\Dishes\奶油蘑菇炖饭.png" />
+    <None Remove="Assets\Cooking\Image\Dishes\果香烤乳猪.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\fish.png" />
+    <None Remove="Assets\Cooking\Image\Ingredients\pork.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\rice.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\board.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\oven.png" />
@@ -218,7 +223,16 @@
     <Content Include="Assets\Cooking\Image\Condiment\onion.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Image\Dishes\奶油蘑菇炖饭.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Dishes\果香烤乳猪.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\fish.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Ingredients\pork.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\rice.png">
@@ -343,6 +357,12 @@
     </Content>
     <Resource Include="Assets\hpma.png" />
     <Content Include="Assets\logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Condiment\coconut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Condiment\lemon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Views\Windows\Logo.ico" />
