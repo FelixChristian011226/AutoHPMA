@@ -27,6 +27,7 @@ namespace AutoHPMA.ViewModels.Pages
     {
         private readonly AppSettings _settings;
         private readonly ILogger<TaskViewModel> _logger;
+        private readonly CookingConfigService _cookingConfigService;
         private bool _isAnyTaskRunning = false;
 
         #region Observable Properties
@@ -93,12 +94,7 @@ namespace AutoHPMA.ViewModels.Pages
         private string _selectedTeamPosition = "Leader";
 
         [ObservableProperty]
-        private ObservableCollection<string> _dishes =
-            [
-                "黄金海鱼焗饭",
-                "果香烤乳猪",
-                "奶油蘑菇炖饭"
-            ];
+        private ObservableCollection<string> _dishes = new();
         [ObservableProperty]
         private string _autoCookingSelectedDish = "黄金海鱼焗饭";
 
@@ -113,10 +109,11 @@ namespace AutoHPMA.ViewModels.Pages
         private IGameTask? _currentTask;
         private AppContextService appContextService;
 
-        public TaskViewModel(AppSettings settings, ILogger<TaskViewModel> logger)
+        public TaskViewModel(AppSettings settings, ILogger<TaskViewModel> logger, CookingConfigService cookingConfigService)
         {
             _settings = settings;
             _logger = logger;
+            _cookingConfigService = cookingConfigService;
             
             // 获取单例实例
             appContextService = AppContextService.Instance;
@@ -130,6 +127,27 @@ namespace AutoHPMA.ViewModels.Pages
             SelectedTeamPosition = _settings.SelectedTeamPosition;
             AutoCookingTimes = _settings.AutoCookingTimes;
             AutoCookingSelectedDish = _settings.AutoCookingSelectedDish;
+
+            // 加载菜品列表
+            LoadDishes();
+        }
+
+        private void LoadDishes()
+        {
+            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Cooking/Config");
+            if (Directory.Exists(configPath))
+            {
+                var configFiles = Directory.GetFiles(configPath, "*.json");
+                foreach (var file in configFiles)
+                {
+                    var json = File.ReadAllText(file);
+                    var config = System.Text.Json.JsonSerializer.Deserialize<Models.Cooking.DishConfig>(json);
+                    if (config != null)
+                    {
+                        Dishes.Add(config.Name);
+                    }
+                }
+            }
         }
 
         private void AppContextService_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -351,11 +369,11 @@ namespace AutoHPMA.ViewModels.Pages
             AutoCookingStopButtonVisibility = Visibility.Visible;
 
             var logger = App.GetLogger<AutoCooking>();
-            _currentTask = new AutoCooking(logger, _displayHwnd, _gameHwnd);
+            _currentTask = new AutoCooking(logger, _cookingConfigService, _displayHwnd, _gameHwnd);
             _currentTask.SetParameters(new Dictionary<string, object>
             {
                 { "Times", AutoCookingTimes },
-                { "Dish", GetDishEnumValue(AutoCookingSelectedDish) }
+                { "Dish", AutoCookingSelectedDish }
             });
 
             // 订阅任务完成事件，当任务完成时更新按钮状态

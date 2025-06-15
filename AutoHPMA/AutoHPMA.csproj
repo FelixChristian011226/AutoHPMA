@@ -74,6 +74,8 @@
     <None Remove="Assets\ClubQuiz\question_LT.png" />
     <None Remove="Assets\ClubQuiz\question_RB.png" />
     <None Remove="Assets\club_question_bank.xlsx" />
+    <None Remove="Assets\Cooking\Config\果香烤乳猪.json" />
+    <None Remove="Assets\Cooking\Config\黄金海鱼焗饭.json" />
     <None Remove="Assets\Cooking\Image\click_challenge.png" />
     <None Remove="Assets\Cooking\Image\click_start.png" />
     <None Remove="Assets\Cooking\Image\Condiment\coconut.png" />
@@ -209,6 +211,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ClubQuiz\Image\ui_club_symbol.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Config\果香烤乳猪.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Config\黄金海鱼焗饭.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\click_challenge.png">

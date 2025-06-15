@@ -104,6 +104,7 @@ namespace AutoHPMA
                 services.AddSingleton<SettingsViewModel>();
 
                 services.AddSingleton<KeyboardHookService>();
+                services.AddSingleton<CookingConfigService>();
             }).Build();
 
         public static ILogger<T> GetLogger<T>()
