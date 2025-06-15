@@ -190,6 +190,15 @@ namespace AutoHPMA.ViewModels.Pages
                 { "AnswerDelay", AnswerDelay },
                 { "JoinOthers", JoinOthers }
             });
+
+            // 订阅任务完成事件，当任务完成时更新按钮状态
+            _currentTask.TaskCompleted += (sender, e) =>
+            {
+                AutoClubQuizStartButtonVisibility = Visibility.Visible;
+                AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
+                _currentTask = null;
+                _isAnyTaskRunning = false;
+            };
             _currentTask.Start();
         }
 
@@ -251,6 +260,15 @@ namespace AutoHPMA.ViewModels.Pages
                 { "Times", AutoForbiddenForestTimes },
                 { "TeamPosition", SelectedTeamPosition }
             });
+
+            // 订阅任务完成事件，当任务完成时更新按钮状态
+            _currentTask.TaskCompleted += (sender, e) =>
+            {
+                AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
+                AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
+                _currentTask = null;
+                _isAnyTaskRunning = false;
+            };
             _currentTask.Start();
         }
 
@@ -327,6 +345,15 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 { "Times", AutoCookingTimes }
             });
+
+            // 订阅任务完成事件，当任务完成时更新按钮状态
+            _currentTask.TaskCompleted += (sender, e) =>
+            {
+                AutoCookingStartButtonVisibility = Visibility.Visible;
+                AutoCookingStopButtonVisibility = Visibility.Collapsed;
+                _currentTask = null;
+                _isAnyTaskRunning = false;
+            };
             _currentTask.Start();
         }
 
