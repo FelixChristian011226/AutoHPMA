@@ -74,6 +74,8 @@
     <None Remove="Assets\ClubQuiz\question_LT.png" />
     <None Remove="Assets\ClubQuiz\question_RB.png" />
     <None Remove="Assets\club_question_bank.xlsx" />
+    <None Remove="Assets\Cooking\Image\click_challenge.png" />
+    <None Remove="Assets\Cooking\Image\click_start.png" />
     <None Remove="Assets\Cooking\Image\Condiment\cream.png" />
     <None Remove="Assets\Cooking\Image\Condiment\onion.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\fish.png" />
@@ -85,6 +87,12 @@
     <None Remove="Assets\Cooking\Image\Kitchenware\pot_ring.png" />
     <None Remove="Assets\Cooking\Image\Order\order.png" />
     <None Remove="Assets\Cooking\Image\Order\red_order.png" />
+    <None Remove="Assets\Cooking\Image\ui_challenge.png" />
+    <None Remove="Assets\Cooking\Image\ui_clock.png" />
+    <None Remove="Assets\Cooking\Image\ui_continue1.png" />
+    <None Remove="Assets\Cooking\Image\ui_continue2.png" />
+    <None Remove="Assets\Cooking\Image\ui_shop.png" />
+    <None Remove="Assets\Cooking\Image\海鱼黄金焗饭.png" />
     <None Remove="Assets\ForbiddenForest\auto.png" />
     <None Remove="Assets\ForbiddenForest\Image\ui_clock.png" />
     <None Remove="Assets\ForbiddenForest\Image\ui_explore.png" />
@@ -107,6 +115,7 @@
     <None Remove="Assets\SweetAdventure\Image\ui_teaming.png" />
     <None Remove="Assets\wpfui-icon-256.png" />
     <None Remove="Assets\wpfui-icon-1024.png" />
+    <None Remove="tessdata\eng.traineddata" />
   </ItemGroup>
 
   <ItemGroup>
@@ -197,6 +206,12 @@
     <Content Include="Assets\ClubQuiz\Image\ui_club_symbol.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Image\click_challenge.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\click_start.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Image\Condiment\cream.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -231,6 +246,24 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Order\red_order.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\ui_challenge.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\ui_clock.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\ui_continue1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\ui_continue2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\ui_shop.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Dishes\海鱼黄金焗饭.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\ForbiddenForest\Image\team_auto.png">
@@ -303,6 +336,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="tessdata\chi_sim.traineddata">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="tessdata\eng.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Assets\hpma.png" />

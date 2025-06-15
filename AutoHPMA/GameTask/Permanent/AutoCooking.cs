@@ -8,9 +8,11 @@ using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using static AutoHPMA.Helpers.WindowInteractionHelper;
+using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
@@ -19,9 +21,9 @@ namespace AutoHPMA.GameTask.Permanent;
 
 public enum AutoCookingState
 {
-    Outside,
-    Map,
-    CookingScene,
+    Unknown,
+    Workbench,
+    Challenge,
     Cooking,
     Summary,
 }
@@ -34,6 +36,11 @@ public enum CookingStatus
     Overcooked  // 糊了
 }
 
+public enum Dishes
+{
+    FishRice, // 海鱼黄金焗饭
+}
+
 public class AutoCooking : IGameTask
 {
     private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
@@ -44,7 +51,7 @@ public class AutoCooking : IGameTask
     private nint _displayHwnd, _gameHwnd;
     private int offsetX, offsetY;
     private double scale;
-    private AutoCookingState _state = AutoCookingState.Outside;
+    private AutoCookingState _state = AutoCookingState.Unknown;
 
     private Mat? captureMat;
     private Mat bin, board, oven, pot;
@@ -53,12 +60,19 @@ public class AutoCooking : IGameTask
     private Mat order, red_order;
     private Mat oven_ring, pot_ring;
 
+    private Mat ui_shop, ui_challenge, ui_clock, ui_continue1, ui_continue2;
+    private Mat click_challenge, click_start;
+    private Mat fishrice;
+
     private List<Rect> detect_rects = new List<Rect>();
     private List<Rect> order_rects = new List<Rect>();
 
-    private bool initialized = false;
     private int _autoCookingTimes;
+    private Dishes _autoCookingDish = Dishes.FishRice;
+
+    private bool initialized = false;
     private int round = 0;
+    private bool _waited = false;
 
     private Rect bin_rect, board_rect, oven_rect, pot_rect;
     private Rect rice_rect, fish_rect;
@@ -99,65 +113,123 @@ public class AutoCooking : IGameTask
 
     public async void Start()
     {
-        _state = AutoCookingState.Outside;
+        _state = AutoCookingState.Unknown;
         _logWindow?.SetGameState("自动烹饪");
         _logger.LogInformation("[Aquamarine]---自动烹饪任务已启动---[/Aquamarine]");
         try
         {
             while (!_cts.Token.IsCancellationRequested)
             {
-                System.GC.Collect();
-                await Task.Delay(500, _cts.Token);
-                if(!initialized)
+                GC.Collect();
+
+                if (round >= _autoCookingTimes)
                 {
-                    Initialize();
+                    Stop();
+                    _logger.LogInformation("[Aquamarine]---自动烹饪任务已终止---[/Aquamarine]");
                     continue;
                 }
-
-                _ovenStatus = GetOvenStatus();
-                _potStatus = GetPotStatus();
-                UpdateKitchenwareStatus();
-
-                //厨具糊了
-                if(_ovenStatus.status == CookingStatus.Overcooked)
+                FindState();
+                switch (_state)
                 {
-                    DragMove(ref oven_center, ref bin_center, 100);
-                }
-                if(_potStatus.status == CookingStatus.Overcooked)
-                {
-                    DragMove(ref pot_center, ref bin_center, 100);
-                }
+                    case AutoCookingState.Unknown:
+                        if (!_waited)
+                        {
+                            await Task.Delay(2000, _cts.Token);
+                            _waited = true;
+                            break;
+                        }
+                        _logger.LogInformation("状态未知，请手动进入烹饪界面。");
+                        _waited = false;
+                        await Task.Delay(1000, _cts.Token);
+                        break;
 
-                //厨具都为空
-                if (_ovenStatus.status == CookingStatus.Idle && _potStatus.status == CookingStatus.Idle)
-                {
-                    DragMove(ref fish_center, ref oven_center, 100);
-                    DragMove(ref rice_center, ref pot_center, 100);
-                    continue;
-                }
+                    case AutoCookingState.Workbench:
+                        FindAndClick(ref click_challenge);
+                        await Task.Delay(1000, _cts.Token);
+                        break;
 
-                //厨具都烹饪完成
-                if(_ovenStatus.status == CookingStatus.Cooked && _potStatus.status == CookingStatus.Cooked)
-                {
-                    LocateOrders();
-                    DragMove(ref oven_center, ref board_center, 100);
-                    DragMove(ref pot_center, ref board_center, 100);
-                    //继续补充食材
-                    DragMove(ref fish_center, ref oven_center, 100);
-                    DragMove(ref rice_center, ref pot_center, 100);
-                    //补充调料
-                    for(int i = 0; i < _creamCount; i++)
-                    {
-                        DragMove(ref cream_center, ref board_center, 100);
-                    }
-                    for(int i = 0; i < _onionCount; i++)
-                    {
-                        DragMove(ref onion_center, ref board_center, 100);
-                    }
-                    //提交订单
-                    DragMove(ref board_center, ref next_order, 100);
-                }
+                    case AutoCookingState.Challenge:
+                        ChooseDish();
+                        await Task.Delay(1500, _cts.Token);
+                        FindAndClick(ref click_start);
+                        await Task.Delay(2000, _cts.Token);
+                        break;
 
+                    case AutoCookingState.Cooking:
+                        await Task.Delay(500, _cts.Token);
+                        if (!initialized)
+                        {
+                            Initialize();
+                            continue;
+                        }
+
+                        _ovenStatus = GetOvenStatus();
+                        _potStatus = GetPotStatus();
+                        UpdateKitchenwareStatus();
+
+                        //厨具糊了
+                        if (_ovenStatus.status == CookingStatus.Overcooked)
+                        {
+                            DragMove(ref oven_center, ref bin_center, 100);
+                            DragMove(ref board_center, ref bin_center, 100);
+                        }
+                        if (_potStatus.status == CookingStatus.Overcooked)
+                        {
+                            DragMove(ref pot_center, ref bin_center, 100);
+                            DragMove(ref board_center, ref bin_center, 100);
+                        }
+
+                        //厨具都为空
+                        if (_ovenStatus.status == CookingStatus.Idle && _potStatus.status == CookingStatus.Idle)
+                        {
+                            DragMove(ref fish_center, ref oven_center, 100);
+                            DragMove(ref rice_center, ref pot_center, 100);
+                            continue;
+                        }
+
+                        //厨具都烹饪完成
+                        if (_ovenStatus.status == CookingStatus.Cooked && _potStatus.status == CookingStatus.Cooked)
+                        {
+                            LocateOrders();
+                            DragMove(ref oven_center, ref board_center, 100);
+                            DragMove(ref pot_center, ref board_center, 100);
+                            //继续补充食材
+                            DragMove(ref fish_center, ref oven_center, 100);
+                            DragMove(ref rice_center, ref pot_center, 100);
+                            //补充调料
+                            for (int i = 0; i < _creamCount; i++)
+                            {
+                                DragMove(ref cream_center, ref board_center, 100);
+                            }
+                            for (int i = 0; i < _onionCount; i++)
+                            {
+                                DragMove(ref onion_center, ref board_center, 100);
+                            }
+                            //提交订单
+                            DragMove(ref board_center, ref next_order, 100);
+                        }
+                        break;
+
+                    case AutoCookingState.Summary:
+                        round++;
+                        _logger.LogInformation("第 {round} 轮烹饪完成。", round);
+                        _maskWindow.ClearLayer("Kitchenware");
+                        _maskWindow.ClearLayer("Condiments");
+                        _maskWindow.ClearLayer("Ingredients");
+                        _maskWindow.ClearLayer("Orders");
+                        await Task.Delay(1000, _cts.Token);
+                        SendSpace(_gameHwnd);
+                        await Task.Delay(2000, _cts.Token);
+                        SendSpace(_gameHwnd);
+                        await Task.Delay(3000, _cts.Token);
+                        break;
+
+                    default:
+
+                        break;
+
+
+                }
             }
         }
         catch (TaskCanceledException)
@@ -175,6 +247,118 @@ public class AutoCooking : IGameTask
             _cts.Dispose();
             _cts = new CancellationTokenSource();
         }
+    }
+
+    private bool ChooseDish()
+    {
+        double threshold = 0.9;
+        captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
+        Mat maskMat;
+
+        switch(_autoCookingDish)
+        {
+            case Dishes.FishRice:
+                using (var fishriceBGR = fishrice.Clone())
+                {
+                    Cv2.CvtColor(fishriceBGR, fishriceBGR, ColorConversionCodes.BGRA2BGR);
+                    maskMat = MatchTemplateHelper.GenerateMask(fishrice);
+                    var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, fishriceBGR, TemplateMatchModes.CCoeffNormed, maskMat, threshold);
+                    if (matchpoint == default)
+                    {
+                        return false;
+                    }
+                    detect_rects.Clear();
+                    detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(fishrice.Width * scale), (int)(fishrice.Height * scale)));
+                    _maskWindow?.SetLayerRects("Click", detect_rects);
+                    SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + fishrice.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + fishrice.Height / 2.0 * scale));
+                }
+                break;
+        }
+
+        return true;
+    }
+
+    public void FindState()
+    {
+        captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
+        //Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
+
+        if (FindMatch(ref ui_shop))
+        {
+            _state = AutoCookingState.Workbench;
+            _logWindow?.SetGameState("烹饪-工作台");
+            _waited = false;
+            return;
+        }
+
+        if (FindMatch(ref ui_challenge))
+        {
+            _state = AutoCookingState.Challenge;
+            _logWindow?.SetGameState("烹饪-订单挑战");
+            _waited = false;
+            return;
+        }
+
+        if (FindMatch(ref ui_clock))
+        {
+            _state = AutoCookingState.Cooking;
+            _logWindow?.SetGameState("烹饪-烹饪中");
+            _waited = false;
+            return;
+        }
+
+        if (FindMatch(ref ui_continue1) || FindMatch(ref ui_continue2))
+        {
+            _state = AutoCookingState.Summary;
+            _logWindow?.SetGameState("烹饪-结算中");
+            _waited = false;
+            return;
+        }
+
+        _state = AutoCookingState.Unknown;
+        return;
+
+    }
+
+    private bool FindMatch(ref Mat mat, double threshold = 0.9)
+    {
+        captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
+        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
+        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
+        if (matchpoint == default)
+        {
+            return false;
+        }
+        _maskWindow?.ClearLayer("Click");
+        detect_rects.Clear();
+        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
+        _maskWindow?.SetLayerRects("Match", detect_rects);
+        return true;
+
+    }
+
+    private bool FindAndClick(ref Mat mat, double threshold = 0.9)
+    {
+        captureMat = _capture.Capture();
+        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
+        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
+        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
+        if (matchpoint == default)
+        {
+            return false;
+        }
+        detect_rects.Clear();
+        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
+        _maskWindow?.SetLayerRects("Click", detect_rects);
+        SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
+        return true;
     }
 
     private bool Initialize()
@@ -211,6 +395,8 @@ public class AutoCooking : IGameTask
         initialized = true;
         return true;
     }
+
+    #region Locate Assets
 
     private bool LocateKitchenWare()
     {
@@ -444,6 +630,8 @@ public class AutoCooking : IGameTask
         return false;
     }
 
+    #endregion
+
     private bool DragMove(ref Point start, ref Point end, int duration = 500)
     {
         SendMouseDragWithNoise(
@@ -459,16 +647,32 @@ public class AutoCooking : IGameTask
 
     private void AddLayersForMaskWindow()
     {
-        _maskWindow.AddLayer("Match");
         _maskWindow.AddLayer("Kitchenware");
         _maskWindow.AddLayer("Condiments");
         _maskWindow.AddLayer("Ingredients");
         _maskWindow.AddLayer("Orders");
+
+        _maskWindow.AddLayer("Match");
+        _maskWindow.AddLayer("Click");
     }
 
     public void LoadAssets()
     {
         string image_folder = "Assets/Cooking/Image/";
+        //UI
+        ui_shop = Cv2.ImRead(image_folder + "ui_shop.png");
+        ui_challenge = Cv2.ImRead(image_folder + "ui_challenge.png");
+        ui_clock = Cv2.ImRead(image_folder + "ui_clock.png");
+        ui_continue1 = Cv2.ImRead(image_folder + "ui_continue1.png");
+        ui_continue2 = Cv2.ImRead(image_folder + "ui_continue2.png");
+
+        //Click
+        click_challenge = Cv2.ImRead(image_folder + "click_challenge.png");
+        click_start = Cv2.ImRead(image_folder + "click_start.png");
+
+        //Dishes
+        fishrice = Cv2.ImRead(image_folder + "Dishes/海鱼黄金焗饭.png", ImreadModes.Unchanged);
+
         //Kitchenware
         bin = Cv2.ImRead(image_folder + "Kitchenware/bin.png");
         board = Cv2.ImRead(image_folder + "Kitchenware/board.png");
@@ -476,9 +680,11 @@ public class AutoCooking : IGameTask
         pot = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
         oven_ring = Cv2.ImRead(image_folder + "Kitchenware/oven_ring.png");
         pot_ring = Cv2.ImRead(image_folder + "Kitchenware/pot_ring.png");
+
         //Condiments
         cream = Cv2.ImRead(image_folder + "Condiment/cream.png", ImreadModes .Unchanged);
         onion = Cv2.ImRead(image_folder + "Condiment/onion.png", ImreadModes.Unchanged);
+
         //Ingredients
         rice = Cv2.ImRead(image_folder + "Ingredients/rice.png", ImreadModes.Unchanged);
         fish = Cv2.ImRead(image_folder + "Ingredients/fish.png", ImreadModes.Unchanged);
@@ -526,7 +732,7 @@ public class AutoCooking : IGameTask
         double completedPercentage = ColorFilterHelper.CalculateColorMatchPercentage(ovenRegion, mask, "ed5432", 5);
         if (completedPercentage > 0)
         {
-            if (completedPercentage > 99)
+            if (completedPercentage > 95)
                 return (CookingStatus.Overcooked, completedPercentage);
             return (CookingStatus.Cooked, completedPercentage);
         }
@@ -552,7 +758,7 @@ public class AutoCooking : IGameTask
         double completedPercentage = ColorFilterHelper.CalculateColorMatchPercentage(potRegion, mask, "ed5432", 5);
         if (completedPercentage > 0)
         {
-            if (completedPercentage > 99)
+            if (completedPercentage > 95)
                 return (CookingStatus.Overcooked, completedPercentage);
             return (CookingStatus.Cooked, completedPercentage);
         }
@@ -598,9 +804,9 @@ public class AutoCooking : IGameTask
             if (parameters.ContainsKey("Times"))
             {
                 var times = Convert.ToInt32(parameters["Times"]);
-                if (times <= 0)
+                if (times < 0)
                 {
-                    _logger.LogWarning("烹饪次数必须大于0。已设置为默认值。");
+                    _logger.LogWarning("烹饪次数必须大于等于0。已设置为默认值。");
                     return false;
                 }
                 _autoCookingTimes = times;

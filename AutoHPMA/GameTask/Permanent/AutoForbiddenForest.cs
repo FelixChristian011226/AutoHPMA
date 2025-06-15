@@ -362,9 +362,9 @@ public class AutoForbiddenForest : IGameTask
             if (parameters.ContainsKey("Times"))
             {
                 var times = Convert.ToInt32(parameters["Times"]);
-                if (times <= 0)
+                if (times < 0)
                 {
-                    _logger.LogWarning("禁林次数必须大于0。已设置为默认值。");
+                    _logger.LogWarning("禁林次数必须大于等于0。已设置为默认值。");
                     return false;
                 }
                 _autoForbiddenForestTimes = times;

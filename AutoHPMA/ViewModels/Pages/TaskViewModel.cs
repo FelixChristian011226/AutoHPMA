@@ -133,6 +133,7 @@ namespace AutoHPMA.ViewModels.Pages
             }
         }
 
+        #region 自动社团答题
         private bool CanAutoClubQuizStartTrigger() => AutoClubQuizStartButtonEnabled;
 
         private bool CheckTaskRunningStatus()
@@ -206,7 +207,9 @@ namespace AutoHPMA.ViewModels.Pages
 
             GC.Collect();
         }
+        #endregion
 
+        #region 自动禁林
         private bool CanAutoForbiddenForestStartTrigger() => AutoForbiddenForestStartButtonEnabled;
 
         [RelayCommand(CanExecute = nameof(CanAutoForbiddenForestStartTrigger))]
@@ -266,60 +269,24 @@ namespace AutoHPMA.ViewModels.Pages
             GC.Collect();
         }
 
-        private bool CanAutoSweetAdventureStartTrigger() => AutoSweetAdventureStartButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStartTrigger))]
-        private void OnAutoSweetAdventureStartTrigger()
+        [RelayCommand]
+        private void OnOpenQuestionBank(object sender)
         {
-            if (CheckTaskRunningStatus()) return;
-
-            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
+            var questionBankPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/ClubQuiz");
+            if (!Directory.Exists(questionBankPath))
             {
-                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-                {
-                    Title = "⚠️ 错误",
-                    Content = "任务启动失败。请先启动截图器!",
-                };
-                var result = uiMessageBox.ShowDialogAsync();
-                return;
+                Directory.CreateDirectory(questionBankPath);
             }
-            else
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                var snackbarInfo = new SnackbarInfo
-                {
-                    Title = "启动成功",
-                    Message = "甜蜜冒险已启动。",
-                    Appearance = ControlAppearance.Success,
-                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
-                    Duration = TimeSpan.FromSeconds(3)
-                };
-                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
-            }
-
-            _isAnyTaskRunning = true;
-            AutoSweetAdventureStartButtonVisibility = Visibility.Collapsed;
-            AutoSweetAdventureStopButtonVisibility = Visibility.Visible;
-
-            var logger = App.GetLogger<AutoSweetAdventure>();
-            _currentTask = new AutoSweetAdventure(logger, _displayHwnd, _gameHwnd);
-            _currentTask.Start();
+                FileName = questionBankPath,
+                UseShellExecute = true,
+                Verb = "open"
+            });
         }
+        #endregion
 
-        private bool CanAutoSweetAdventureStopTrigger() => AutoSweetAdventureStopButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStopTrigger))]
-        private void OnAutoSweetAdventureStopTrigger()
-        {
-            AutoSweetAdventureStartButtonVisibility = Visibility.Visible;
-            AutoSweetAdventureStopButtonVisibility = Visibility.Collapsed;
-
-            _currentTask?.Stop();
-            _currentTask = null;
-            _isAnyTaskRunning = false;
-
-            GC.Collect();
-        }
-
+        #region 自动烹饪
         private bool CanAutoCookingStartTrigger() => AutoCookingStartButtonEnabled;
 
         [RelayCommand(CanExecute = nameof(CanAutoCookingStartTrigger))]
@@ -377,22 +344,63 @@ namespace AutoHPMA.ViewModels.Pages
 
             GC.Collect();
         }
+        #endregion
 
-        [RelayCommand]
-        private void OnOpenQuestionBank(object sender)
+        #region 自动甜蜜冒险
+        private bool CanAutoSweetAdventureStartTrigger() => AutoSweetAdventureStartButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStartTrigger))]
+        private void OnAutoSweetAdventureStartTrigger()
         {
-            var questionBankPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/ClubQuiz");
-            if (!Directory.Exists(questionBankPath))
+            if (CheckTaskRunningStatus()) return;
+
+            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
             {
-                Directory.CreateDirectory(questionBankPath);
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "⚠️ 错误",
+                    Content = "任务启动失败。请先启动截图器!",
+                };
+                var result = uiMessageBox.ShowDialogAsync();
+                return;
             }
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            else
             {
-                FileName = questionBankPath,
-                UseShellExecute = true,
-                Verb = "open"
-            });
+                var snackbarInfo = new SnackbarInfo
+                {
+                    Title = "启动成功",
+                    Message = "甜蜜冒险已启动。",
+                    Appearance = ControlAppearance.Success,
+                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
+                    Duration = TimeSpan.FromSeconds(3)
+                };
+                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
+            }
+
+            _isAnyTaskRunning = true;
+            AutoSweetAdventureStartButtonVisibility = Visibility.Collapsed;
+            AutoSweetAdventureStopButtonVisibility = Visibility.Visible;
+
+            var logger = App.GetLogger<AutoSweetAdventure>();
+            _currentTask = new AutoSweetAdventure(logger, _displayHwnd, _gameHwnd);
+            _currentTask.Start();
         }
+
+        private bool CanAutoSweetAdventureStopTrigger() => AutoSweetAdventureStopButtonEnabled;
+
+        [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStopTrigger))]
+        private void OnAutoSweetAdventureStopTrigger()
+        {
+            AutoSweetAdventureStartButtonVisibility = Visibility.Visible;
+            AutoSweetAdventureStopButtonVisibility = Visibility.Collapsed;
+
+            _currentTask?.Stop();
+            _currentTask = null;
+            _isAnyTaskRunning = false;
+
+            GC.Collect();
+        }
+        #endregion
 
         public Task OnNavigatedToAsync()
         {
