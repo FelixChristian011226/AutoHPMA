@@ -170,10 +170,9 @@ public class AutoCooking : IGameTask
                         // 更新所有厨具状态
                         foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
                         {
-                            if (kitchenware == "oven" || kitchenware == "pot")
-                            {
-                                kitchenwareStatus[kitchenware] = GetKitchenwareStatus(kitchenware);
-                            }
+                            if(kitchenware == "bin" || kitchenware == "board")
+                                { continue; }
+                            kitchenwareStatus[kitchenware] = GetKitchenwareStatus(kitchenware);
                         }
                         UpdateKitchenwareStatus();
 
@@ -318,7 +317,7 @@ public class AutoCooking : IGameTask
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "发生异常");
+            _logger.LogError(ex, "发生异常：{ex}", ex.Message);
         }
         finally
         {
@@ -484,7 +483,12 @@ public class AutoCooking : IGameTask
         }
         _logger.LogInformation("调料定位成功");
 
-        _logger.LogInformation("自动烹饪初始化完成");
+        // 设置食材和调料的显示
+        var ingredientRectsList = _currentDishConfig.RequiredIngredients.Select(i => ScaleRect(ingredientRects[i], scale)).ToList();
+        var condimentRectsList = _currentDishConfig.RequiredCondiments.Select(c => ScaleRect(condimentRects[c], scale)).ToList();
+        _maskWindow?.SetLayerRects("Ingredients", ingredientRectsList);
+        _maskWindow?.SetLayerRects("Condiments", condimentRectsList);
+
         initialized = true;
         return true;
     }
@@ -747,29 +751,34 @@ public class AutoCooking : IGameTask
         //Dishes
         dishImages["Dishes/海鱼黄金焗饭.png"] = Cv2.ImRead(image_folder + "Dishes/海鱼黄金焗饭.png", ImreadModes.Unchanged);
         dishImages["Dishes/果香烤乳猪.png"] = Cv2.ImRead(image_folder + "Dishes/果香烤乳猪.png", ImreadModes.Unchanged);
-        _logger.LogDebug("已加载菜品图片：海鱼黄金焗饭，果香烤乳猪。");
+        dishImages["Dishes/奶油蘑菇炖饭.png"] = Cv2.ImRead(image_folder + "Dishes/奶油蘑菇炖饭.png", ImreadModes.Unchanged);
+        _logger.LogDebug("已加载菜品图片：海鱼黄金焗饭，果香烤乳猪，奶油蘑菇炖饭");
 
         //Kitchenware
         bin = Cv2.ImRead(image_folder + "Kitchenware/bin.png");
         board = Cv2.ImRead(image_folder + "Kitchenware/board.png");
         kitchenwares["oven"] = Cv2.ImRead(image_folder + "Kitchenware/oven.png", ImreadModes.Unchanged);
         kitchenwares["pot"] = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
+        kitchenwares["wok"] = Cv2.ImRead(image_folder + "Kitchenware/wok.png", ImreadModes.Unchanged);
         kitchenwareRings["oven"] = Cv2.ImRead(image_folder + "Kitchenware/oven_ring.png");
         kitchenwareRings["pot"] = Cv2.ImRead(image_folder + "Kitchenware/pot_ring.png");
-        _logger.LogDebug("已加载厨具图片：bin, board, oven, pot");
+        kitchenwareRings["wok"] = Cv2.ImRead(image_folder + "Kitchenware/wok_ring.png");
+        _logger.LogDebug("已加载厨具图片：bin, board, oven, pot, wok");
 
         //Condiments
         condiments["cream"] = Cv2.ImRead(image_folder + "Condiment/cream.png", ImreadModes.Unchanged);
         condiments["onion"] = Cv2.ImRead(image_folder + "Condiment/onion.png", ImreadModes.Unchanged);
         condiments["lemon"] = Cv2.ImRead(image_folder + "Condiment/lemon.png", ImreadModes.Unchanged);
         condiments["coconut"] = Cv2.ImRead(image_folder + "Condiment/coconut.png", ImreadModes.Unchanged);
+        condiments["wine"] = Cv2.ImRead(image_folder + "Condiment/wine.png", ImreadModes.Unchanged);
         _logger.LogDebug("已加载调料图片：cream, onion, lemon, coconut");
 
         //Ingredients
         ingredients["rice"] = Cv2.ImRead(image_folder + "Ingredients/rice.png", ImreadModes.Unchanged);
         ingredients["fish"] = Cv2.ImRead(image_folder + "Ingredients/fish.png", ImreadModes.Unchanged);
         ingredients["pork"] = Cv2.ImRead(image_folder + "Ingredients/pork.png", ImreadModes.Unchanged);
-        _logger.LogDebug("已加载食材图片：rice, fish, pork");
+        ingredients["mushroom"] = Cv2.ImRead(image_folder + "Ingredients/mushroom.png", ImreadModes.Unchanged);
+        _logger.LogDebug("已加载食材图片：rice, fish, pork, mushroom");
 
         //Orders
         order = Cv2.ImRead(image_folder + "Order/order.png", ImreadModes.Unchanged);

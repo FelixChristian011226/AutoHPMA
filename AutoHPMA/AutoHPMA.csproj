@@ -82,9 +82,11 @@
     <None Remove="Assets\Cooking\Image\Condiment\cream.png" />
     <None Remove="Assets\Cooking\Image\Condiment\lemon.png" />
     <None Remove="Assets\Cooking\Image\Condiment\onion.png" />
+    <None Remove="Assets\Cooking\Image\Condiment\wine.png" />
     <None Remove="Assets\Cooking\Image\Dishes\奶油蘑菇炖饭.png" />
     <None Remove="Assets\Cooking\Image\Dishes\果香烤乳猪.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\fish.png" />
+    <None Remove="Assets\Cooking\Image\Ingredients\mushroom.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\pork.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\rice.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\board.png" />
@@ -92,6 +94,8 @@
     <None Remove="Assets\Cooking\Image\Kitchenware\oven_ring.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\pot.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\pot_ring.png" />
+    <None Remove="Assets\Cooking\Image\Kitchenware\wok.png" />
+    <None Remove="Assets\Cooking\Image\Kitchenware\wok_ring.png" />
     <None Remove="Assets\Cooking\Image\Order\order.png" />
     <None Remove="Assets\Cooking\Image\Order\red_order.png" />
     <None Remove="Assets\Cooking\Image\ui_challenge.png" />
@@ -216,6 +220,9 @@
     <Content Include="Assets\Cooking\Config\果香烤乳猪.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Config\奶油蘑菇炖饭.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Config\黄金海鱼焗饭.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -231,6 +238,9 @@
     <Content Include="Assets\Cooking\Image\Condiment\onion.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Image\Condiment\wine.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Image\Dishes\奶油蘑菇炖饭.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -238,6 +248,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\fish.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Ingredients\mushroom.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\pork.png">
@@ -262,6 +275,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Kitchenware\bin.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Kitchenware\wok.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Kitchenware\wok_ring.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Order\order.png">
