@@ -47,7 +47,7 @@ public class AutoCooking : IGameTask
     private AutoCookingState _state = AutoCookingState.Outside;
 
     private Mat? captureMat;
-    private Mat board, oven, pot;
+    private Mat bin, board, oven, pot;
     private Mat rice, fish;
     private Mat cream, onion;
     private Mat order, red_order;
@@ -60,17 +60,21 @@ public class AutoCooking : IGameTask
     private int _autoCookingTimes;
     private int round = 0;
 
-    private Rect board_rect, oven_rect, pot_rect;
+    private Rect bin_rect, board_rect, oven_rect, pot_rect;
     private Rect rice_rect, fish_rect;
     private Rect cream_rect, onion_rect;
 
-    private Point board_center, oven_center, pot_center; 
+    private Point bin_center, board_center, oven_center, pot_center; 
     private Point rice_center, fish_center;
     private Point cream_center, onion_center;
     private Point next_order;
 
     private (CookingStatus status, double progress) _ovenStatus = (CookingStatus.Idle, 0);
     private (CookingStatus status, double progress) _potStatus = (CookingStatus.Idle, 0);
+
+    private int _creamCount = 0;
+    private int _onionCount = 0;
+    private static PaddleOCRHelper paddleOCRHelper;
 
     private CancellationTokenSource _cts;
     public event EventHandler? TaskCompleted;
@@ -81,6 +85,7 @@ public class AutoCooking : IGameTask
         this._displayHwnd = _displayHwnd;
         this._gameHwnd = _gameHwnd;
         _cts = new CancellationTokenSource();
+        paddleOCRHelper = new PaddleOCRHelper();
         LoadAssets();
         CalOffset();
         AddLayersForMaskWindow();
@@ -112,16 +117,46 @@ public class AutoCooking : IGameTask
                 _ovenStatus = GetOvenStatus();
                 _potStatus = GetPotStatus();
                 UpdateKitchenwareStatus();
-                //DragMove(ref fish_center, ref oven_center, 250 );
-                //DragMove(ref rice_center, ref pot_center, 250 );
-                //await Task.Delay(3000, _cts.Token);
-                //DragMove(ref oven_center, ref board_center, 250 );
-                //DragMove(ref pot_center, ref board_center, 250 );
-                //await Task.Delay(500, _cts.Token);
 
-                //LocateOrders();
-                //_logger.LogDebug("订单提交坐标：（" + next_order.X + "," + next_order.Y + "）。");
-                //DragMove(ref board_center, ref next_order, 250 );
+                //厨具糊了
+                if(_ovenStatus.status == CookingStatus.Overcooked)
+                {
+                    DragMove(ref oven_center, ref bin_center, 100);
+                }
+                if(_potStatus.status == CookingStatus.Overcooked)
+                {
+                    DragMove(ref pot_center, ref bin_center, 100);
+                }
+
+                //厨具都为空
+                if (_ovenStatus.status == CookingStatus.Idle && _potStatus.status == CookingStatus.Idle)
+                {
+                    DragMove(ref fish_center, ref oven_center, 100);
+                    DragMove(ref rice_center, ref pot_center, 100);
+                    continue;
+                }
+
+                //厨具都烹饪完成
+                if(_ovenStatus.status == CookingStatus.Cooked && _potStatus.status == CookingStatus.Cooked)
+                {
+                    LocateOrders();
+                    DragMove(ref oven_center, ref board_center, 100);
+                    DragMove(ref pot_center, ref board_center, 100);
+                    //继续补充食材
+                    DragMove(ref fish_center, ref oven_center, 100);
+                    DragMove(ref rice_center, ref pot_center, 100);
+                    //补充调料
+                    for(int i = 0; i < _creamCount; i++)
+                    {
+                        DragMove(ref cream_center, ref board_center, 100);
+                    }
+                    for(int i = 0; i < _onionCount; i++)
+                    {
+                        DragMove(ref onion_center, ref board_center, 100);
+                    }
+                    //提交订单
+                    DragMove(ref board_center, ref next_order, 100);
+                }
 
             }
         }
@@ -151,7 +186,7 @@ public class AutoCooking : IGameTask
         }
         else
         {
-            _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) });
+            //_maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) });
         }
         if(!LocateIngredients())
         {
@@ -184,7 +219,18 @@ public class AutoCooking : IGameTask
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
 
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, board, TemplateMatchModes.CCoeffNormed, null, threshold);
+        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, bin, TemplateMatchModes.CCoeffNormed, null, threshold);
+        if (matchpoint == default)
+        {
+            return false;
+        }
+        else
+        {
+            bin_rect = new Rect(matchpoint.X, matchpoint.Y, bin.Width, bin.Height);
+            bin_center = new Point(matchpoint.X + bin.Width / 2, matchpoint.Y + bin.Height / 2);
+        }
+
+        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, board, TemplateMatchModes.CCoeffNormed, null, threshold);
         if (matchpoint == default)
         {
             return false;
@@ -308,6 +354,7 @@ public class AutoCooking : IGameTask
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
         Mat maskMat;
+        Rect selectedOrderRect = default;
 
         using (var red_orderBGR = red_order.Clone())
         {
@@ -323,6 +370,7 @@ public class AutoCooking : IGameTask
 
             if(matches.Count != 0)
             {
+                selectedOrderRect = matches[0];
                 next_order = new Point(matches[0].X + order.Width / 2, matches[0].Y + order.Height / 2);
                 foreach (var rect in matches)
                 {
@@ -353,6 +401,7 @@ public class AutoCooking : IGameTask
                     {
                         if(rect.X <= min_X)
                         {
+                            selectedOrderRect = rect;
                             next_order.X = rect.X + order.Width/2;
                             next_order.Y = rect.Y + order.Height/2;
                         }
@@ -363,14 +412,36 @@ public class AutoCooking : IGameTask
                     detect_rects.Add(ScaleRect(rect, scale));
                 }
             }
-
         }
 
-        _maskWindow.SetLayerRects("Orders", detect_rects);
+        // 只对最终选择的订单进行调料数量识别
+        if (selectedOrderRect != default)
+        {
+            // 识别奶油数量
+            var creamRect = new Rect(selectedOrderRect.X + selectedOrderRect.Width/2, selectedOrderRect.Y + selectedOrderRect.Height + 50, selectedOrderRect.Width/4, 40);
+            var creamMat = new Mat(captureMat, creamRect);
+            var creamText = paddleOCRHelper.Ocr(creamMat);
+            if (int.TryParse(creamText, out int creamCount))
+            {
+                _creamCount = creamCount;
+            }
+
+            // 识别洋葱数量
+            var onionRect = new Rect(selectedOrderRect.X + selectedOrderRect.Width*3/4, selectedOrderRect.Y + selectedOrderRect.Height + 50, selectedOrderRect.Width/4, 40);
+            var onionMat = new Mat(captureMat, onionRect);
+            var onionText = paddleOCRHelper.Ocr(onionMat);
+            if (int.TryParse(onionText, out int onionCount))
+            {
+                _onionCount = onionCount;
+            }
+
+            //_logger.LogDebug("识别到订单：奶油数量 {creamCount}，洋葱数量 {onionCount}", _creamCount, _onionCount);
+        }
+
+        _maskWindow.SetLayerRects("Orders", detect_rects, new Dictionary<Rect, string> { { selectedOrderRect, "目标订单" } });
         if (next_order != default)
             return true;
         return false;
-
     }
 
     private bool DragMove(ref Point start, ref Point end, int duration = 500)
@@ -399,6 +470,7 @@ public class AutoCooking : IGameTask
     {
         string image_folder = "Assets/Cooking/Image/";
         //Kitchenware
+        bin = Cv2.ImRead(image_folder + "Kitchenware/bin.png");
         board = Cv2.ImRead(image_folder + "Kitchenware/board.png");
         oven = Cv2.ImRead(image_folder + "Kitchenware/oven.png", ImreadModes.Unchanged);
         pot = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
@@ -454,7 +526,7 @@ public class AutoCooking : IGameTask
         double completedPercentage = ColorFilterHelper.CalculateColorMatchPercentage(ovenRegion, mask, "ed5432", 5);
         if (completedPercentage > 0)
         {
-            if (completedPercentage > 95)
+            if (completedPercentage > 99)
                 return (CookingStatus.Overcooked, completedPercentage);
             return (CookingStatus.Cooked, completedPercentage);
         }
@@ -480,7 +552,7 @@ public class AutoCooking : IGameTask
         double completedPercentage = ColorFilterHelper.CalculateColorMatchPercentage(potRegion, mask, "ed5432", 5);
         if (completedPercentage > 0)
         {
-            if (completedPercentage > 95)
+            if (completedPercentage > 99)
                 return (CookingStatus.Overcooked, completedPercentage);
             return (CookingStatus.Cooked, completedPercentage);
         }
@@ -514,7 +586,7 @@ public class AutoCooking : IGameTask
         };
         textContents[pot_rect] = potText;
 
-        _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(board_rect, scale), ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) }, textContents);
+        _maskWindow?.SetLayerRects("Kitchenware", new List<Rect>{ ScaleRect(bin_rect, scale), ScaleRect(board_rect, scale), ScaleRect(oven_rect, scale), ScaleRect(pot_rect, scale) }, textContents);
     }
 
     #region SetParameter

@@ -224,6 +224,9 @@
     <Content Include="Assets\Cooking\Image\Kitchenware\pot_ring.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Image\Kitchenware\bin.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Image\Order\order.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
