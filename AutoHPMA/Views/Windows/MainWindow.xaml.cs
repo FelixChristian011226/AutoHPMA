@@ -142,7 +142,7 @@ namespace AutoHPMA.Views.Windows
                         var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                         {
                             Title = "发现更新",
-                            Content = "检测到新版本：" + latestRelease.TagName + "! \n请前往GitHub下载最新版本。",
+                            Content = "检测到新版本：" + latestRelease.TagName + "\n请前往GitHub下载最新版本",
                             IsSecondaryButtonEnabled = false,
                             PrimaryButtonText = "确定",
                             CloseButtonText = "取消",

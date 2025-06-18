@@ -194,9 +194,18 @@
                         <Run Text="{Binding ViewModel.AppVersion}" />
                     </Hyperlink>
                 </ui:TextBlock>
-
                 <Separator Margin="0,1"/>
 
+                <!-- 作者 -->
+                <ui:TextBlock TextWrapping="Wrap">
+                    <Run Text="软件作者: " />
+                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226"
+                       RequestNavigate="Hyperlink_RequestNavigate">
+                        Felix Christian
+                    </Hyperlink>
+                </ui:TextBlock>
+                <Separator Margin="0,1"/>
+                
                 <!-- 开源地址 -->
                 <ui:TextBlock TextWrapping="Wrap">
                     <Run Text="开源地址: " />
@@ -205,7 +214,6 @@
                         https://github.com/FelixChristian011226/AutoHPMA
                     </Hyperlink>
                 </ui:TextBlock>
-
                 <Separator Margin="0,1"/>
 
                 <!-- 使用教程 -->
@@ -216,20 +224,7 @@
                         https://www.felixchristian.top/2025/04/04/16-AutoHPMA/
                     </Hyperlink>
                 </ui:TextBlock>
-
                 <Separator Margin="0,1"/>
-
-                <!-- 作者 -->
-                <ui:TextBlock TextWrapping="Wrap">
-                    <Run Text="作者: " />
-                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226"
-                       RequestNavigate="Hyperlink_RequestNavigate">
-                        Felix Christian
-                    </Hyperlink>
-                </ui:TextBlock>
-
-                <Separator Margin="0,1"/>
-
 
             </StackPanel>
         </Border>
