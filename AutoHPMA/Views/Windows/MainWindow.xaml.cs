@@ -39,8 +39,8 @@ namespace AutoHPMA.Views.Windows
 
         private readonly ISnackbarService _snackbarService;
         private readonly ILogger<MainWindow> _logger;
-        private readonly KeyboardHookService _keyboardHookService;
         private const string GitHubApiUrl = "https://api.github.com/repos/FelixChristian011226/AutoHPMA/releases/latest";
+        private static Services.HotkeyManager? _hotkeyManager;
 
         public MainWindowViewModel ViewModel { get; }
 
@@ -53,8 +53,6 @@ namespace AutoHPMA.Views.Windows
             ViewModel = viewModel;
             DataContext = this;
             _logger = App.GetLogger<MainWindow>();
-            var hotkeySettings = (HotkeySettingsViewModel)App.Services.GetService(typeof(HotkeySettingsViewModel));
-            _keyboardHookService = new KeyboardHookService(App.GetLogger<KeyboardHookService>(), hotkeySettings);
 
             InitializeComponent();
 
@@ -100,7 +98,6 @@ namespace AutoHPMA.Views.Windows
         /// </summary>
         protected override void OnClosed(EventArgs e)
         {
-            _keyboardHookService.Dispose();
             base.OnClosed(e);
 
             // Make sure that closing this window will begin the process of closing the application.
@@ -187,6 +184,17 @@ namespace AutoHPMA.Views.Windows
                     CloseButtonText = "确定",
                 };
                 var result = await uiMessageBox.ShowDialogAsync();
+            }
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_hotkeyManager == null)
+                _hotkeyManager = new Services.HotkeyManager(new System.Windows.Interop.WindowInteropHelper(this).Handle);
+            var hotkeyVM = App.Services.GetService(typeof(ViewModels.Pages.HotkeySettingsViewModel)) as ViewModels.Pages.HotkeySettingsViewModel;
+            if (hotkeyVM != null)
+            {
+                hotkeyVM.SetHotkeyManager(_hotkeyManager);
             }
         }
 

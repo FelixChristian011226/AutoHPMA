@@ -8,6 +8,7 @@ using System.Linq;
 using System.Collections.Generic;
 using AutoHPMA.ViewModels.Pages;
 using Microsoft.Extensions.Logging;
+using AutoHPMA.Services;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -25,6 +26,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private bool _isWaitingForKey;
 
+        private HotkeyManager? _hotkeyManager;
+        private Dictionary<string, int> _hotkeyIds = new();
+
         public HotkeySettingsViewModel(AppSettings settings, ILogger<HotkeySettingsViewModel> logger)
         {
             _settings = settings;
@@ -33,59 +37,62 @@ namespace AutoHPMA.ViewModels.Pages
             LoadHotkeyBindings();
         }
 
+        public void SetHotkeyManager(HotkeyManager manager)
+        {
+            _hotkeyManager = manager;
+            _hotkeyManager.HotkeyPressed += (s, e) => ExecuteHotkeyAction(GetActionNameByHotkey(e.Modifiers, e.Key));
+            RegisterAllHotkeys();
+        }
+
         private void LoadHotkeyBindings()
         {
             // 基础功能
-            HotkeyBindings.Add(new HotkeyBinding { Name = "截图", Description = "截图当前游戏页面", Key = Key.None, Group = "基础功能" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "截图", Description = "截图当前游戏页面", Modifiers = ModifierKeys.None, Key = Key.None, Group = "基础功能" });
 
             // 任务启动
-            HotkeyBindings.Add(new HotkeyBinding { Name = "AutoHPMA", Description = "开始/停止 AutoHPMA", Key = Key.None, Group = "任务启动" });
-            HotkeyBindings.Add(new HotkeyBinding { Name = "社团答题", Description = "开始/停止 社团答题", Key = Key.None, Group = "任务启动" });
-            HotkeyBindings.Add(new HotkeyBinding { Name = "禁林探索", Description = "开始/停止 禁林探索", Key = Key.None, Group = "任务启动" });
-            HotkeyBindings.Add(new HotkeyBinding { Name = "甜蜜冒险", Description = "开始/停止 甜蜜冒险", Key = Key.None, Group = "任务启动" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "AutoHPMA", Description = "开始/停止 AutoHPMA", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "社团答题", Description = "开始/停止 社团答题", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "禁林探索", Description = "开始/停止 禁林探索", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "甜蜜冒险", Description = "开始/停止 甜蜜冒险", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
 
             // 从设置中加载保存的热键
             foreach (var binding in HotkeyBindings)
             {
-                if (_settings.HotkeyBindings.TryGetValue(binding.Name, out int keyValue))
+                if (_settings.HotkeyBindings.TryGetValue(binding.Name, out var hotkeyStr))
                 {
-                    binding.Key = (Key)keyValue;
-                    _logger.LogDebug($"Loaded hotkey binding: {binding.Name} -> {binding.Key}");
+                    ParseHotkeyString(hotkeyStr, out var mod, out var key);
+                    binding.Modifiers = mod;
+                    binding.Key = key;
+                    _logger.LogDebug($"Loaded hotkey binding: {binding.Name} -> {mod}+{key}");
                 }
             }
         }
 
         public void ChangeHotkey(HotkeyBinding binding)
         {
-            if (IsWaitingForKey)
-            {
-                IsWaitingForKey = false;
-                return;
-            }
-
             SelectedBinding = binding;
             IsWaitingForKey = true;
-            //_logger.LogDebug($"Waiting for key for binding: {binding.Name}");
         }
 
-        public void OnKeyDown(Key key)
+        public void OnKeyDown(Key key, ModifierKeys modifiers)
         {
+            _logger.LogDebug($"OnKeyDown called with key={key}, modifiers={modifiers}");
             if (!IsWaitingForKey || SelectedBinding == null)
                 return;
 
-            // 如果按下ESC键，取消绑定
             if (key == Key.Escape)
             {
                 SelectedBinding.Key = Key.None;
+                SelectedBinding.Modifiers = ModifierKeys.None;
                 IsWaitingForKey = false;
-                _settings.HotkeyBindings[SelectedBinding.Name] = (int)Key.None;
+                _settings.HotkeyBindings[SelectedBinding.Name] = "";
                 _settings.Save();
+                RegisterAllHotkeys();
                 _logger.LogDebug($"Cancelled hotkey binding for: {SelectedBinding.Name}");
                 return;
             }
 
-            // 检查是否与其他热键冲突
-            if (HotkeyBindings.Any(b => b != SelectedBinding && b.Key == key))
+            if (HotkeyBindings.Any(b => b != SelectedBinding && b.Key == key && b.Modifiers == modifiers))
             {
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
@@ -97,15 +104,72 @@ namespace AutoHPMA.ViewModels.Pages
             }
 
             SelectedBinding.Key = key;
+            SelectedBinding.Modifiers = modifiers;
             IsWaitingForKey = false;
-            _settings.HotkeyBindings[SelectedBinding.Name] = (int)key;
+            _settings.HotkeyBindings[SelectedBinding.Name] = HotkeyToString(modifiers, key);
             _settings.Save();
-            _logger.LogInformation($"Set hotkey binding: {SelectedBinding.Name} -> {key}");
+            RegisterAllHotkeys();
+            _logger.LogInformation($"Set hotkey binding: {SelectedBinding.Name} -> {HotkeyToString(modifiers, key)}");
+        }
+
+        private void RegisterAllHotkeys()
+        {
+            if (_hotkeyManager == null) return;
+            foreach (var id in _hotkeyIds.Values)
+                _hotkeyManager.UnregisterHotKey(id);
+            _hotkeyIds.Clear();
+            foreach (var binding in HotkeyBindings)
+            {
+                if (binding.Key != Key.None)
+                {
+                    try
+                    {
+                        int id = _hotkeyManager.RegisterHotKey(binding.Modifiers, binding.Key);
+                        _hotkeyIds[binding.Name] = id;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"注册热键失败: {binding.Name}");
+                    }
+                }
+            }
+        }
+
+        private string HotkeyToString(ModifierKeys mod, Key key)
+        {
+            string s = "";
+            if ((mod & ModifierKeys.Control) != 0) s += "Ctrl+";
+            if ((mod & ModifierKeys.Alt) != 0) s += "Alt+";
+            if ((mod & ModifierKeys.Shift) != 0) s += "Shift+";
+            if ((mod & ModifierKeys.Windows) != 0) s += "Win+";
+            s += key.ToString();
+            return s;
+        }
+
+        private void ParseHotkeyString(string str, out ModifierKeys mod, out Key key)
+        {
+            mod = ModifierKeys.None;
+            key = Key.None;
+            if (string.IsNullOrEmpty(str)) return;
+            var parts = str.Split('+');
+            foreach (var p in parts)
+            {
+                if (p.Equals("Ctrl", StringComparison.OrdinalIgnoreCase)) mod |= ModifierKeys.Control;
+                else if (p.Equals("Alt", StringComparison.OrdinalIgnoreCase)) mod |= ModifierKeys.Alt;
+                else if (p.Equals("Shift", StringComparison.OrdinalIgnoreCase)) mod |= ModifierKeys.Shift;
+                else if (p.Equals("Win", StringComparison.OrdinalIgnoreCase)) mod |= ModifierKeys.Windows;
+                else if (Enum.TryParse<Key>(p, out var k)) key = k;
+            }
+        }
+
+        private string GetActionNameByHotkey(ModifierKeys mod, Key key)
+        {
+            var binding = HotkeyBindings.FirstOrDefault(b => b.Key == key && b.Modifiers == mod);
+            return binding?.Name ?? string.Empty;
         }
 
         public void ExecuteHotkeyAction(string actionName)
         {
-            //_logger.LogInformation($"Executing hotkey action: {actionName}");
             switch (actionName)
             {
                 case "截图":
@@ -124,10 +188,31 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private string _description;
 
-        [ObservableProperty]
+        private ModifierKeys _modifiers;
+        public ModifierKeys Modifiers
+        {
+            get => _modifiers;
+            set
+            {
+                SetProperty(ref _modifiers, value);
+                OnPropertyChanged(nameof(ModKeyTuple));
+            }
+        }
+
         private Key _key;
+        public Key Key
+        {
+            get => _key;
+            set
+            {
+                SetProperty(ref _key, value);
+                OnPropertyChanged(nameof(ModKeyTuple));
+            }
+        }
 
         [ObservableProperty]
         private string _group;
+
+        public Tuple<ModifierKeys, Key> ModKeyTuple => Tuple.Create(Modifiers, Key);
     }
 } 

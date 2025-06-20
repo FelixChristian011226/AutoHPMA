@@ -72,11 +72,11 @@
 
                             <!-- 右侧：热键输入框 -->
                             <ui:TextBox Grid.Column="1"
-                                        Width="100"
+                                        Width="140"
                                         MinWidth="100"
-                                        MaxWidth="100"
+                                        MaxWidth="160"
                                         Margin="10,0,0,0"
-                                        Text="{Binding Key, Converter={StaticResource KeyToStringConverter}}"
+                                        Text="{Binding ModKeyTuple, Converter={StaticResource KeyToStringConverter}, Mode=OneWay}"
                                         IsReadOnly="True"
                                         PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"
                                         HorizontalAlignment="Right"
@@ -87,7 +87,7 @@
                                             <DataTrigger Binding="{Binding DataContext.ViewModel.IsWaitingForKey, 
                                                               RelativeSource={RelativeSource AncestorType=Page}}" 
                                              Value="True">
-                                                <Setter Property="Text" Value="请按键..." />
+                                                <Setter Property="Text" Value="请按组合键..." />
                                                 <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
                                             </DataTrigger>
                                         </Style.Triggers>

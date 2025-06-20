@@ -21,7 +21,9 @@ namespace AutoHPMA.Views.Pages
 
         private void HotkeySettingsPage_KeyDown(object sender, KeyEventArgs e)
         {
-            ViewModel.OnKeyDown(e.Key);
+            Key key = e.Key == Key.System ? e.SystemKey : e.Key;
+            ModifierKeys modifiers = Keyboard.Modifiers;
+            ViewModel.OnKeyDown(key, modifiers);
             e.Handled = true;
         }
 
@@ -33,8 +35,22 @@ namespace AutoHPMA.Views.Pages
             var binding = textBox.DataContext as HotkeyBinding;
             if (binding == null) return;
 
-            ViewModel.ChangeHotkey(binding);
-            ViewModel.OnKeyDown(e.Key);
+            if (!ViewModel.IsWaitingForKey)
+                ViewModel.ChangeHotkey(binding);
+
+            ModifierKeys modifiers = Keyboard.Modifiers;
+            Key key = e.Key == Key.System ? e.SystemKey : e.Key;
+
+            // 日志调试
+            System.Diagnostics.Debug.WriteLine($"捕获到按键: key={key}, modifiers={modifiers}");
+
+            // 过滤掉仅有修饰键的情况
+            if (key == Key.LeftCtrl || key == Key.RightCtrl || key == Key.LeftAlt || key == Key.RightAlt || key == Key.LeftShift || key == Key.RightShift || key == Key.LWin || key == Key.RWin)
+            {
+                e.Handled = true;
+                return;
+            }
+            ViewModel.OnKeyDown(key, modifiers);
             e.Handled = true;
         }
     }
