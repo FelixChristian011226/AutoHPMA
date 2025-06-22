@@ -68,9 +68,9 @@ public class AutoSweetAdventure : IGameTask
 
     private void AddLayersForMaskWindow()
     {
-        _maskWindow.AddLayer("Match");
-        _maskWindow.AddLayer("Click");
-        _maskWindow.AddLayer("Round");
+        _maskWindow?.AddLayer("Match");
+        _maskWindow?.AddLayer("Click");
+        _maskWindow?.AddLayer("Round");
     }
 
     private void LoadAssets()
@@ -146,7 +146,7 @@ public class AutoSweetAdventure : IGameTask
                         break;
 
                     case AutoSweetAdventureState.Gaming:
-                        _maskWindow.ShowLayer("Round");
+                        _maskWindow?.ShowLayer("Round");
                         round = FindRound();
                         if(round > prev_round)
                         {
@@ -189,7 +189,7 @@ public class AutoSweetAdventure : IGameTask
                             }
                         }
                         await Task.Delay(1000, _cts.Token);
-                        _maskWindow.HideLayer("Round");
+                        _maskWindow?.HideLayer("Round");
                         break;
 
                     case AutoSweetAdventureState.Endding:
@@ -215,7 +215,7 @@ public class AutoSweetAdventure : IGameTask
         }
         finally
         {
-            _maskWindow.ClearAllLayers();
+            _maskWindow?.ClearAllLayers();
             _logWindow?.SetGameState("空闲");
             _cts.Dispose();
             _cts = new CancellationTokenSource();

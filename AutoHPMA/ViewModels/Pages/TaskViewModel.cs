@@ -16,62 +16,35 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
 using Microsoft.Extensions.Logging;
 
 namespace AutoHPMA.ViewModels.Pages
 {
+    /// <summary>
+    /// 任务类型枚举
+    /// </summary>
+    public enum TaskType
+    {
+        None,
+        AutoClubQuiz,
+        AutoForbiddenForest,
+        AutoCooking,
+        AutoSweetAdventure
+    }
 
     public partial class TaskViewModel : ObservableObject, INavigationAware
     {
         private readonly AppSettings _settings;
         private readonly ILogger<TaskViewModel> _logger;
         private readonly CookingConfigService _cookingConfigService;
-        private bool _isAnyTaskRunning = false;
 
         #region Observable Properties
-        [ObservableProperty] 
-        private Visibility _autoClubQuizStartButtonVisibility = Visibility.Visible;
-        [ObservableProperty] 
-        private Visibility _autoClubQuizStopButtonVisibility = Visibility.Collapsed;
         [ObservableProperty]
-        private Visibility _autoForbiddenForestStartButtonVisibility = Visibility.Visible;
-        [ObservableProperty]
-        private Visibility _autoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
-        [ObservableProperty]
-        private Visibility _autoSweetAdventureStartButtonVisibility = Visibility.Visible;
-        [ObservableProperty]
-        private Visibility _autoSweetAdventureStopButtonVisibility = Visibility.Collapsed;
-        [ObservableProperty]
-        private Visibility _autoCookingStartButtonVisibility = Visibility.Visible;
-        [ObservableProperty]
-        private Visibility _autoCookingStopButtonVisibility = Visibility.Collapsed;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStartTriggerCommand))]
-        private bool _autoClubQuizStartButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoClubQuizStopTriggerCommand))]
-        private bool _autoClubQuizStopButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoForbiddenForestStartTriggerCommand))]
-        private bool _autoForbiddenForestStartButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoForbiddenForestStopTriggerCommand))]
-        private bool _autoForbiddenForestStopButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoSweetAdventureStartTriggerCommand))]
-        private bool _autoSweetAdventureStartButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoSweetAdventureStopTriggerCommand))]
-        private bool _autoSweetAdventureStopButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoCookingStartTriggerCommand))]
-        private bool _autoCookingStartButtonEnabled = true;
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AutoCookingStopTriggerCommand))]
-        private bool _autoCookingStopButtonEnabled = true;
+        private TaskType _currentTaskType = TaskType.None;
 
         [ObservableProperty]
         private int _answerDelay = 0;
@@ -105,6 +78,41 @@ namespace AutoHPMA.ViewModels.Pages
 
         #endregion
 
+        #region 智能按钮状态计算属性
+        /// <summary>
+        /// 自动社团答题按钮状态
+        /// </summary>
+        public Visibility AutoClubQuizStartButtonVisibility => 
+            CurrentTaskType == TaskType.AutoClubQuiz ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility AutoClubQuizStopButtonVisibility => 
+            CurrentTaskType == TaskType.AutoClubQuiz ? Visibility.Visible : Visibility.Collapsed;
+
+        /// <summary>
+        /// 自动禁林按钮状态
+        /// </summary>
+        public Visibility AutoForbiddenForestStartButtonVisibility => 
+            CurrentTaskType == TaskType.AutoForbiddenForest ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility AutoForbiddenForestStopButtonVisibility => 
+            CurrentTaskType == TaskType.AutoForbiddenForest ? Visibility.Visible : Visibility.Collapsed;
+
+        /// <summary>
+        /// 自动烹饪按钮状态
+        /// </summary>
+        public Visibility AutoCookingStartButtonVisibility => 
+            CurrentTaskType == TaskType.AutoCooking ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility AutoCookingStopButtonVisibility => 
+            CurrentTaskType == TaskType.AutoCooking ? Visibility.Visible : Visibility.Collapsed;
+
+        /// <summary>
+        /// 甜蜜冒险按钮状态
+        /// </summary>
+        public Visibility AutoSweetAdventureStartButtonVisibility => 
+            CurrentTaskType == TaskType.AutoSweetAdventure ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility AutoSweetAdventureStopButtonVisibility => 
+            CurrentTaskType == TaskType.AutoSweetAdventure ? Visibility.Visible : Visibility.Collapsed;
+
+        #endregion
+
         private IntPtr _displayHwnd => AppContextService.Instance.DisplayHwnd;
         private IntPtr _gameHwnd => AppContextService.Instance.GameHwnd;
         private LogWindow? _logWindow => AppContextService.Instance.LogWindow;
@@ -124,6 +132,12 @@ namespace AutoHPMA.ViewModels.Pages
             appContextService = AppContextService.Instance;
             // 订阅属性变化通知
             appContextService.PropertyChanged += AppContextService_PropertyChanged;
+
+            // 注册停止所有任务的消息接收器
+            WeakReferenceMessenger.Default.Register<StopAllTasksMessage>(this, (r, message) =>
+            {
+                StopAllRunningTasks();
+            });
 
             // 初始化时从设置中加载数据
             AnswerDelay = _settings.AnswerDelay;
@@ -156,6 +170,27 @@ namespace AutoHPMA.ViewModels.Pages
             }
         }
 
+        /// <summary>
+        /// 停止所有正在运行的任务
+        /// </summary>
+        private void StopAllRunningTasks()
+        {
+            if (_currentTask != null)
+            {
+                _logger.LogInformation("收到停止信号，正在停止当前任务...");
+                _currentTask.Stop();
+                _currentTask = null;
+                
+                // 确保在UI线程上执行属性变化通知
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CurrentTaskType = TaskType.None;
+                });
+                
+                GC.Collect();
+            }
+        }
+
         private void AppContextService_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(AppContextService.LogWindow) ||
@@ -169,11 +204,9 @@ namespace AutoHPMA.ViewModels.Pages
         }
 
         #region 自动社团答题
-        private bool CanAutoClubQuizStartTrigger() => AutoClubQuizStartButtonEnabled;
-
         private bool CheckTaskRunningStatus()
         {
-            if (_isAnyTaskRunning)
+            if (_currentTask != null)
             {
                 var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
@@ -186,7 +219,7 @@ namespace AutoHPMA.ViewModels.Pages
             return false;
         }
 
-        [RelayCommand(CanExecute = nameof(CanAutoClubQuizStartTrigger))]
+        [RelayCommand]
         private void OnAutoClubQuizStartTrigger()
         {
             if (CheckTaskRunningStatus()) return;
@@ -214,9 +247,7 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
-            _isAnyTaskRunning = true;
-            AutoClubQuizStartButtonVisibility = Visibility.Collapsed;
-            AutoClubQuizStopButtonVisibility = Visibility.Visible;
+            CurrentTaskType = TaskType.AutoClubQuiz;
 
             var logger = App.GetLogger<AutoClubQuiz>();
             _currentTask = new AutoClubQuiz(logger, _displayHwnd, _gameHwnd);
@@ -229,34 +260,28 @@ namespace AutoHPMA.ViewModels.Pages
             // 订阅任务完成事件，当任务完成时更新按钮状态
             _currentTask.TaskCompleted += (sender, e) =>
             {
-                AutoClubQuizStartButtonVisibility = Visibility.Visible;
-                AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
-                _currentTask = null;
-                _isAnyTaskRunning = false;
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CurrentTaskType = TaskType.None;
+                    _currentTask = null;
+                });
             };
             _currentTask.Start();
         }
 
-        private bool CanAutoClubQuizStopTrigger() => AutoClubQuizStopButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoClubQuizStopTrigger))]
+        [RelayCommand]
         private void OnAutoClubQuizStopTrigger()
         {
-            AutoClubQuizStartButtonVisibility = Visibility.Visible;
-            AutoClubQuizStopButtonVisibility = Visibility.Collapsed;
-
             _currentTask?.Stop();
             _currentTask = null;
-            _isAnyTaskRunning = false;
+            CurrentTaskType = TaskType.None;
 
             GC.Collect();
         }
         #endregion
 
         #region 自动禁林
-        private bool CanAutoForbiddenForestStartTrigger() => AutoForbiddenForestStartButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoForbiddenForestStartTrigger))]
+        [RelayCommand]
         private void OnAutoForbiddenForestStartTrigger()
         {
             if (CheckTaskRunningStatus()) return;
@@ -284,9 +309,7 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
-            _isAnyTaskRunning = true;
-            AutoForbiddenForestStartButtonVisibility = Visibility.Collapsed;
-            AutoForbiddenForestStopButtonVisibility = Visibility.Visible;
+            CurrentTaskType = TaskType.AutoForbiddenForest;
 
             var logger = App.GetLogger<AutoForbiddenForest>();
             _currentTask = new AutoForbiddenForest(logger, _displayHwnd, _gameHwnd);
@@ -299,25 +322,21 @@ namespace AutoHPMA.ViewModels.Pages
             // 订阅任务完成事件，当任务完成时更新按钮状态
             _currentTask.TaskCompleted += (sender, e) =>
             {
-                AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
-                AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
-                _currentTask = null;
-                _isAnyTaskRunning = false;
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CurrentTaskType = TaskType.None;
+                    _currentTask = null;
+                });
             };
             _currentTask.Start();
         }
 
-        private bool CanAutoForbiddenForestStopTrigger() => AutoForbiddenForestStopButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoForbiddenForestStopTrigger))]
+        [RelayCommand]
         private void OnAutoForbiddenForestStopTrigger()
         {
-            AutoForbiddenForestStartButtonVisibility = Visibility.Visible;
-            AutoForbiddenForestStopButtonVisibility = Visibility.Collapsed;
-
             _currentTask?.Stop();
             _currentTask = null;
-            _isAnyTaskRunning = false;
+            CurrentTaskType = TaskType.None;
 
             GC.Collect();
         }
@@ -340,9 +359,7 @@ namespace AutoHPMA.ViewModels.Pages
         #endregion
 
         #region 自动烹饪
-        private bool CanAutoCookingStartTrigger() => AutoCookingStartButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoCookingStartTrigger))]
+        [RelayCommand]
         private void OnAutoCookingStartTrigger()
         {
             if (CheckTaskRunningStatus()) return;
@@ -370,9 +387,7 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
-            _isAnyTaskRunning = true;
-            AutoCookingStartButtonVisibility = Visibility.Collapsed;
-            AutoCookingStopButtonVisibility = Visibility.Visible;
+            CurrentTaskType = TaskType.AutoCooking;
 
             var logger = App.GetLogger<AutoCooking>();
             _currentTask = new AutoCooking(logger, _cookingConfigService, _displayHwnd, _gameHwnd);
@@ -386,34 +401,28 @@ namespace AutoHPMA.ViewModels.Pages
             // 订阅任务完成事件，当任务完成时更新按钮状态
             _currentTask.TaskCompleted += (sender, e) =>
             {
-                AutoCookingStartButtonVisibility = Visibility.Visible;
-                AutoCookingStopButtonVisibility = Visibility.Collapsed;
-                _currentTask = null;
-                _isAnyTaskRunning = false;
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CurrentTaskType = TaskType.None;
+                    _currentTask = null;
+                });
             };
             _currentTask.Start();
         }
 
-        private bool CanAutoCookingStopTrigger() => AutoCookingStopButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoCookingStopTrigger))]
+        [RelayCommand]
         private void OnAutoCookingStopTrigger()
         {
-            AutoCookingStartButtonVisibility = Visibility.Visible;
-            AutoCookingStopButtonVisibility = Visibility.Collapsed;
-
             _currentTask?.Stop();
             _currentTask = null;
-            _isAnyTaskRunning = false;
+            CurrentTaskType = TaskType.None;
 
             GC.Collect();
         }
         #endregion
 
         #region 自动甜蜜冒险
-        private bool CanAutoSweetAdventureStartTrigger() => AutoSweetAdventureStartButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStartTrigger))]
+        [RelayCommand]
         private void OnAutoSweetAdventureStartTrigger()
         {
             if (CheckTaskRunningStatus()) return;
@@ -441,26 +450,19 @@ namespace AutoHPMA.ViewModels.Pages
                 WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
 
-            _isAnyTaskRunning = true;
-            AutoSweetAdventureStartButtonVisibility = Visibility.Collapsed;
-            AutoSweetAdventureStopButtonVisibility = Visibility.Visible;
+            CurrentTaskType = TaskType.AutoSweetAdventure;
 
             var logger = App.GetLogger<AutoSweetAdventure>();
             _currentTask = new AutoSweetAdventure(logger, _displayHwnd, _gameHwnd);
             _currentTask.Start();
         }
 
-        private bool CanAutoSweetAdventureStopTrigger() => AutoSweetAdventureStopButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanAutoSweetAdventureStopTrigger))]
+        [RelayCommand]
         private void OnAutoSweetAdventureStopTrigger()
         {
-            AutoSweetAdventureStartButtonVisibility = Visibility.Visible;
-            AutoSweetAdventureStopButtonVisibility = Visibility.Collapsed;
-
             _currentTask?.Stop();
             _currentTask = null;
-            _isAnyTaskRunning = false;
+            CurrentTaskType = TaskType.None;
 
             GC.Collect();
         }
@@ -473,6 +475,8 @@ namespace AutoHPMA.ViewModels.Pages
 
         public Task OnNavigatedFromAsync()
         {
+            // 取消消息注册，避免内存泄漏
+            //WeakReferenceMessenger.Default.Unregister<StopAllTasksMessage>(this);
             return Task.CompletedTask;
         }
 
@@ -516,6 +520,19 @@ namespace AutoHPMA.ViewModels.Pages
         {
             _settings.AutoCookingSelectedOCR = value;
             _settings.Save();
+        }
+
+        partial void OnCurrentTaskTypeChanged(TaskType value)
+        {
+            // 通知UI更新所有按钮状态
+            OnPropertyChanged(nameof(AutoClubQuizStartButtonVisibility));
+            OnPropertyChanged(nameof(AutoClubQuizStopButtonVisibility));
+            OnPropertyChanged(nameof(AutoForbiddenForestStartButtonVisibility));
+            OnPropertyChanged(nameof(AutoForbiddenForestStopButtonVisibility));
+            OnPropertyChanged(nameof(AutoCookingStartButtonVisibility));
+            OnPropertyChanged(nameof(AutoCookingStopButtonVisibility));
+            OnPropertyChanged(nameof(AutoSweetAdventureStartButtonVisibility));
+            OnPropertyChanged(nameof(AutoSweetAdventureStopButtonVisibility));
         }
 
         private string GetDishEnumValue(string dishName)

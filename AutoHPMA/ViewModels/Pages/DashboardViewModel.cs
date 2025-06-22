@@ -297,6 +297,9 @@ namespace AutoHPMA.ViewModels.Pages
             StartButtonVisibility = Visibility.Visible;
             StopButtonVisibility = Visibility.Collapsed;
 
+            // 发送停止所有任务的消息
+            WeakReferenceMessenger.Default.Send(new StopAllTasksMessage(true));
+
             _logWindow?.Close();
             _logWindow = null;
 

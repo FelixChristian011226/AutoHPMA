@@ -78,9 +78,9 @@ public class AutoForbiddenForest : IGameTask
 
     private void AddLayersForMaskWindow()
     {
-        _maskWindow.AddLayer("Match");
-        _maskWindow.AddLayer("Click");
-        _maskWindow.AddLayer("MultiClick");
+        _maskWindow?.AddLayer("Match");
+        _maskWindow?.AddLayer("Click");
+        _maskWindow?.AddLayer("MultiClick");
     }
 
     private void LoadAssets()
@@ -208,7 +208,7 @@ public class AutoForbiddenForest : IGameTask
         }
         finally
         {
-            _maskWindow.ClearAllLayers();
+            _maskWindow?.ClearAllLayers();
             _logWindow?.SetGameState("空闲");
             _cts.Dispose();
             _cts = new CancellationTokenSource();

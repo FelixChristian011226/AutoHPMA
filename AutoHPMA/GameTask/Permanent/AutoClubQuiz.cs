@@ -110,10 +110,10 @@ public class AutoClubQuiz : IGameTask
 
     private void AddLayersForMaskWindow()
     {
-        _maskWindow.AddLayer("Match");
-        _maskWindow.AddLayer("Option");
-        _maskWindow.AddLayer("Question");
-        _maskWindow.AddLayer("Time");
+        _maskWindow?.AddLayer("Match");
+        _maskWindow?.AddLayer("Option");
+        _maskWindow?.AddLayer("Question");
+        _maskWindow?.AddLayer("Time");
     }
 
     public void LoadAssets()
@@ -328,7 +328,7 @@ public class AutoClubQuiz : IGameTask
                         break;
 
                     case AutoClubQuizState.Quiz:
-                        _maskWindow.ShowLayer("Option");
+                        _maskWindow?.ShowLayer("Option");
                         if (_quiz_over)
                         {
                             _logger.LogInformation("第[Yellow]{roundIndex}[/Yellow]轮答题开始", roundIndex);
@@ -363,12 +363,12 @@ public class AutoClubQuiz : IGameTask
                         }
 
                         await Task.Delay(detect_gap, _cts.Token);
-                        _maskWindow.HideLayer("Option");
+                        _maskWindow?.HideLayer("Option");
                         break;
 
                     case AutoClubQuizState.Over:
-                        _maskWindow.ClearLayer("Time");
-                        _maskWindow.ClearLayer("Question");
+                        _maskWindow?.ClearLayer("Time");
+                        _maskWindow?.ClearLayer("Question");
                         await Task.Delay(1000, _cts.Token);
                         FindAndClick(ref quiz_over);
                         await Task.Delay(2000, _cts.Token);
@@ -400,7 +400,7 @@ public class AutoClubQuiz : IGameTask
         }
         finally
         {
-            _maskWindow.ClearAllLayers();
+            _maskWindow?.ClearAllLayers();
             _logWindow?.SetGameState("空闲");
             _cts.Dispose();
             _cts = new CancellationTokenSource();
@@ -479,7 +479,7 @@ public class AutoClubQuiz : IGameTask
         }
 
         _questionLocated = true;
-        _maskWindow.SetLayerRects("Question", new List<Rect> { ScaleRect(question_rect, scale) });
+        _maskWindow?.SetLayerRects("Question", new List<Rect> { ScaleRect(question_rect, scale) });
 
         return true;
 

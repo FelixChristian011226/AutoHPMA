@@ -239,10 +239,10 @@ public class AutoCooking : IGameTask
                     case AutoCookingState.Summary:
                         round++;
                         _logger.LogInformation("第 {round} 轮烹饪完成。", round);
-                        _maskWindow.ClearLayer("Kitchenware");
-                        _maskWindow.ClearLayer("Condiments");
-                        _maskWindow.ClearLayer("Ingredients");
-                        _maskWindow.ClearLayer("Orders");
+                        _maskWindow?.ClearLayer("Kitchenware");
+                        _maskWindow?.ClearLayer("Condiments");
+                        _maskWindow?.ClearLayer("Ingredients");
+                        _maskWindow?.ClearLayer("Orders");
                         await Task.Delay(1000, _cts.Token);
                         SendSpace(_gameHwnd);
                         await Task.Delay(2000, _cts.Token);
@@ -268,7 +268,7 @@ public class AutoCooking : IGameTask
         }
         finally
         {
-            _maskWindow.ClearAllLayers();
+            _maskWindow?.ClearAllLayers();
             _logWindow?.SetGameState("空闲");
             _cts.Dispose();
             _cts = new CancellationTokenSource();
@@ -659,7 +659,7 @@ public class AutoCooking : IGameTask
             }
         }
 
-        _maskWindow.SetLayerRects("Orders", detect_rects, new Dictionary<Rect, string> { { selectedOrderRect, "目标订单" } });
+        _maskWindow?.SetLayerRects("Orders", detect_rects, new Dictionary<Rect, string> { { selectedOrderRect, "目标订单" } });
         return next_order != default;
     }
 
@@ -680,13 +680,13 @@ public class AutoCooking : IGameTask
 
     private void AddLayersForMaskWindow()
     {
-        _maskWindow.AddLayer("Kitchenware");
-        _maskWindow.AddLayer("Condiments");
-        _maskWindow.AddLayer("Ingredients");
-        _maskWindow.AddLayer("Orders");
+        _maskWindow?.AddLayer("Kitchenware");
+        _maskWindow?.AddLayer("Condiments");
+        _maskWindow?.AddLayer("Ingredients");
+        _maskWindow?.AddLayer("Orders");
 
-        _maskWindow.AddLayer("Match");
-        _maskWindow.AddLayer("Click");
+        _maskWindow?.AddLayer("Match");
+        _maskWindow?.AddLayer("Click");
     }
 
     public void LoadAssets()
