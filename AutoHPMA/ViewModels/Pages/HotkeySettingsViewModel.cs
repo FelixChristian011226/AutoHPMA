@@ -46,13 +46,16 @@ namespace AutoHPMA.ViewModels.Pages
 
         private void LoadHotkeyBindings()
         {
+            // 主要程序
+            HotkeyBindings.Add(new HotkeyBinding { Name = "AutoHPMA", Description = "启动或终止AutoHPMA", Modifiers = ModifierKeys.None, Key = Key.None, Group = "主要程序" });
             // 基础功能
             HotkeyBindings.Add(new HotkeyBinding { Name = "截图", Description = "截图当前游戏页面", Modifiers = ModifierKeys.None, Key = Key.None, Group = "基础功能" });
 
             // 任务启动
-            HotkeyBindings.Add(new HotkeyBinding { Name = "AutoHPMA", Description = "开始/停止 AutoHPMA", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
+            
             HotkeyBindings.Add(new HotkeyBinding { Name = "社团答题", Description = "开始/停止 社团答题", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
             HotkeyBindings.Add(new HotkeyBinding { Name = "禁林探索", Description = "开始/停止 禁林探索", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
+            HotkeyBindings.Add(new HotkeyBinding { Name = "自动烹饪", Description = "开始/停止 自动烹饪", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
             HotkeyBindings.Add(new HotkeyBinding { Name = "甜蜜冒险", Description = "开始/停止 甜蜜冒险", Modifiers = ModifierKeys.None, Key = Key.None, Group = "任务启动" });
 
             // 从设置中加载保存的热键
@@ -175,7 +178,99 @@ namespace AutoHPMA.ViewModels.Pages
                 case "截图":
                     ScreenshotViewModel.TakeScreenshot();
                     break;
-                // 其他热键动作可以在这里添加
+                case "AutoHPMA":
+                {
+                    var dashboardVM = App.Services.GetService(typeof(DashboardViewModel)) as DashboardViewModel;
+                    if (dashboardVM != null)
+                    {
+                        // 判断当前状态，切换启动/终止
+                        if (dashboardVM.StartButtonVisibility == Visibility.Visible && dashboardVM.StartButtonEnabled)
+                        {
+                            var startCmd = dashboardVM.GetType().GetMethod("OnStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            startCmd?.Invoke(dashboardVM, null);
+                        }
+                        else if (dashboardVM.StopButtonVisibility == Visibility.Visible && dashboardVM.StopButtonEnabled)
+                        {
+                            var stopCmd = dashboardVM.GetType().GetMethod("OnStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            stopCmd?.Invoke(dashboardVM, null);
+                        }
+                    }
+                    break;
+                }
+                case "社团答题":
+                {
+                    var taskVM = App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
+                    if (taskVM != null)
+                    {
+                        if (taskVM.AutoClubQuizStartButtonVisibility == Visibility.Visible)
+                        {
+                            var startCmd = taskVM.GetType().GetMethod("OnAutoClubQuizStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            startCmd?.Invoke(taskVM, null);
+                        }
+                        else if (taskVM.AutoClubQuizStopButtonVisibility == Visibility.Visible)
+                        {
+                            var stopCmd = taskVM.GetType().GetMethod("OnAutoClubQuizStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            stopCmd?.Invoke(taskVM, null);
+                        }
+                    }
+                    break;
+                }
+                case "禁林探索":
+                {
+                    var taskVM = App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
+                    if (taskVM != null)
+                    {
+                        if (taskVM.AutoForbiddenForestStartButtonVisibility == Visibility.Visible)
+                        {
+                            var startCmd = taskVM.GetType().GetMethod("OnAutoForbiddenForestStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            startCmd?.Invoke(taskVM, null);
+                        }
+                        else if (taskVM.AutoForbiddenForestStopButtonVisibility == Visibility.Visible)
+                        {
+                            var stopCmd = taskVM.GetType().GetMethod("OnAutoForbiddenForestStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            stopCmd?.Invoke(taskVM, null);
+                        }
+                    }
+                    break;
+                }
+                case "自动烹饪":
+                {
+                    var taskVM = App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
+                    if (taskVM != null)
+                    {
+                        if (taskVM.AutoCookingStartButtonVisibility == Visibility.Visible)
+                        {
+                            var startCmd = taskVM.GetType().GetMethod("OnAutoCookingStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            startCmd?.Invoke(taskVM, null);
+                        }
+                        else if (taskVM.AutoCookingStopButtonVisibility == Visibility.Visible)
+                        {
+                            var stopCmd = taskVM.GetType().GetMethod("OnAutoCookingStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            stopCmd?.Invoke(taskVM, null);
+                        }
+                    }
+                    break;
+                }
+                case "甜蜜冒险":
+                {
+                    var taskVM = App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
+                    if (taskVM != null)
+                    {
+                        if (taskVM.AutoSweetAdventureStartButtonVisibility == Visibility.Visible)
+                        {
+                            var startCmd = taskVM.GetType().GetMethod("OnAutoSweetAdventureStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            startCmd?.Invoke(taskVM, null);
+                        }
+                        else if (taskVM.AutoSweetAdventureStopButtonVisibility == Visibility.Visible)
+                        {
+                            var stopCmd = taskVM.GetType().GetMethod("OnAutoSweetAdventureStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            stopCmd?.Invoke(taskVM, null);
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
             }
         }
     }
