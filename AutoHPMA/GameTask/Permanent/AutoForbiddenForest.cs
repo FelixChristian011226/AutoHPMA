@@ -35,16 +35,8 @@ public enum AutoForbiddenForestOption
     Member,
 }
 
-public class AutoForbiddenForest : IGameTask
+public class AutoForbiddenForest : BaseGameTask
 {
-    private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
-    private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
-    private static WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
-
-    private readonly ILogger<AutoForbiddenForest> _logger;
-    private nint _displayHwnd, _gameHwnd;
-    private int offsetX, offsetY;
-    private double scale;
     private AutoForbiddenForestState _state = AutoForbiddenForestState.Outside;
 
     private Mat? captureMat;
@@ -53,8 +45,6 @@ public class AutoForbiddenForest : IGameTask
     private Mat fight_auto;
     private Mat over_thumb;
 
-    private List<Rect> detect_rects = new List<Rect>();
-
     private bool _waited = false;
 
     private int _autoForbiddenForestTimes;
@@ -62,15 +52,11 @@ public class AutoForbiddenForest : IGameTask
 
     private int round = 0;
 
-    private CancellationTokenSource _cts;
     public event EventHandler? TaskCompleted;
 
-    public AutoForbiddenForest(ILogger<AutoForbiddenForest> logger, nint _displayHwnd, nint _gameHwnd)
+    public AutoForbiddenForest(ILogger<AutoForbiddenForest> logger, nint displayHwnd, nint gameHwnd)
+        : base(logger, displayHwnd, gameHwnd)
     {
-        _logger = logger;
-        this._displayHwnd = _displayHwnd;
-        this._gameHwnd = _gameHwnd;
-        _cts = new CancellationTokenSource();
         LoadAssets();
         CalOffset();
         AddLayersForMaskWindow();
@@ -87,37 +73,24 @@ public class AutoForbiddenForest : IGameTask
     {
         string image_folder = "Assets/ForbiddenForest/Image/";
 
-        ui_explore = Cv2.ImRead(image_folder + "ui_explore.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(ui_explore, ui_explore, ColorConversionCodes.BGR2GRAY);
-        ui_loading = Cv2.ImRead(image_folder + "ui_loading.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(ui_loading, ui_loading, ColorConversionCodes.BGR2GRAY);
-        ui_clock = Cv2.ImRead(image_folder + "ui_clock.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(ui_clock, ui_clock, ColorConversionCodes.BGR2GRAY);
-        ui_statistics = Cv2.ImRead(image_folder + "ui_statistics.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(ui_statistics, ui_statistics, ColorConversionCodes.BGR2GRAY);
-        team_auto = Cv2.ImRead(image_folder + "team_auto.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(team_auto, team_auto, ColorConversionCodes.BGR2GRAY);
-        team_start = Cv2.ImRead(image_folder + "team_start.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(team_start, team_start, ColorConversionCodes.BGR2GRAY);
-        team_confirm = Cv2.ImRead(image_folder + "team_confirm.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(team_confirm, team_confirm, ColorConversionCodes.BGR2GRAY);
-        team_ready = Cv2.ImRead(image_folder + "team_ready.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(team_ready, team_ready, ColorConversionCodes.BGR2GRAY);
+        ui_explore = Cv2.ImRead(image_folder + "ui_explore.png", ImreadModes.Color);
+        ui_loading = Cv2.ImRead(image_folder + "ui_loading.png", ImreadModes.Color);
+        ui_clock = Cv2.ImRead(image_folder + "ui_clock.png", ImreadModes.Color);
+        ui_statistics = Cv2.ImRead(image_folder + "ui_statistics.png", ImreadModes.Color);
+        team_auto = Cv2.ImRead(image_folder + "team_auto.png", ImreadModes.Color);
+        team_start = Cv2.ImRead(image_folder + "team_start.png", ImreadModes.Color);
+        team_confirm = Cv2.ImRead(image_folder + "team_confirm.png", ImreadModes.Color);
+        team_ready = Cv2.ImRead(image_folder + "team_ready.png", ImreadModes.Color);
         fight_auto = Cv2.ImRead(image_folder + "fight_auto.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(fight_auto, fight_auto, ColorConversionCodes.BGR2GRAY);
-        over_thumb = Cv2.ImRead(image_folder + "over_thumb.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(over_thumb, over_thumb, ColorConversionCodes.BGR2GRAY);
-
-
+        over_thumb = Cv2.ImRead(image_folder + "over_thumb.png", ImreadModes.Color);
     }
 
-    public void Stop()
+    public override void Stop()
     {
-        _cts.Cancel();
-        TaskCompleted?.Invoke(this, EventArgs.Empty);
+        base.Stop();
     }
 
-    public async void Start()
+    public override async void Start()
     {
         _state = AutoForbiddenForestState.Outside;
         _logWindow?.SetGameState("禁林");
@@ -182,7 +155,7 @@ public class AutoForbiddenForest : IGameTask
                         break;
 
                     case AutoForbiddenForestState.Fighting:
-                        FindAndClick(ref fight_auto);
+                        FindAndClickWithAlpha(ref fight_auto, 0.8);
                         await Task.Delay(1000, _cts.Token);
                         break;
 
@@ -254,108 +227,10 @@ public class AutoForbiddenForest : IGameTask
         }
 
         _state = AutoForbiddenForestState.Outside;
+        _logWindow?.SetGameState("禁林-未知状态");
         return;
-
     }
-    private bool FindMatch(ref Mat mat, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if (matchpoint == default)
-        {
-            return false;
-        }
-        _maskWindow?.ClearLayer("Click");
-        detect_rects.Clear();
-        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        _maskWindow?.SetLayerRects("Match", detect_rects);
-        return true;
-
-    }
-
-    private bool FindAndClick(ref Mat mat, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if (matchpoint == default)
-        {
-            return false;
-        }
-        detect_rects.Clear();
-        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        _maskWindow?.SetLayerRects("Click", detect_rects);
-        SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
-        return true;
-    }
-
-    private bool FindAndClickWithMask(ref Mat mat, ref Mat mask, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(mask.Width, mask.Height));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        Cv2.BitwiseAnd(captureMat, mask, captureMat);
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if (matchpoint == default)
-        {
-            return false;
-        }
-        detect_rects.Clear();
-        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        _maskWindow?.SetLayerRects("Match", detect_rects);
-        SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
-        return true;
-    }
-
-    private async Task<bool> FindAndClickMultiAsync(Mat mat, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-
-        var matchrects = MatchTemplateHelper.MatchOnePicForOnePic(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        if(matchrects.Count == 0)
-        {
-            return false;
-        }
-        detect_rects.Clear();
-        foreach (var rect in matchrects)
-        {
-            detect_rects.Add(new Rect((int)(rect.X * scale), (int)(rect.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        }
-        _maskWindow?.SetLayerRects("MultiClick", detect_rects);
-        foreach (var rect in matchrects)
-        {
-            SendMouseClick(_gameHwnd,
-                (uint)(rect.X * scale - offsetX + mat.Width / 2.0 * scale),
-                (uint)(rect.Y * scale - offsetY + mat.Height / 2.0 * scale));
-            //_logWindow?.AddLogMessage("DBG", "第" + ++index + "次点赞：(" + rect.X + "," + rect.Y + ")");
-            await Task.Delay(1000);
-        }
-        _maskWindow?.ClearLayer("MultiClick");
-        return true;
-    }
-
-    private void CalOffset()
-    {
-        int left, top, width, height;
-        int leftMumu, topMumu;
-        GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
-        GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
-        offsetX = left - leftMumu;
-        offsetY = top - topMumu;
-        scale = width / 1280.0;
-    }
-
-    #region SetParameter
-
-    public bool SetParameters(Dictionary<string, object> parameters)
+    public override bool SetParameters(Dictionary<string, object> parameters)
     {
         try
         {
@@ -397,8 +272,4 @@ public class AutoForbiddenForest : IGameTask
             return false;
         }
     }
-
-    #endregion
-
-
 }

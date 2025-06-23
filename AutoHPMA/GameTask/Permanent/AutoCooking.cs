@@ -44,17 +44,9 @@ public enum Dishes
     MushroomRisotto // 奶油蘑菇炖饭
 }
 
-public class AutoCooking : IGameTask
+public class AutoCooking : BaseGameTask
 {
-    private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
-    private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
-    private static WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
-
-    private readonly ILogger<AutoCooking> _logger;
     private readonly CookingConfigService _cookingConfigService;
-    private nint _displayHwnd, _gameHwnd;
-    private int offsetX, offsetY;
-    private double scale;
     private AutoCookingState _state = AutoCookingState.Unknown;
 
     private Mat? captureMat;
@@ -69,7 +61,6 @@ public class AutoCooking : IGameTask
     private Mat click_challenge, click_start;
     private Dictionary<string, Mat> dishImages = new();
 
-    private List<Rect> detect_rects = new List<Rect>();
     private List<Rect> order_rects = new List<Rect>();
 
     private int _autoCookingTimes;
@@ -96,28 +87,23 @@ public class AutoCooking : IGameTask
     private static TesseractOCRHelper? tesseractOCRHelper;
     private string _autoCookingSelectedOCR = "Tesseract";
 
-    private CancellationTokenSource _cts;
     public event EventHandler? TaskCompleted;
 
-    public AutoCooking(ILogger<AutoCooking> logger, CookingConfigService cookingConfigService, nint _displayHwnd, nint _gameHwnd)
+    public AutoCooking(ILogger<AutoCooking> logger, CookingConfigService cookingConfigService, nint displayHwnd, nint gameHwnd)
+        : base(logger, displayHwnd, gameHwnd)
     {
-        _logger = logger;
         _cookingConfigService = cookingConfigService;
-        this._displayHwnd = _displayHwnd;
-        this._gameHwnd = _gameHwnd;
-        _cts = new CancellationTokenSource();
         LoadAssets();
         CalOffset();
         AddLayersForMaskWindow();
     }
 
-    public void Stop()
+    public override void Stop()
     {
-        _cts.Cancel();
-        TaskCompleted?.Invoke(this, EventArgs.Empty);
+        base.Stop();
     }
 
-    public async void Start()
+    public override async void Start()
     {
         _state = AutoCookingState.Unknown;
         _logWindow?.SetGameState("自动烹饪");
@@ -200,7 +186,6 @@ public class AutoCooking : IGameTask
                                 break;
                             }
                         }
-
                         if (allIdle)
                         {
                             // 根据配置执行烹饪步骤
@@ -251,10 +236,7 @@ public class AutoCooking : IGameTask
                         break;
 
                     default:
-
                         break;
-
-
                 }
             }
         }
@@ -359,43 +341,6 @@ public class AutoCooking : IGameTask
 
     }
 
-    private bool FindMatch(ref Mat mat, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if (matchpoint == default)
-        {
-            return false;
-        }
-        _maskWindow?.ClearLayer("Click");
-        detect_rects.Clear();
-        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        _maskWindow?.SetLayerRects("Match", detect_rects);
-        return true;
-
-    }
-
-    private bool FindAndClick(ref Mat mat, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if (matchpoint == default)
-        {
-            return false;
-        }
-        detect_rects.Clear();
-        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        _maskWindow?.SetLayerRects("Click", detect_rects);
-        SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
-        return true;
-    }
-
     private bool Initialize()
     {
         if (_currentDishConfig == null)
@@ -441,7 +386,6 @@ public class AutoCooking : IGameTask
     }
 
     #region Locate Assets
-
     private bool LocateKitchenWare()
     {
         if (_currentDishConfig == null) return false;
@@ -665,18 +609,6 @@ public class AutoCooking : IGameTask
 
     #endregion
 
-    private bool DragMove(ref Point start, ref Point end, int duration = 500)
-    {
-        SendMouseDragWithNoise(
-            _gameHwnd,
-            (uint)(start.X * scale - offsetX),
-            (uint)(start.Y * scale - offsetY),
-            (uint)(end.X * scale - offsetX),
-            (uint)(end.Y * scale - offsetY),
-            duration
-        );
-        return true;
-    }
 
     private void AddLayersForMaskWindow()
     {
@@ -745,25 +677,6 @@ public class AutoCooking : IGameTask
         _logger.LogInformation("图片资源加载完成");
     }
 
-    private void CalOffset()
-    {
-        int left, top, width, height;
-        int leftMumu, topMumu;
-        GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
-        GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
-        offsetX = left - leftMumu;
-        offsetY = top - topMumu;
-        scale = width / 1280.0;
-    }
-    private Rect ScaleRect(Rect rect, double scale)
-    {
-        return new Rect(
-            (int)(rect.X * scale),
-            (int)(rect.Y * scale),
-            (int)(rect.Width * scale),
-            (int)(rect.Height * scale)
-        );
-    }
 
     private (CookingStatus status, double progress) GetKitchenwareStatus(string kitchenware)
     {
@@ -822,7 +735,7 @@ public class AutoCooking : IGameTask
 
     #region SetParameter
 
-    public bool SetParameters(Dictionary<string, object> parameters)
+    public override bool SetParameters(Dictionary<string, object> parameters)
     {
         try
         {

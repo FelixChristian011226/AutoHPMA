@@ -24,6 +24,7 @@ using static Vanara.PInvoke.User32;
 using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
+using AutoHPMA.GameTask;
 
 namespace AutoHPMA.GameTask.Permanent;
 
@@ -40,20 +41,12 @@ public enum AutoClubQuizState
     Victory,
 }
 
-public class AutoClubQuiz : IGameTask
+public class AutoClubQuiz : BaseGameTask
 {
-    private static LogWindow _logWindow => AppContextService.Instance.LogWindow;
-    private static MaskWindow _maskWindow => AppContextService.Instance.MaskWindow;
-    private static WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
     private static ExcelHelper excelHelper;
     private static PaddleOCRHelper paddleOCRHelper;
 
-    private readonly ILogger<AutoClubQuiz> _logger;
-    private nint _displayHwnd, _gameHwnd;
-    private int offsetX, offsetY;
-    private double scale;
     private AutoClubQuizState _state = AutoClubQuizState.Outside;
-
     private static Mat? captureMat;
     private Mat close_quiz_info, close_club_rank;
     private Mat map_castle_symbol, map_club_symbol, map_club_enter, map_return;
@@ -64,12 +57,9 @@ public class AutoClubQuiz : IGameTask
     private Mat quiz_option_a, quiz_option_b, quiz_option_c, quiz_option_d, quiz_option_mask;
     private Mat quiz_time0, quiz_time20;
 
-    private List<Rect> detect_rects = new List<Rect>();
     private List<Rect> time_rects = new List<Rect>();
-
     private string? excelPath;
     private char bestOption;
-
     private string? q, a, b, c, d, answer, i;
     private bool _optionLocated = false, _questionLocated = false;
     private bool _waited = false, _quiz_over = true;
@@ -77,29 +67,17 @@ public class AutoClubQuiz : IGameTask
     private Rect question_rect;
     private Rect index_rect;
     private int detect_gap = 200;
-
-    private enum GatherRefreshMode
-    {
-        ChatBox,
-        Badge,
-    }
-
+    private enum GatherRefreshMode { ChatBox, Badge }
     private GatherRefreshMode _gatherRefreshMode=GatherRefreshMode.Badge;
     private int _answerDelay = 0;
     private bool _joinOthers = true;
-
     private int roundIndex = 1;
-
-    private CancellationTokenSource _cts;
 
     public event EventHandler? TaskCompleted;
 
-    public AutoClubQuiz(ILogger<AutoClubQuiz> logger, nint _displayHwnd, nint _gameHwnd)
+    public AutoClubQuiz(ILogger<AutoClubQuiz> logger, nint displayHwnd, nint gameHwnd)
+        : base(logger, displayHwnd, gameHwnd)
     {
-        _logger = logger;
-        this._displayHwnd = _displayHwnd;
-        this._gameHwnd = _gameHwnd;
-        _cts = new CancellationTokenSource();
         excelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/ClubQuiz", "club_question_bank.xlsx");
         excelHelper = new ExcelHelper(excelPath);
         paddleOCRHelper = new PaddleOCRHelper();
@@ -120,73 +98,42 @@ public class AutoClubQuiz : IGameTask
     {
         string image_folder = "Assets/ClubQuiz/Image/";
 
-        close_club_rank = Cv2.ImRead(image_folder + "close_club_rank.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(close_club_rank, close_club_rank, ColorConversionCodes.BGR2GRAY);
-        close_quiz_info = Cv2.ImRead(image_folder + "close_quiz_info.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(close_quiz_info, close_quiz_info, ColorConversionCodes.BGR2GRAY);
-        map_castle_symbol = Cv2.ImRead(image_folder+"map_castle_symbol.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(map_castle_symbol, map_castle_symbol, ColorConversionCodes.BGR2GRAY);
-        map_club_symbol = Cv2.ImRead(image_folder + "map_club_symbol.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(map_club_symbol, map_club_symbol, ColorConversionCodes.BGR2GRAY);
-        map_club_enter = Cv2.ImRead(image_folder + "map_club_enter.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(map_club_enter, map_club_enter, ColorConversionCodes.BGR2GRAY);
-        map_return = Cv2.ImRead(image_folder + "map_return.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(map_return, map_return, ColorConversionCodes.BGR2GRAY);
-        ui_club_symbol = Cv2.ImRead(image_folder + "ui_club_symbol.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(ui_club_symbol, ui_club_symbol, ColorConversionCodes.BGR2GRAY);
-        ui_badge = Cv2.ImRead(image_folder + "ui_badge.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(ui_badge, ui_badge, ColorConversionCodes.BGR2GRAY);
-        chat_mail = Cv2.ImRead(image_folder + "chat_mail.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(chat_mail, chat_mail, ColorConversionCodes.BGR2GRAY);
-        chat_whisper = Cv2.ImRead(image_folder + "chat_whisper.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(chat_whisper, chat_whisper, ColorConversionCodes.BGR2GRAY);
-        chat_club = Cv2.ImRead(image_folder + "chat_club.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(chat_club, chat_club, ColorConversionCodes.BGR2GRAY);
-        chat_club_quiz = Cv2.ImRead(image_folder + "chat_club_quiz.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(chat_club_quiz, chat_club_quiz, ColorConversionCodes.BGR2GRAY);
-        chat_college = Cv2.ImRead(image_folder + "chat_college.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(chat_college, chat_college, ColorConversionCodes.BGR2GRAY);
-        chat_college_help = Cv2.ImRead(image_folder + "chat_college_help.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(chat_college_help, chat_college_help, ColorConversionCodes.BGR2GRAY);
-        badge_club_shop = Cv2.ImRead(image_folder + "badge_club_shop.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(badge_club_shop, badge_club_shop, ColorConversionCodes.BGR2GRAY);
-        badge_enter = Cv2.ImRead(image_folder + "badge_enter.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(badge_enter, badge_enter, ColorConversionCodes.BGR2GRAY);
-        badge_enter_mask = Cv2.ImRead(image_folder + "badge_enter_mask.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(badge_enter_mask, badge_enter_mask, ColorConversionCodes.BGR2GRAY);
-        quiz_wait = Cv2.ImRead(image_folder + "quiz_wait.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_wait, quiz_wait, ColorConversionCodes.BGR2GRAY);
-        quiz_leave = Cv2.ImRead(image_folder + "quiz_leave.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_leave, quiz_leave, ColorConversionCodes.BGR2GRAY);
-        quiz_option_a = Cv2.ImRead(image_folder + "quiz_option_a.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_option_a, quiz_option_a, ColorConversionCodes.BGR2GRAY);
-        quiz_option_b = Cv2.ImRead(image_folder + "quiz_option_b.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_option_b, quiz_option_b, ColorConversionCodes.BGR2GRAY);
-        quiz_option_c = Cv2.ImRead(image_folder + "quiz_option_c.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_option_c, quiz_option_c, ColorConversionCodes.BGR2GRAY);
-        quiz_option_d = Cv2.ImRead(image_folder + "quiz_option_d.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_option_d, quiz_option_d, ColorConversionCodes.BGR2GRAY);
-        quiz_option_mask = Cv2.ImRead(image_folder + "quiz_option_mask.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_option_mask, quiz_option_mask, ColorConversionCodes.BGR2GRAY);
-        quiz_time0 = Cv2.ImRead(image_folder + "quiz_time0.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_time0, quiz_time0, ColorConversionCodes.BGR2GRAY);
-        quiz_time20 = Cv2.ImRead(image_folder + "quiz_time20.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_time20, quiz_time20, ColorConversionCodes.BGR2GRAY);
-        quiz_over = Cv2.ImRead(image_folder + "quiz_over.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_over, quiz_over, ColorConversionCodes.BGR2GRAY);
-        quiz_victory = Cv2.ImRead(image_folder + "quiz_victory.png", ImreadModes.Unchanged);
-        Cv2.CvtColor(quiz_victory, quiz_victory, ColorConversionCodes.BGR2GRAY);
-
-
+        close_club_rank = Cv2.ImRead(image_folder + "close_club_rank.png", ImreadModes.Color);
+        close_quiz_info = Cv2.ImRead(image_folder + "close_quiz_info.png", ImreadModes.Color);
+        map_castle_symbol = Cv2.ImRead(image_folder+"map_castle_symbol.png", ImreadModes.Color);
+        map_club_symbol = Cv2.ImRead(image_folder + "map_club_symbol.png", ImreadModes.Color);
+        map_club_enter = Cv2.ImRead(image_folder + "map_club_enter.png", ImreadModes.Color);
+        map_return = Cv2.ImRead(image_folder + "map_return.png", ImreadModes.Color);
+        ui_club_symbol = Cv2.ImRead(image_folder + "ui_club_symbol.png", ImreadModes.Color);
+        ui_badge = Cv2.ImRead(image_folder + "ui_badge.png", ImreadModes.Color);
+        chat_mail = Cv2.ImRead(image_folder + "chat_mail.png", ImreadModes.Color);
+        chat_whisper = Cv2.ImRead(image_folder + "chat_whisper.png", ImreadModes.Color);
+        chat_club = Cv2.ImRead(image_folder + "chat_club.png", ImreadModes.Color);
+        chat_club_quiz = Cv2.ImRead(image_folder + "chat_club_quiz.png", ImreadModes.Color);
+        chat_college = Cv2.ImRead(image_folder + "chat_college.png", ImreadModes.Color);
+        chat_college_help = Cv2.ImRead(image_folder + "chat_college_help.png", ImreadModes.Color);
+        badge_club_shop = Cv2.ImRead(image_folder + "badge_club_shop.png", ImreadModes.Color);
+        badge_enter = Cv2.ImRead(image_folder + "badge_enter.png", ImreadModes.Color);
+        badge_enter_mask = Cv2.ImRead(image_folder + "badge_enter_mask.png", ImreadModes.Color);
+        quiz_wait = Cv2.ImRead(image_folder + "quiz_wait.png", ImreadModes.Color);
+        quiz_leave = Cv2.ImRead(image_folder + "quiz_leave.png", ImreadModes.Color);
+        quiz_option_a = Cv2.ImRead(image_folder + "quiz_option_a.png", ImreadModes.Color);
+        quiz_option_b = Cv2.ImRead(image_folder + "quiz_option_b.png", ImreadModes.Color);
+        quiz_option_c = Cv2.ImRead(image_folder + "quiz_option_c.png", ImreadModes.Color);
+        quiz_option_d = Cv2.ImRead(image_folder + "quiz_option_d.png", ImreadModes.Color);
+        quiz_option_mask = Cv2.ImRead(image_folder + "quiz_option_mask.png", ImreadModes.Color);
+        quiz_time0 = Cv2.ImRead(image_folder + "quiz_time0.png", ImreadModes.Color);
+        quiz_time20 = Cv2.ImRead(image_folder + "quiz_time20.png", ImreadModes.Color);
+        quiz_over = Cv2.ImRead(image_folder + "quiz_over.png", ImreadModes.Color);
+        quiz_victory = Cv2.ImRead(image_folder + "quiz_victory.png", ImreadModes.Color);
     }
 
-    public void Stop()
+    public override void Stop()
     {
-        _cts.Cancel();
-        TaskCompleted?.Invoke(this, EventArgs.Empty);
+        base.Stop();
     }
 
-    public async void Start()
+    public override async void Start()
     {
         _state = AutoClubQuizState.Outside;
         _logWindow?.SetGameState("社团答题");
@@ -248,7 +195,6 @@ public class AutoClubQuiz : IGameTask
                                 await Task.Delay(3000, _cts.Token);
                                 _gatherRefreshMode = GatherRefreshMode.ChatBox;
                                 break;
-
                         }
                         break;
 
@@ -382,13 +328,10 @@ public class AutoClubQuiz : IGameTask
                         SendESC(_gameHwnd);
                         await Task.Delay(1000, _cts.Token);
                         break;
-
                 }
-
 
                 continue;
             }
-
         }
         catch (TaskCanceledException)
         {
@@ -405,8 +348,6 @@ public class AutoClubQuiz : IGameTask
             _cts.Dispose();
             _cts = new CancellationTokenSource();
         }
-
-
     }
 
     private async Task AcquireAnswerAsync()
@@ -427,7 +368,7 @@ public class AutoClubQuiz : IGameTask
         Point matchpoint;
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
         matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_option_a, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.85);
         if (matchpoint == default || matchpoint.X < 0 || matchpoint.Y < 0 || matchpoint.X > captureMat.Width || matchpoint.Y > captureMat.Height)
         {
@@ -464,7 +405,6 @@ public class AutoClubQuiz : IGameTask
         _optionLocated = true;
 
         return true;
-
     }
 
     private bool LocateQuestion()
@@ -482,7 +422,6 @@ public class AutoClubQuiz : IGameTask
         _maskWindow?.SetLayerRects("Question", new List<Rect> { ScaleRect(question_rect, scale) });
 
         return true;
-
     }
 
     public void RecogniseText()
@@ -504,7 +443,6 @@ public class AutoClubQuiz : IGameTask
         c = paddleOCRHelper.Ocr(answercMat);
         d = paddleOCRHelper.Ocr(answerdMat);
         i = paddleOCRHelper.Ocr(indexMat);
-
     }
 
     private void PrintText()
@@ -515,8 +453,6 @@ public class AutoClubQuiz : IGameTask
         _logger.LogDebug("选项C：{c}", c);
         _logger.LogDebug("选项D：{d}", d);
     }
-
-
 
     private void ClickOption()
     {
@@ -549,7 +485,7 @@ public class AutoClubQuiz : IGameTask
     {
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
 
         if(FindMatch(ref ui_club_symbol))
         {
@@ -618,7 +554,6 @@ public class AutoClubQuiz : IGameTask
         _state = AutoClubQuizState.Outside;
         _logWindow?.SetGameState("社团答题-未进入场景");
         return;
-
     }
 
     private void FindScore()
@@ -642,14 +577,13 @@ public class AutoClubQuiz : IGameTask
         _logger.LogInformation("本次社团贡献：[Yellow]+{addScore}[/Yellow]。", addScore);
         _logger.LogInformation("本周社团贡献：[Yellow]{weekTotal}[/Yellow]。", weekTotal);
         ToastNotificationHelper.ShowToastWithImage("答题结束", "本次社团贡献：+" + addScore + "。\n" + "本周社团贡献：" + weekTotal + "。", captureMat);
-
     }
 
     private bool FindTime20AndIndex()
     {
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
+        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
         var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, quiz_time20, TemplateMatchModes.CCoeffNormed, null, 0.9);
         if (matchpoint == default)
         {
@@ -662,85 +596,12 @@ public class AutoClubQuiz : IGameTask
         return true;
     }
 
-    private bool FindMatch(ref Mat mat, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if (matchpoint == default)
-        {
-            return false;
-        }
-        detect_rects.Clear();
-        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        _maskWindow?.SetLayerRects("Match", detect_rects);
-        return true;
 
-    }
 
-    private bool FindAndClick(ref Mat mat, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if (matchpoint == default)
-        {
-            return false;
-        }
-        detect_rects.Clear();
-        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        _maskWindow?.SetLayerRects("Match", detect_rects);
-        SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
-        return true;
-    }
-
-    private bool FindAndClickWithMask(ref Mat mat, ref Mat mask, double threshold = 0.9)
-    {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(mask.Width, mask.Height));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-        Cv2.BitwiseAnd(captureMat, mask, captureMat);
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, mat, TemplateMatchModes.CCoeffNormed, null, threshold);
-        //_logWindow?.AddLogMessage("DBG", "Matchpoint: ("  + matchpoint.X + "," + matchpoint.Y + ")");
-        if (matchpoint == default)
-        {
-            return false;
-        }
-        detect_rects.Clear();
-        detect_rects.Add(new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(mat.Width * scale), (int)(mat.Height * scale)));
-        _maskWindow?.SetLayerRects("Match", detect_rects);
-        SendMouseClick(_gameHwnd, (uint)(matchpoint.X * scale - offsetX + mat.Width / 2.0 * scale), (uint)(matchpoint.Y * scale - offsetY + mat.Height / 2.0 * scale));
-        return true;
-    }
-
-    private void CalOffset()
-    {
-        int left, top, width, height;
-        int leftMumu, topMumu;
-        GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
-        GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
-        offsetX = left - leftMumu;
-        offsetY = top - topMumu;
-        scale = width / 1280.0;
-    }
-
-    private Rect ScaleRect(Rect rect, double scale)
-    {
-        return new Rect(
-            (int)(rect.X * scale),
-            (int)(rect.Y * scale),
-            (int)(rect.Width * scale),
-            (int)(rect.Height * scale)
-        );
-    }
 
     #region SetParameter
 
-    public bool SetParameters(Dictionary<string, object> parameters)
+    public override bool SetParameters(Dictionary<string, object> parameters)
     {
         try
         {

@@ -39,7 +39,7 @@ public class CookingConfigService
                 if (config != null)
                 {
                     _dishConfigs[config.Name] = config;
-                    _logger.LogInformation("已加载菜品配置：{Name}", config.Name);
+                    _logger.LogDebug("已加载菜品配置：{Name}", config.Name);
                 }
             }
         }
