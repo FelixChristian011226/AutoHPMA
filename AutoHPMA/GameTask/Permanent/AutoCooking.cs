@@ -188,16 +188,8 @@ public class AutoCooking : BaseGameTask
                         }
                         if (allIdle)
                         {
-                            // 根据配置执行烹饪步骤
-                            foreach (var step in _currentDishConfig.CookingSteps)
-                            {
-                                var ingredientCenter = ingredientCenters[step.Ingredient];
-                                var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
-                                DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
-                                ingredientCenters[step.Ingredient] = ingredientCenter;
-                                kitchenwareCenters[step.TargetKitchenware] = kitchenwareCenter;
-                                await Task.Delay(_autoCookingGap, _cts.Token);
-                            }
+                            CookFood();
+                            await Task.Delay(_autoCookingGap, _cts.Token);
                             continue;
                         }
 
@@ -214,7 +206,7 @@ public class AutoCooking : BaseGameTask
 
                         if (allCooked)
                         {
-                            HandleCookedFood();
+                            CookLoop();
                             await Task.Delay(_autoCookingGap, _cts.Token);
                             continue;
                         }
@@ -228,9 +220,9 @@ public class AutoCooking : BaseGameTask
                         _maskWindow?.ClearLayer("Condiments");
                         _maskWindow?.ClearLayer("Ingredients");
                         _maskWindow?.ClearLayer("Orders");
-                        await Task.Delay(1000, _cts.Token);
+                        await Task.Delay(3000, _cts.Token);
                         SendSpace(_gameHwnd);
-                        await Task.Delay(2000, _cts.Token);
+                        await Task.Delay(3000, _cts.Token);
                         SendSpace(_gameHwnd);
                         await Task.Delay(3000, _cts.Token);
                         break;
@@ -287,10 +279,103 @@ public class AutoCooking : BaseGameTask
         return false;
     }
 
+    private void CookLoop()
+    {
+        DefaultOrder();
+        if (CheckOver()) return;
+        GetCookedFood();
+        if (CheckOver()) return;
+        CookFood();
+        if (CheckOver()) return;
+        Seasoning();
+        if (CheckOver()) return;
+        SubmitOrder();
+    }
+    /// <summary>
+    /// 将食物原料放入厨具中进行烹饪
+    /// </summary>
+    private void CookFood()
+    {
+        foreach (var step in _currentDishConfig.CookingSteps)
+        {
+            var ingredientCenter = ingredientCenters[step.Ingredient];
+            var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
+            if (CheckOver()) return;
+            DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
+        }
+    }
+
+    /// <summary>
+    /// 将烹饪好的食物放到砧板上
+    /// </summary>
+    private void GetCookedFood()
+    {
+        foreach (var step in _currentDishConfig.CookingSteps)
+        {
+            var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
+            var boardCenter = kitchenwareCenters["board"];
+            if (CheckOver()) return;
+            DragMove(ref kitchenwareCenter, ref boardCenter, 100);
+        }
+    }
+
+    /// <summary>
+    /// 调味食物
+    /// </summary>
+    private void Seasoning()
+    {
+        foreach (var condiment in _currentDishConfig.RequiredCondiments)
+        {
+            if (condimentCounts.TryGetValue(condiment, out var count))
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    var condimentCenter = condimentCenters[condiment];
+                    var boardCenter = kitchenwareCenters["board"];
+                    if (CheckOver()) return;
+                    DragMove(ref condimentCenter, ref boardCenter, 100);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 提交砧板上的食物订单
+    /// </summary>
+    private void SubmitOrder()
+    {
+        var finalBoardCenter = kitchenwareCenters["board"];
+        if (CheckOver()) return;
+        DragMove(ref finalBoardCenter, ref next_order, 100);
+    }
+
+    /// <summary>
+    /// 丢弃所有厨具和砧板上的食物
+    /// </summary>
+    private void DisgardAllFood()
+    {
+        var binCenter = kitchenwareCenters["bin"];
+
+        // 将所有厨具中的食物丢到垃圾桶
+        foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
+        {
+            if (kitchenware == "bin" || kitchenware == "board") continue;
+
+            var kitchenwareCenter = kitchenwareCenters[kitchenware];
+            if (CheckOver()) return;
+            DragMove(ref kitchenwareCenter, ref binCenter, 100);
+        }
+
+        // 将砧板上的食物丢到垃圾桶
+        var boardCenter = kitchenwareCenters["board"];
+        if (CheckOver()) return;
+        DragMove(ref boardCenter, ref binCenter, 100);
+    }
+
+
     private bool CheckOver()
     {
-        FindState();
-        if(_state == AutoCookingState.Summary)
+        if(!FindMatch(ref ui_clock))
         {
             return true;
         }
@@ -301,8 +386,15 @@ public class AutoCooking : BaseGameTask
     {
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        //Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
+
+        if (FindMatch(ref ui_clock))
+        {
+            _state = AutoCookingState.Cooking;
+            _logWindow?.SetGameState("烹饪-烹饪中");
+            _waited = false;
+            return;
+        }
 
         if (FindMatch(ref ui_shop))
         {
@@ -316,14 +408,6 @@ public class AutoCooking : BaseGameTask
         {
             _state = AutoCookingState.Challenge;
             _logWindow?.SetGameState("烹饪-订单挑战");
-            _waited = false;
-            return;
-        }
-
-        if (FindMatch(ref ui_clock))
-        {
-            _state = AutoCookingState.Cooking;
-            _logWindow?.SetGameState("烹饪-烹饪中");
             _waited = false;
             return;
         }
@@ -830,66 +914,5 @@ public class AutoCooking : BaseGameTask
 
     #endregion
 
-    private void HandleCookedFood()
-    {
-        //LocateOrders();
-        DefaultOrder();
-
-        // 移出烹饪好的食材
-        foreach (var step in _currentDishConfig.CookingSteps)
-        {
-            var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
-            var boardCenter = kitchenwareCenters["board"];
-            DragMove(ref kitchenwareCenter, ref boardCenter, 100);
-            if (CheckOver()) return;
-        }
-
-        // 继续补充食材
-        foreach (var step in _currentDishConfig.CookingSteps)
-        {
-            var ingredientCenter = ingredientCenters[step.Ingredient];
-            var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
-            DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
-            if (CheckOver()) return;
-        }
-
-        // 补充调料
-        foreach (var condiment in _currentDishConfig.RequiredCondiments)
-        {
-            if (condimentCounts.TryGetValue(condiment, out var count))
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var condimentCenter = condimentCenters[condiment];
-                    var boardCenter = kitchenwareCenters["board"];
-                    DragMove(ref condimentCenter, ref boardCenter, 100);
-                    if (CheckOver()) return;
-                }
-            }
-        }
-
-        // 提交订单
-        var finalBoardCenter = kitchenwareCenters["board"];
-        DragMove(ref finalBoardCenter, ref next_order, 100);
-    }
-
-    private void DisgardAllFood()
-    {
-        var binCenter = kitchenwareCenters["bin"];
-
-        // 将所有厨具中的食物丢到垃圾桶
-        foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
-        {
-            if (kitchenware == "bin" || kitchenware == "board") continue;
-            
-            var kitchenwareCenter = kitchenwareCenters[kitchenware];
-            DragMove(ref kitchenwareCenter, ref binCenter, 100);
-            if (CheckOver()) return;
-        }
-
-        // 将砧板上的食物丢到垃圾桶
-        var boardCenter = kitchenwareCenters["board"];
-        DragMove(ref boardCenter, ref binCenter, 100);
-    }
 
 }

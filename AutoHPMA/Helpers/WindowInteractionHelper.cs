@@ -215,20 +215,10 @@ public class WindowInteractionHelper
             Thread.Sleep(50);
         }
 
-        // 最后确保在精确的终点位置
-        PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, endLParam);
-        Thread.Sleep(100);
-
         // 释放鼠标左键
         PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, endLParam);
         Thread.Sleep(50);
 
-        // 最后再发送几次移动消息，确保位置正确
-        for (int i = 0; i < 2; i++)
-        {
-            PostMessage(hWnd, WM_MOUSEMOVE, IntPtr.Zero, endLParam);
-            Thread.Sleep(30);
-        }
     }
 
     public static void SendMouseDrag(IntPtr hWnd, uint startX, uint startY, uint endX, uint endY, int duration = 500)
