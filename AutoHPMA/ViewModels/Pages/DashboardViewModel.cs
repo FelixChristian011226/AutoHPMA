@@ -322,7 +322,7 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public void OnGoToWikiUrl()
         {
-            Process.Start(new ProcessStartInfo("https://www.felixchristian.top/2025/04/04/16-AutoHPMA/") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo("https://autohpma-web.vercel.app/") { UseShellExecute = true });
         }
 
         public void OnNavigatedFrom()

@@ -189,7 +189,7 @@
                 <!-- 当前版本 -->
                 <ui:TextBlock TextWrapping="Wrap">
                     <Run Text="当前版本: " />
-                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA/releases"
+                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA/releases/latest"
                        RequestNavigate="Hyperlink_RequestNavigate">
                         <Run Text="{Binding ViewModel.AppVersion}" />
                     </Hyperlink>
@@ -219,9 +219,9 @@
                 <!-- 使用教程 -->
                 <ui:TextBlock TextWrapping="Wrap">
                     <Run Text="使用教程: " />
-                    <Hyperlink NavigateUri="https://www.felixchristian.top/2025/04/04/16-AutoHPMA/"
+                    <Hyperlink NavigateUri="https://autohpma-web.vercel.app/document/"
                        RequestNavigate="Hyperlink_RequestNavigate">
-                        https://www.felixchristian.top/2025/04/04/16-AutoHPMA/
+                        https://autohpma-web.vercel.app/document/
                     </Hyperlink>
                 </ui:TextBlock>
                 <Separator Margin="0,1"/>
