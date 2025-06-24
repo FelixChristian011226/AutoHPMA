@@ -124,8 +124,7 @@
     <None Remove="Assets\SweetAdventure\Image\ui_endding.png" />
     <None Remove="Assets\SweetAdventure\Image\ui_gaming.png" />
     <None Remove="Assets\SweetAdventure\Image\ui_teaming.png" />
-    <None Remove="Assets\wpfui-icon-256.png" />
-    <None Remove="Assets\wpfui-icon-1024.png" />
+    <None Remove="AutoHPMA.ico" />
     <None Remove="tessdata\eng.traineddata" />
   </ItemGroup>
 
@@ -376,13 +375,16 @@
     <Content Include="Assets\SweetAdventure\Image\ui_teaming.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="AutoHPMA.ico" />
     <Content Include="tessdata\chi_sim.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="tessdata\eng.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Resource Include="Assets\hpma.png" />
+    <Content Include="Assets\hpma.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -393,8 +395,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="Views\Windows\Logo.ico" />
-    <Resource Include="Assets\wpfui-icon-256.png" />
-    <Resource Include="Assets\wpfui-icon-1024.png" />
   </ItemGroup>
 
   <ItemGroup>
