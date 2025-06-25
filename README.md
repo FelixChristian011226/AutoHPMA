@@ -18,63 +18,76 @@
   <img src="https://img.shields.io/github/stars/FelixChristian011226/AutoHPMA">
 </div>
 
-> Note: This software is currently developed solely by me, and as I only possess game accounts from the Chinese region, all game recognition features are implemented based on the **Chinese version** of the games. Therefore, support for other languages is not available at this time. At present, the application only supports the **Mumu emulator**, and integration with official launchers or other platforms has not yet been implemented. I sincerely apologize for any inconvenience this may cause. Given my limited capability, I warmly welcome any developers who are interested in contributing to this project. Thank you!
+**AutoHPMA** is a WPF tool developed in C# for the game *Harry Potter: Magic Awakened (HPMA)*, designed to automate various repetitive gameplay tasks for players.
 
-**AutoHPMA** is a WPF tool developed in C# designed for the game *Harry Potter: Magic Awakened (HPMA)*, providing simple automation functionalities for players.
-
-<br>
+<br/>
 
 ## Features
-- **Automated Club Quiz**: Uses PaddleOCR for text recognition and compares it with a built-in question database to automate answering.
 
-<br>
-  
+- **Auto Club Quiz**  
+  Fully automated quiz answering powered by a state machine. Supports auto-entering club scene, OCR recognition of questions and options, database matching, and accurate answering. Results are pushed via Windows notifications.
+
+- **Auto Forbidden Forest Exploration**  
+  Automatically completes a specified number of Forbidden Forest runs. Detects player role (leader/member), likes teammates, and handles the entire process without manual input.
+
+- **Auto Wizard Cooking**  
+  Automates multiple recipes. Users can customize or add new recipes, with full automation for dragging ingredients, tools, seasonings, and cooking.
+
+- **Auto Sweet Adventure**  
+  Automates the limited-time event "Sweet Adventure", including matchmaking, round progression, and result settlement.
+
+<br/>
+
 ## Highlights
-- **Log Window**: Displays runtime information such as current stage and answer options.
-- **Background Operation**: AutoHPMA can run entirely in the background, allowing you to perform other tasks while it operates.
 
-<br>
+- Logging System: Overlays logs on the game window and supports local file logging.
+- Overlay Mask Window: Customizable real-time overlay showing match results.
+- Hotkey Binding: Bind custom hotkeys to quickly activate each feature.
+- Notification System: Native Windows notifications for real-time result feedback.
 
-## Usage Instructions
+<br/>
 
-To use AutoHPMA, follow these simple installation steps:
+## Installation Guide
 
-### Download
+### Requirements
 
-Download the latest version of AutoHPMA from the [Releases](https://github.com/YourGitHubUsername/AutoHPMA/releases) page.
+- Windows 10 or later
+- .NET 8.0 or newer
 
-### Installation
+### Steps
 
-1. Locate the downloaded `AutoHPMA.msi` file on your computer.
-2. Double-click the MSI file to start the installation process.
-3. (Optional) Click `Configure` to change the installation path.
-4. Click `Install` and wait for the installation to complete.
+1. Go to the [Releases](https://github.com/FelixChristian011226/AutoHPMA/releases) page to download the latest version.
+2. Download and run `AutoHPMA-Setup.exe` to start the installer.
+3. Follow the instructions to complete the installation. You can choose the installation path and whether to launch on startup.
+4. If prompted about missing .NET runtime on first launch, download it from the [Microsoft .NET website](https://dotnet.microsoft.com/download).
 
-### Launch
+### Launch & Usage
 
-- After installation, launch AutoHPMA from the Start menu or desktop shortcut.
-- Start the game and set the correct game parameters.
-- Configure the tool according to your preferences.
-- Click the start button for the desired function on the main interface.
+1. Run `AutoHPMA.exe`
+2. Configure required parameters as instructed
+3. Click the "Start" button on the main page
+4. Navigate to additional tabs to enable desired features
 
-For more detailed instructions, please follow this link: [AutoHPMA instructions](https://www.felixchristian.top/2025/04/04/16-AutoHPMA/#autohpma).
+For more detailed usage, tutorials, and FAQs, visit the [official website](https://autohpma-web.vercel.app/).
 
-<br>
+<br/>
 
-## Notice
+## Notes
 
-- **Compatibility**: AutoHPMA is currently only compatible with the MuMu emulator, supporting multiple resolutions in windowed mode, however, at present, the resolution of 1600\*900 will cause screenshot abnormalities, please do not use it. Furthermore, the official launcher is not currently supported.
-- **Guidelines**: Do not minimize the game window or click the "Show Desktop" button while the software is running, as it may cause window overlay issues. However, the game window can be covered by other windows without affecting the tool's operation.
-- **Legal Disclaimer**: AutoHPMA is intended for educational and entertainment purposes only. Please carefully read and comply with *Harry Potter: Magic Awakened*'s terms of service. The developer is not responsible for any adverse consequences resulting from misuse of this application.
+- **Only compatible with the MuMu emulator**, with a recommended resolution of 1280×720. 1600×900 may cause screenshot issues.
+- Set game graphics to the default "Standard" quality. Avoid changing graphical parameters that may affect UI layout.
+- Do not minimize the game or click “Show Desktop” during script execution; this may cause overlay issues. If issues arise, try switching windows several times or rebooting the system.
+- This is a personal project for learning and sharing purposes. Use at your own risk.
 
-<br>
+<br/>
 
 ## Contribution
 
-Feedback and contributions are welcome! If you have suggestions to improve AutoHPMA or want to contribute code, feel free to open an issue or submit a pull request on the GitHub page.
+Feedback and contributions are welcome! If you have suggestions or wish to contribute, feel free to open an issue or submit a pull request on GitHub.
 
-<br>
+<br/>
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/FelixChristian011226/AutoHPMA/blob/master/LICENSE) - see the LICENSE file for details.
+This project is licensed under the [GPL-3.0 License](https://github.com/FelixChristian011226/AutoHPMA/blob/master/LICENSE) – see the LICENSE file for details.
+
