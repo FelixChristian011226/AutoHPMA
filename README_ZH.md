@@ -57,7 +57,7 @@
 
 ### 安装步骤
 
-1. 前往[Releases](https://github.com/YourGitHubUsername/AutoHPMA/releases)获取最新发布版本。
+1. 前往[Releases](https://github.com/FelixChristian011226/AutoHPMA/releases)获取最新发布版本。
 2. 下载并双击 `AutoHPMA-Setup.exe` 启动安装程序。
 3. 按提示完成安装，可自定义安装路径和开机启动设置。
 4. 若首次启动提示缺少 .NET 运行时，请前往 [Microsoft .NET 官网](https://dotnet.microsoft.com/download) 安装对应版本。
@@ -69,7 +69,7 @@
 3. 点击启动页面的"启动"按钮
 4. 根据需要，前往其余页面启用相关功能
 
-详细使用教程请参阅[使用说明](https://autohpma-web.vercel.app/document/usage.html)。
+如需更详细的功能说明、使用教程、常见问题解答等，请上[官网](https://autohpma-web.vercel.app/)查询相关内容。
 
 <br>
 
@@ -92,6 +92,3 @@
 
 本项目根据 [GPL-3.0 许可证](https://github.com/FelixChristian011226/AutoHPMA/blob/master/LICENSE) 授权发布 - 有关详情，请参阅 LICENSE 文件。
 
----
-
-如需更详细的功能说明、常见问题解答等，请上[官网](https://autohpma-web.vercel.app/)查询相关内容。
