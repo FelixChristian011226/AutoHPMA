@@ -67,7 +67,7 @@
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="恢复该应用程序的用户偏好设置，需要重启生效"
+                                  Text="恢复应用程序的用户偏好设置，重置后须重启生效"
                                   TextWrapping="Wrap" />
                 </Grid>
             </ui:CardControl.Header>

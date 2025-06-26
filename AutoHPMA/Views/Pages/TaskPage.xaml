@@ -181,7 +181,7 @@
                            Grid.Row="0"
                            Grid.Column="0"
                            FontTypography="Body"
-                           Text="自动禁林"
+                           Text="自动禁林探索"
                            TextWrapping="Wrap" />
                     <ui:TextBlock
                            Grid.Row="1"
@@ -294,7 +294,7 @@
                            Grid.Row="0"
                            Grid.Column="0"
                            FontTypography="Body"
-                           Text="自动烹饪"
+                           Text="自动巫师烹饪"
                            TextWrapping="Wrap" />
                     <ui:TextBlock
                            Grid.Row="1"

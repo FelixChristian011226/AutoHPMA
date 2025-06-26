@@ -197,7 +197,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="在游戏左上角覆盖一个日志窗口，输出运行状态信息"
+                        Text="覆盖于游戏窗口左上，显示时间状态以及日志信息"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"
@@ -221,13 +221,13 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="输出调试信息"
+                        Text="输出调试日志"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="在日志窗口输出DBG信息，如无异常不建议勾选"
+                        Text="勾选后，日志窗口会输出Debug日志信息"
                         TextWrapping="Wrap" />
                     <CheckBox
                         Grid.Row="0"
@@ -264,7 +264,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="实时显示任务过程中，模板匹配的识别结果"
+                        Text="覆盖于游戏窗口之上，实时显示任务过程中的识别结果"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"

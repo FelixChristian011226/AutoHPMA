@@ -33,7 +33,7 @@
         
         <Label
             Margin="0,0,0,16"
-            Content="点击右侧输入框并按下想要设置的按键来设置热键，按ESC键可以取消热键设置。"
+            Content="点击右侧输入框，按下需设定的按键来设置热键，按ESC键可以取消热键设置。支持组合键。"
             Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" />
         
         <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
