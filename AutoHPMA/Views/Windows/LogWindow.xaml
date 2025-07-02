@@ -71,10 +71,15 @@
                                     Text="{Binding Category}" />
                                 <Run Foreground="White" Text="] " />
                         </TextBlock>
-                        <TextBlock Foreground="FloralWhite"
-                                   TextWrapping="Wrap"
-                                   Width="240"
-                                   helpers:InlineBindingHelper.FormattedText="{Binding Content}" />
+                        <Grid Width="240" Height="20" ClipToBounds="True">
+                            <Canvas x:Name="MarqueeCanvas" Height="20">
+                                <TextBlock x:Name="MarqueeText"
+                                           Foreground="FloralWhite"
+                                           VerticalAlignment="Center"
+                                           helpers:InlineBindingHelper.FormattedText="{Binding Content}"
+                                           Loaded="MarqueeText_Loaded" />
+                            </Canvas>
+                        </Grid>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>

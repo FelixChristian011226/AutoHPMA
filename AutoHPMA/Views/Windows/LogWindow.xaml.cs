@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using AutoHPMA.Helpers;
 using System.ComponentModel;
 using System.Windows.Threading;
+using System.Windows.Controls;
 
 namespace AutoHPMA.Views.Windows
 {
@@ -27,6 +28,16 @@ namespace AutoHPMA.Views.Windows
         private const int WS_EX_LAYERED = 0x00080000;
 
         private ObservableCollection<LogMessage> _logMessages = new ObservableCollection<LogMessage>();
+
+        private bool _showMarquee = true;
+        public bool ShowMarquee
+        {
+            get => _showMarquee;
+            set
+            {
+                _showMarquee = value;
+            }
+        }
 
         private bool _showDebugLogs = false;
         public bool ShowDebugLogs
@@ -183,6 +194,61 @@ namespace AutoHPMA.Views.Windows
             }
         }
 
+        public static void StartMarquee(TextBlock marqueeText, Canvas marqueeCanvas, double viewWidth = 240, double pauseSeconds = 1.5)
+        {
+            marqueeText.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            double textWidth = marqueeText.DesiredSize.Width;
+            if (textWidth <= viewWidth)
+            {
+                Canvas.SetLeft(marqueeText, 0);
+                return;
+            }
+            double scrollSeconds = Math.Max(2, (textWidth - viewWidth) / 60.0);
+            var storyboard = new System.Windows.Media.Animation.Storyboard();
+            var animation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = viewWidth - textWidth,
+                BeginTime = TimeSpan.FromSeconds(pauseSeconds),
+                Duration = TimeSpan.FromSeconds(scrollSeconds),
+                AutoReverse = false,
+                FillBehavior = System.Windows.Media.Animation.FillBehavior.HoldEnd
+            };
+            System.Windows.Media.Animation.Storyboard.SetTarget(animation, marqueeText);
+            System.Windows.Media.Animation.Storyboard.SetTargetProperty(animation, new PropertyPath("(Canvas.Left)"));
+            storyboard.Children.Add(animation);
+            storyboard.Completed += (s, e) =>
+            {
+                var timer = new DispatcherTimer();
+                timer.Interval = TimeSpan.FromSeconds(pauseSeconds);
+                timer.Tick += (s2, e2) =>
+                {
+                    timer.Stop();
+                    Canvas.SetLeft(marqueeText, 0);
+                    StartMarquee(marqueeText, marqueeCanvas, viewWidth, pauseSeconds);
+                };
+                timer.Start();
+            };
+            storyboard.Begin();
+        }
+
+        private void MarqueeText_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!_showMarquee) return;
+
+            var textBlock = sender as TextBlock;
+            if (textBlock == null) return;
+            var parent = VisualTreeHelper.GetParent(textBlock);
+            while (parent != null && !(parent is Canvas))
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            var canvas = parent as Canvas;
+            if (canvas != null)
+            {
+                StartMarquee(textBlock, canvas, 240, 1.5);
+            }
+        }
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

@@ -52,6 +52,9 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _logWindowEnabled = true;
 
         [ObservableProperty]
+        private bool _logWindowMarqueeEnabled = true;
+
+        [ObservableProperty]
         private bool _debugLogEnabled = false;
 
         [ObservableProperty]
@@ -71,6 +74,7 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
         private bool _stopButtonEnabled = true;
+
         #endregion
 
         # region argument from AppContextService
@@ -149,6 +153,7 @@ namespace AutoHPMA.ViewModels.Pages
             CaptureInterval = _settings.CaptureInterval;
             RealTimeScreenshotEnabled = _settings.RealTimeScreenshotEnabled;
             LogWindowEnabled = _settings.LogWindowEnabled;
+            LogWindowMarqueeEnabled = _settings.LogWindowMarqueeEnabled;
             DebugLogEnabled = _settings.DebugLogEnabled;
             MaskWindowEnabled = _settings.MaskWindowEnabled;
 
@@ -270,6 +275,7 @@ namespace AutoHPMA.ViewModels.Pages
                 //_logWindow.Owner = GetWindow(_gameHwnd); // 将游戏窗口设置为LogWindow的Owner
                 _logWindow.RefreshPosition(_gameHwnd);
                 _logWindow.ShowDebugLogs = DebugLogEnabled;
+                _logWindow.ShowMarquee = LogWindowMarqueeEnabled;
                 _logger.LogInformation("检测到[Yellow]{_startupOption}[/Yellow]已启动", _startupOption);
                 ShowGameWindowInfo();
             }
@@ -454,6 +460,12 @@ namespace AutoHPMA.ViewModels.Pages
         partial void OnMaskWindowEnabledChanged(bool value)
         {
             _settings.MaskWindowEnabled = value;
+            _settings.Save();
+        }
+
+        partial void OnLogWindowMarqueeEnabledChanged(bool value)
+        {
+            _settings.LogWindowMarqueeEnabled = value;
             _settings.Save();
         }
 
