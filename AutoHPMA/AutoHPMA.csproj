@@ -258,7 +258,7 @@
     <Content Include="Assets\Cooking\Image\Ingredients\rice.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Cooking\Image\Kitchenware\board.png">
+    <Content Include="Assets\Cooking\Image\Section\board.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Kitchenware\oven.png">
@@ -273,7 +273,7 @@
     <Content Include="Assets\Cooking\Image\Kitchenware\pot_ring.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Cooking\Image\Kitchenware\bin.png">
+    <Content Include="Assets\Cooking\Image\Section\bin.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Kitchenware\wok.png">

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.NetworkInformation;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
@@ -722,36 +723,61 @@ public class AutoCooking : BaseGameTask
         click_start = Cv2.ImRead(image_folder + "click_start.png");
 
         //Dishes
-        dishImages["Dishes/海鱼黄金焗饭.png"] = Cv2.ImRead(image_folder + "Dishes/海鱼黄金焗饭.png", ImreadModes.Unchanged);
-        dishImages["Dishes/果香烤乳猪.png"] = Cv2.ImRead(image_folder + "Dishes/果香烤乳猪.png", ImreadModes.Unchanged);
-        dishImages["Dishes/奶油蘑菇炖饭.png"] = Cv2.ImRead(image_folder + "Dishes/奶油蘑菇炖饭.png", ImreadModes.Unchanged);
-        _logger.LogDebug("已加载菜品图片：海鱼黄金焗饭，果香烤乳猪，奶油蘑菇炖饭");
+
+        var dishDir = Path.Combine(image_folder, "Dishes");
+        var loadedDishes = new List<string>();
+        foreach (var file in Directory.GetFiles(dishDir, "*.png"))
+        {
+            var fileName = Path.GetFileName(file);
+            dishImages["Dishes/" + fileName] = Cv2.ImRead(file, ImreadModes.Unchanged);
+            loadedDishes.Add(Path.GetFileNameWithoutExtension(file));
+        }
+        _logger.LogDebug("已加载菜品图片：" + string.Join("，", loadedDishes));
+
+        //Section
+        bin = Cv2.ImRead(image_folder + "Section/bin.png");
+        board = Cv2.ImRead(image_folder + "Section/board.png");
 
         //Kitchenware
-        bin = Cv2.ImRead(image_folder + "Kitchenware/bin.png");
-        board = Cv2.ImRead(image_folder + "Kitchenware/board.png");
-        kitchenwares["oven"] = Cv2.ImRead(image_folder + "Kitchenware/oven.png", ImreadModes.Unchanged);
-        kitchenwares["pot"] = Cv2.ImRead(image_folder + "Kitchenware/pot.png", ImreadModes.Unchanged);
-        kitchenwares["wok"] = Cv2.ImRead(image_folder + "Kitchenware/wok.png", ImreadModes.Unchanged);
-        kitchenwareRings["oven"] = Cv2.ImRead(image_folder + "Kitchenware/oven_ring.png");
-        kitchenwareRings["pot"] = Cv2.ImRead(image_folder + "Kitchenware/pot_ring.png");
-        kitchenwareRings["wok"] = Cv2.ImRead(image_folder + "Kitchenware/wok_ring.png");
-        _logger.LogDebug("已加载厨具图片：bin, board, oven, pot, wok");
+        var kitchenwareDir = Path.Combine(image_folder, "Kitchenware");
+        var loadedKitchenwares = new List<string>();
+        foreach (var file in Directory.GetFiles(kitchenwareDir, "*.png"))
+        {
+            var fileName = Path.GetFileNameWithoutExtension(file);
+            if (fileName.EndsWith("_ring"))
+            {
+                kitchenwareRings[fileName.Replace("_ring", "")] = Cv2.ImRead(file);
+                // 不加入日志
+            }
+            else
+            {
+                kitchenwares[fileName] = Cv2.ImRead(file, ImreadModes.Unchanged);
+                loadedKitchenwares.Add(fileName);
+            }
+        }
+        _logger.LogDebug("已加载厨具图片：" + string.Join("，", loadedKitchenwares));
 
         //Condiments
-        condiments["cream"] = Cv2.ImRead(image_folder + "Condiment/cream.png", ImreadModes.Unchanged);
-        condiments["onion"] = Cv2.ImRead(image_folder + "Condiment/onion.png", ImreadModes.Unchanged);
-        condiments["lemon"] = Cv2.ImRead(image_folder + "Condiment/lemon.png", ImreadModes.Unchanged);
-        condiments["coconut"] = Cv2.ImRead(image_folder + "Condiment/coconut.png", ImreadModes.Unchanged);
-        condiments["wine"] = Cv2.ImRead(image_folder + "Condiment/wine.png", ImreadModes.Unchanged);
-        _logger.LogDebug("已加载调料图片：cream, onion, lemon, coconut");
+        var condimentDir = Path.Combine(image_folder, "Condiment");
+        var loadedCondiments = new List<string>();
+        foreach (var file in Directory.GetFiles(condimentDir, "*.png"))
+        {
+            var fileName = Path.GetFileNameWithoutExtension(file);
+            condiments[fileName] = Cv2.ImRead(file, ImreadModes.Unchanged);
+            loadedCondiments.Add(fileName);
+        }
+        _logger.LogDebug("已加载调料图片：" + string.Join("，", loadedCondiments));
 
         //Ingredients
-        ingredients["rice"] = Cv2.ImRead(image_folder + "Ingredients/rice.png", ImreadModes.Unchanged);
-        ingredients["fish"] = Cv2.ImRead(image_folder + "Ingredients/fish.png", ImreadModes.Unchanged);
-        ingredients["pork"] = Cv2.ImRead(image_folder + "Ingredients/pork.png", ImreadModes.Unchanged);
-        ingredients["mushroom"] = Cv2.ImRead(image_folder + "Ingredients/mushroom.png", ImreadModes.Unchanged);
-        _logger.LogDebug("已加载食材图片：rice, fish, pork, mushroom");
+        var ingredientDir = Path.Combine(image_folder, "Ingredients");
+        var loadedIngredients = new List<string>();
+        foreach (var file in Directory.GetFiles(ingredientDir, "*.png"))
+        {
+            var fileName = Path.GetFileNameWithoutExtension(file);
+            ingredients[fileName] = Cv2.ImRead(file, ImreadModes.Unchanged);
+            loadedIngredients.Add(fileName);
+        }
+        _logger.LogDebug("已加载食材图片：" + string.Join("，", loadedIngredients));
 
         //Orders
         order = Cv2.ImRead(image_folder + "Order/order.png", ImreadModes.Unchanged);
