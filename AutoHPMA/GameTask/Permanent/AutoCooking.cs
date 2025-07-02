@@ -474,7 +474,7 @@ public class AutoCooking : BaseGameTask
     {
         if (_currentDishConfig == null) return false;
 
-        double threshold = 0.85;
+        double threshold = 0.9;
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
@@ -504,7 +504,7 @@ public class AutoCooking : BaseGameTask
     {
         if (_currentDishConfig == null) return false;
 
-        double threshold = 0.85;
+        double threshold = 0.9;
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
@@ -539,7 +539,7 @@ public class AutoCooking : BaseGameTask
     {
         if (_currentDishConfig == null) return false;
 
-        double threshold = 0.85;
+        double threshold = 0.9;
         captureMat = _capture.Capture();
         Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
         Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
