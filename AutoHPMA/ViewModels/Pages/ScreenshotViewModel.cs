@@ -14,6 +14,7 @@ using Wpf.Ui.Abstractions.Controls;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Services;
 using OpenCvSharp.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -34,9 +35,8 @@ namespace AutoHPMA.ViewModels.Pages
 
         public static void TakeScreenshot()
         {
+            var logger = App.GetLogger<ScreenshotViewModel>();
             var gameHwnd = AppContextService.Instance.GameHwnd;
-            if (gameHwnd == IntPtr.Zero) return;
-
             var capture = AppContextService.Instance.Capture;
             if (capture == null)
             {
@@ -58,9 +58,19 @@ namespace AutoHPMA.ViewModels.Pages
             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             string filename = $"screenshot_{timestamp}.png";
             string fullPath = Path.Combine(folderPath, filename);
-            
-            bmp.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
-            bmp.Dispose();
+            try
+            {
+                bmp.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
+                logger.LogInformation("截图已保存到: {Path}", fullPath);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("截图保存失败: {ex}", ex.Message);
+            }
+            finally
+            {
+                bmp.Dispose();
+            }
         }
 
         private void BitmapUpdated(Bitmap bmp)
