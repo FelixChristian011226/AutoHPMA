@@ -219,9 +219,9 @@
                 <!-- 使用教程 -->
                 <ui:TextBlock TextWrapping="Wrap">
                     <Run Text="使用教程: " />
-                    <Hyperlink NavigateUri="https://autohpma-web.vercel.app/document/"
+                    <Hyperlink NavigateUri="https://autohpma.top/document/"
                        RequestNavigate="Hyperlink_RequestNavigate">
-                        https://autohpma-web.vercel.app/document/
+                        https://autohpma.top/document/
                     </Hyperlink>
                 </ui:TextBlock>
                 <Separator Margin="0,1"/>
