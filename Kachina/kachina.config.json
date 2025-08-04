@@ -1,0 +1,20 @@
+{
+    "source": "https://github.com/FelixChristian011226/AutoHPMA/releases/latest/download/AutoHPMA-Setup.exe",
+    "appName": "AutoHPMA Installer",
+    "publisher": "FelixChristian",
+    "regName": "AutoHPMA",
+    "exeName": "AutoHPMA.exe",
+    "uninstallName": "AutoHPMA.uninst.exe",
+    "updaterName": "AutoHPMA.update.exe",
+    "programFilesPath": "AutoHPMA",
+    "title": "AutoHPMA",
+    "description": "哈利波特：魔法觉醒自动化工具",
+    "windowTitle": "AutoHPMA 安装程序",
+    "userDataPath": ["${INSTALL_PATH}/User"],
+    "extraUninstallPath": ["${INSTALL_PATH}/log"],
+    "uacStrategy": "prefer-admin",
+    "runtimes": [
+      "Microsoft.DotNet.DesktopRuntime.8",
+      "Microsoft.VCRedist.2015+.x64"
+    ]
+}
