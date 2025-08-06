@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the MIT License.
+// This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file, You can obtain one at https://opensource.org/licenses/MIT.
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
@@ -6,6 +6,7 @@
 using AutoHPMA.GameTask;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Services;
+using AutoHPMA.Services.Interface;
 using AutoHPMA.ViewModels.Pages;
 using AutoHPMA.ViewModels.Windows;
 using AutoHPMA.Views.Pages;
@@ -97,6 +98,9 @@ namespace AutoHPMA
                 services.AddSingleton<SettingsViewModel>();
 
                 services.AddSingleton<CookingConfigService>();
+                
+                // 注册更新服务
+                services.AddSingleton<IUpdateService, UpdateService>();
             }).Build();
 
         public static ILogger<T> GetLogger<T>()

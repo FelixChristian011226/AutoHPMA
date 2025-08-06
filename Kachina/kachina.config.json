@@ -1,6 +1,17 @@
 {
-    "source": "https://github.com/FelixChristian011226/AutoHPMA/releases/latest/download/AutoHPMA.Install.exe",
-    "appName": "AutoHPMA Installer",
+    "source": [
+      {
+        "id": "github",
+        "name": "Github",
+        "uri": "https://github.com/FelixChristian011226/AutoHPMA/releases/latest/download/AutoHPMA.Install.exe"
+      },
+      {
+        "id": "gitcode",
+        "name": "Gitcode",
+        "uri": "https://gitcode.com/Felix_Christian/AutoHPMA/releases/download/v3.2.0/AutoHPMA.Install.exe"
+      }
+    ],
+    "appName": "AutoHPMA",
     "publisher": "FelixChristian",
     "regName": "AutoHPMA",
     "exeName": "AutoHPMA.exe",

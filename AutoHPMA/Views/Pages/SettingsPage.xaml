@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="AutoHPMA.Views.Pages.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,6 +18,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <converters:BoolToInverseBoolConverter x:Key="BoolToInverseBoolConverter" />
     </Page.Resources>
 
     <StackPanel Margin="40,30,40,30">
@@ -187,13 +188,26 @@
             BorderThickness="1">
             <StackPanel>
                 <!-- 当前版本 -->
-                <ui:TextBlock TextWrapping="Wrap">
-                    <Run Text="当前版本: " />
-                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA/releases/latest"
-                       RequestNavigate="Hyperlink_RequestNavigate">
-                        <Run Text="{Binding ViewModel.AppVersion}" />
-                    </Hyperlink>
-                </ui:TextBlock>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock Grid.Column="0" TextWrapping="Wrap" VerticalAlignment="Center">
+                        <Run Text="当前版本: " />
+                        <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA/releases/latest"
+                           RequestNavigate="Hyperlink_RequestNavigate">
+                            <Run Text="{Binding ViewModel.AppVersion}" />
+                        </Hyperlink>
+                    </ui:TextBlock>
+                    <ui:Button Grid.Column="1"
+                               Content="检查更新"
+                               Command="{Binding ViewModel.CheckForUpdatesCommand}"
+                               IsEnabled="{Binding ViewModel.IsCheckingUpdate, Converter={StaticResource BoolToInverseBoolConverter}}"
+                               Icon="{ui:SymbolIcon ArrowSync24}"
+                               Appearance="Secondary"
+                               Margin="8,0,0,0" />
+                </Grid>
                 <Separator Margin="0,1"/>
 
                 <!-- 作者 -->

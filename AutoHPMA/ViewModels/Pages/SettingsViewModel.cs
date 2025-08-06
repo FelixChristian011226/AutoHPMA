@@ -1,9 +1,11 @@
-﻿// This Source Code Form is subject to the terms of the MIT License.
+// This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file, You can obtain one at https://opensource.org/licenses/MIT.
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
 using AutoHPMA.Config;
+using AutoHPMA.Models;
+using AutoHPMA.Services.Interface;
 using Microsoft.Win32;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +21,7 @@ namespace AutoHPMA.ViewModels.Pages
     {
         private bool _isInitialized = false;
         private readonly AppSettings _settings;
+        private readonly IUpdateService _updateService;
 
         [ObservableProperty]
         private string _appVersion = String.Empty;
@@ -29,6 +32,9 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private int _logFileLimit = 10;
+
+        [ObservableProperty]
+        private bool _isCheckingUpdate = false;
 
         public class ThemeOption
         {
@@ -44,9 +50,10 @@ namespace AutoHPMA.ViewModels.Pages
 
         public IEnumerable<ThemeOption> ThemeOptions => _themeOptions;
 
-        public SettingsViewModel(AppSettings settings)
+        public SettingsViewModel(AppSettings settings, IUpdateService updateService)
         {
             _settings = settings;
+            _updateService = updateService;
             LogFileLimit = _settings.LogFileLimit;
         }
 
@@ -169,6 +176,31 @@ namespace AutoHPMA.ViewModels.Pages
         {
             _settings.LogFileLimit = value;
             _settings.Save();
+        }
+
+        [RelayCommand]
+        private async Task CheckForUpdatesAsync()
+        {
+            if (IsCheckingUpdate) return;
+
+            IsCheckingUpdate = true;
+            try
+            {
+                await _updateService.CheckUpdateAsync(new UpdateOption { Trigger = UpdateTrigger.Manual });
+            }
+            catch (Exception ex)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "❌ 错误",
+                    Content = $"检查更新时发生错误：{ex.Message}",
+                };
+                await uiMessageBox.ShowDialogAsync();
+            }
+            finally
+            {
+                IsCheckingUpdate = false;
+            }
         }
     }
 }
