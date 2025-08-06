@@ -52,7 +52,7 @@ internal class Program
                 option.ExeName = "AutoHPMA.exe";
                 option.DisplayName = $"{option.AppName}";
                 option.DisplayIcon = $"{option.ExeName}";
-                option.DisplayVersion = "3.2.0";
+                option.DisplayVersion = "3.3.0";
                 option.Publisher = "FelixChristian";
                 option.SetupName = $"{option.AppName} {"UninstallProgram".Tr()}";
                 option.MessageOfPage1 = $"{option.AppName}";

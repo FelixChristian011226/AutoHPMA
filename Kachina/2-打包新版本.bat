@@ -15,7 +15,7 @@ REM 设置你的WPF应用发布后所在的目录
 SET "AppPublishDir=AutoHPMA"
 
 REM 设置即将发布的新版本号
-SET "AppVersion=3.2.0"
+SET "AppVersion=3.3.0"
 
 REM 设置你的应用ID (需要和 kachina.config.json 中的 regName 一致)
 SET "AppId=AutoHPMA"
