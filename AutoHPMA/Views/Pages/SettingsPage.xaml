@@ -186,14 +186,25 @@
             Padding="16"
             BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1">
-            <StackPanel>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
                 <!-- 当前版本 -->
-                <Grid Margin="0,0,0,8">
+                <Grid Grid.Row="0" Margin="0,4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ui:TextBlock Grid.Column="0" TextWrapping="Wrap" VerticalAlignment="Center">
+                    <ui:TextBlock Grid.Column="0" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,8">
                         <Run Text="当前版本: " />
                         <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA/releases/latest"
                            RequestNavigate="Hyperlink_RequestNavigate">
@@ -206,41 +217,42 @@
                                IsEnabled="{Binding ViewModel.IsCheckingUpdate, Converter={StaticResource BoolToInverseBoolConverter}}"
                                Icon="{ui:SymbolIcon ArrowSync24}"
                                Appearance="Secondary"
-                               Margin="8,0,0,0" />
+                               Margin="8,0,0,0"
+                               Height="32" />
                 </Grid>
-                <Separator Margin="0,1"/>
+                <Separator Grid.Row="1" Margin="0,4"/>
 
                 <!-- 作者 -->
-                <ui:TextBlock TextWrapping="Wrap">
+                <ui:TextBlock Grid.Row="2" TextWrapping="Wrap" Margin="0,8">
                     <Run Text="软件作者: " />
                     <Hyperlink NavigateUri="https://github.com/FelixChristian011226"
                        RequestNavigate="Hyperlink_RequestNavigate">
                         Felix Christian
                     </Hyperlink>
                 </ui:TextBlock>
-                <Separator Margin="0,1"/>
+                <Separator Grid.Row="3" Margin="0,4"/>
                 
                 <!-- 开源地址 -->
-                <ui:TextBlock TextWrapping="Wrap">
+                <ui:TextBlock Grid.Row="4" TextWrapping="Wrap" Margin="0,8">
                     <Run Text="开源地址: " />
                     <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA"
                        RequestNavigate="Hyperlink_RequestNavigate">
                         https://github.com/FelixChristian011226/AutoHPMA
                     </Hyperlink>
                 </ui:TextBlock>
-                <Separator Margin="0,1"/>
+                <Separator Grid.Row="5" Margin="0,4"/>
 
                 <!-- 使用教程 -->
-                <ui:TextBlock TextWrapping="Wrap">
+                <ui:TextBlock Grid.Row="6" TextWrapping="Wrap" Margin="0,8">
                     <Run Text="使用教程: " />
                     <Hyperlink NavigateUri="https://autohpma.top/document/"
                        RequestNavigate="Hyperlink_RequestNavigate">
                         https://autohpma.top/document/
                     </Hyperlink>
                 </ui:TextBlock>
-                <Separator Margin="0,1"/>
+                <Separator Grid.Row="7" Margin="0,4"/>
 
-            </StackPanel>
+            </Grid>
         </Border>
 
     </StackPanel>
