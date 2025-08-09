@@ -1,32 +1,46 @@
-name: Upload release file to Cloudflare R2
+name: Upload release file to Cloudflare R2 (debug)
 
 on:
   release:
-    types: [published]   # 发布新 Release 时自动运行
-  workflow_dispatch:     # 也可以手动运行
+    types: [published]
+  workflow_dispatch:
 
 jobs:
   upload:
     runs-on: ubuntu-latest
 
     steps:
-      # 下载最新 Release 中的安装包
-      - name: Download release asset
+      - name: List release assets
+        uses: actions/github-script@v7
+        id: list-assets
+        with:
+          script: |
+            const release = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: context.payload.release.tag_name
+            });
+            const names = release.data.assets.map(a => a.name);
+            console.log("Release assets:", names);
+            return names;
+
+      - name: Debug - Show asset names
+        run: echo "Assets: ${{ steps.list-assets.outputs.result }}"
+
+      - name: Download release asset (adjust filename after check)
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: ${{ github.repository }}
-          version: latest
-          file: AutoHPMA.Install.exe
+          version: ${{ github.event.release.tag_name }}
+          file: AutoHPMA.Install.exe   # 这里先写你预估的文件名，打印出来后确认是否正确
           target: AutoHPMA.Install.exe
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 安装 AWS CLI（Cloudflare R2 兼容 S3 协议）
       - name: Install AWS CLI
         run: |
           sudo apt-get update
           sudo apt-get install -y awscli
 
-      # 上传到 Cloudflare R2
       - name: Upload to Cloudflare R2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_ACCESS_KEY_ID }}
