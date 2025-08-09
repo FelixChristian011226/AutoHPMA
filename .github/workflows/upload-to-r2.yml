@@ -1,4 +1,4 @@
-name: Upload release file to Cloudflare R2 (debug)
+name: Upload release file to Cloudflare R2
 
 on:
   release:
