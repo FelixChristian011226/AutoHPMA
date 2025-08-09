@@ -1,0 +1,42 @@
+name: Upload release file to Cloudflare R2
+
+on:
+  release:
+    types: [published]  # 当新 release 发布时触发
+  workflow_dispatch:    # 允许手动触发
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download release asset
+        uses: dawidd6/action-download-artifact@v2
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: AutoHPMA.Install.exe
+          path: .
+
+      - name: Get release asset from GitHub release
+        if: github.event_name == 'release'
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          repo: ${{ github.repository }}
+          version: latest
+          file: AutoHPMA.Install.exe
+          target: AutoHPMA.Install.exe
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install AWS CLI (for R2 upload)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Upload to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 cp AutoHPMA.Install.exe s3://${{ secrets.CLOUDFLARE_BUCKET_NAME }}/AutoHPMA.Install.exe \
+            --endpoint-url https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
