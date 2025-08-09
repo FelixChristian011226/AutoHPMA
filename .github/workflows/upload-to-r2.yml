@@ -1,4 +1,4 @@
-name: Upload release file to Cloudflare R2
+name: Upload release file to Cloudflare R2 (debug)
 
 on:
   release:
@@ -22,10 +22,11 @@ jobs:
             });
             const names = release.data.assets.map(a => a.name);
             console.log("Release assets:", names);
-            return names;
+            return names.join(", ");
 
       - name: Debug - Show asset names
-        run: echo "Assets: ${{ steps.list-assets.outputs.result }}"
+        run: |
+          echo "Assets: ${{ steps.list-assets.outputs.result }}"
 
       - name: Download release asset (adjust filename after check)
         uses: dsaltares/fetch-gh-release-asset@master
