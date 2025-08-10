@@ -5,9 +5,9 @@ name: Build, Package, and Release WPF App (with Auto Version Validation)
 on:
   # 当代码被推送到 main 或 master 分支时触发
   push:
-    branches:
-      - 'main'
-      - 'master'
+    # branches:
+    #   - 'main'
+    #   - 'master'
   # 同时也允许在 GitHub Actions 页面手动触发 (无需输入版本号)
   workflow_dispatch:
 
