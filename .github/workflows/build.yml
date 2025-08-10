@@ -1,0 +1,43 @@
+name: Build and Publish WPF App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # 拉取代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 安装 .NET 8 SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # 恢复依赖
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # 构建
+      - name: Build
+        run: dotnet build --configuration Release
+
+      # 发布（单文件 + 自包含）
+      - name: Publish
+        run: dotnet publish --configuration Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeAllContentForSelfExtract=true
+
+      # 上传产物（GitHub Actions Artifacts）
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoHPMA-${{ github.run_number }}
+          path: |
+            **/publish/**/*
+            !**/*.pdb
