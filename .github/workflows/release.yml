@@ -125,8 +125,8 @@ jobs:
           
           rem 运行打包脚本，脚本会自动读取环境变量 %APP_VERSION%
           cd ./Update
-          cmd /c "1-updater.bat"
-          cmd /c "2-installer.bat"
+          cmd /c "1-创建更新器.bat"
+          cmd /c "2-打包新版本.bat"
 
       - name: Upload updater asset
         uses: actions/upload-artifact@v4
