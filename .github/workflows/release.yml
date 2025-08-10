@@ -57,25 +57,25 @@ jobs:
       - name: Add 7-Zip to PATH
         run: echo "C:\Program Files\7-Zip" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         shell: pwsh
-      - name: List files for debugging
-        run: dir /s
-        shell: cmd
-      - name: Build Installer
-        shell: cmd
+      - name: Verify 'Build' directory exists
         run: |
-          REM 使用绝对路径来保证命令的准确性
-          set "WORKSPACE=${{ github.workspace }}"
-
-          REM 1. 在工作区根目录创建压缩包
-          7z a "%WORKSPACE%\publish.7z" "%WORKSPACE%\publish_output\*"
-
-          REM 2. 将压缩包移动到 Build 目录, 因为 .bat 脚本需要它
-          move "%WORKSPACE%\publish.7z" "%WORKSPACE%\Build\publish.7z"
-
-          REM 3. 切换到 Build 目录, 然后执行脚本
-          cd "%WORKSPACE%\Build"
-          cmd /c build_autohpma.bat
-
+          if (-not (Test-Path -Path ./Build -PathType Container)) {
+            echo "ERROR: 'Build' directory not found at repository root."
+            dir -Recurse
+            exit 1
+          }
+          echo "'Build' directory found."
+        shell: pwsh
+      - name: Prepare files for installer
+        run: |
+          REM Create the 7z archive and place it inside the Build directory,
+          REM where the .bat script expects to find it.
+          7z a "${{ github.workspace }}\Build\publish.7z" "${{ github.workspace }}\publish_output\*"
+        shell: cmd
+      - name: Run Installer Build Script
+        working-directory: ./Build
+        run: build_autohpma.bat
+        shell: cmd
       - name: Upload installer asset
         uses: actions/upload-artifact@v4
         with:
@@ -97,30 +97,27 @@ jobs:
         with:
           name: publish-output
           path: ./publish_output
-      - name: List files for debugging
-        run: dir /s
-        shell: cmd
-      - name: Build Updater
-        shell: cmd
+      - name: Verify 'Update' directory exists
         run: |
-          REM 使用绝对路径来保证命令的准确性
-          set "WORKSPACE=${{ github.workspace }}"
-          set "GIT_TAG=${{ github.ref_name }}"
-          for /f "tokens=2 delims=v" %%a in ("%GIT_TAG%") do set "APP_VERSION=%%a"
-
-          REM 1. 构造 .bat 文件的绝对路径
-          set "BAT_FILE_PATH=%WORKSPACE%\Update\2-打包新版本.bat"
-
-          REM 2. 使用 PowerShell 修改 .bat 文件中的版本号
-          powershell -Command "(Get-Content -LiteralPath '%BAT_FILE_PATH%') -replace 'SET \"AppVersion=.*\"', 'SET \"AppVersion=%APP_VERSION%\"' | Set-Content -LiteralPath '%BAT_FILE_PATH%' -Encoding oem"
-
-          REM 3. 复制发布文件到 Update 目录下的 publish 子目录
-          xcopy /E /I /Y "%WORKSPACE%\publish_output" "%WORKSPACE%\Update\publish\"
-
-          REM 4. 切换到 Update 目录, 然后执行脚本
-          cd "%WORKSPACE%\Update"
+          if (-not (Test-Path -Path ./Update -PathType Container)) {
+            echo "ERROR: 'Update' directory not found at repository root."
+            dir -Recurse
+            exit 1
+          }
+          echo "'Update' directory found."
+        shell: pwsh
+      - name: Prepare files for updater
+        run: xcopy /E /I /Y "${{ github.workspace }}\publish_output" "${{ github.workspace }}\Update\publish\"
+        shell: cmd
+      - name: Run Updater Build Script
+        working-directory: ./Update
+        shell: pwsh
+        run: |
+          $gitTag = "${{ github.ref_name }}"
+          $appVersion = $gitTag.Substring(1)
+          $batFile = ".\2-打包新版本.bat"
+          (Get-Content -LiteralPath $batFile) -replace 'SET \"AppVersion=.*\"', "SET \"AppVersion=$appVersion\"" | Set-Content -LiteralPath $batFile -Encoding oem
           cmd /c "2-打包新版本.bat"
-
       - name: Upload updater asset
         uses: actions/upload-artifact@v4
         with:
