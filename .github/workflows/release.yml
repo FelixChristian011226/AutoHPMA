@@ -14,6 +14,7 @@ on:
 jobs:
   # ===============================================================
   # Job 1: 构建 WPF 应用 (Publish)
+  # 职责: 仅编译和发布应用, 并将结果作为 artifact 上传
   # ===============================================================
   build_app:
     runs-on: windows-latest
@@ -38,9 +39,10 @@ jobs:
 
   # ===============================================================
   # Job 2: 构建安装包 (Installer Build)
+  # 职责: 下载已发布的应用, 构建安装包, 并上传
   # ===============================================================
   build_installer:
-    needs: build_app
+    needs: build_app # 依赖 build_app job
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -57,25 +59,13 @@ jobs:
       - name: Add 7-Zip to PATH
         run: echo "C:\Program Files\7-Zip" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         shell: pwsh
-      - name: Verify 'Build' directory exists
-        run: |
-          if (-not (Test-Path -Path ./Build -PathType Container)) {
-            echo "ERROR: 'Build' directory not found at repository root."
-            dir -Recurse
-            exit 1
-          }
-          echo "'Build' directory found."
-        shell: pwsh
-      - name: Prepare files for installer
-        run: |
-          REM Create the 7z archive and place it inside the Build directory,
-          REM where the .bat script expects to find it.
-          7z a "${{ github.workspace }}\Build\publish.7z" "${{ github.workspace }}\publish_output\*"
+      - name: Build Installer
         shell: cmd
-      - name: Run Installer Build Script
-        working-directory: ./Build
-        run: build_autohpma.bat
-        shell: cmd
+        run: |
+          7z a ./publish.7z ./publish_output/*
+          move ./publish.7z ./Build/MicaSetup/Resources/Setups/publish.7z
+          cd ./Build
+          cmd /c build_autohpma.bat
       - name: Upload installer asset
         uses: actions/upload-artifact@v4
         with:
@@ -85,9 +75,10 @@ jobs:
 
   # ===============================================================
   # Job 3: 构建更新包 (Updater Build)
+  # 职责: 下载已发布的应用, 构建更新包, 并上传
   # ===============================================================
   build_updater:
-    needs: build_app
+    needs: build_app # 依赖 build_app job
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -97,26 +88,14 @@ jobs:
         with:
           name: publish-output
           path: ./publish_output
-      - name: Verify 'Update' directory exists
-        run: |
-          if (-not (Test-Path -Path ./Update -PathType Container)) {
-            echo "ERROR: 'Update' directory not found at repository root."
-            dir -Recurse
-            exit 1
-          }
-          echo "'Update' directory found."
-        shell: pwsh
-      - name: Prepare files for updater
-        run: xcopy /E /I /Y "${{ github.workspace }}\publish_output" "${{ github.workspace }}\Update\publish\"
+      - name: Build Updater
         shell: cmd
-      - name: Run Updater Build Script
-        working-directory: ./Update
-        shell: pwsh
         run: |
-          $gitTag = "${{ github.ref_name }}"
-          $appVersion = $gitTag.Substring(1)
-          $batFile = ".\2-打包新版本.bat"
-          (Get-Content -LiteralPath $batFile) -replace 'SET \"AppVersion=.*\"', "SET \"AppVersion=$appVersion\"" | Set-Content -LiteralPath $batFile -Encoding oem
+          set "GIT_TAG=${{ github.ref_name }}"
+          for /f "tokens=2 delims=v" %%a in ("%GIT_TAG%") do set "APP_VERSION=%%a"
+          powershell -Command "(Get-Content 'Update/2-打包新版本.bat') -replace 'SET \"AppVersion=.*\"', 'SET \"AppVersion=%APP_VERSION%\"' | Set-Content 'Update/2-打包新版本.bat' -Encoding oem"
+          xcopy /E /I /Y publish_output Update\publish
+          cd ./Update
           cmd /c "2-打包新版本.bat"
       - name: Upload updater asset
         uses: actions/upload-artifact@v4
@@ -127,9 +106,10 @@ jobs:
 
   # ===============================================================
   # Job 4: 上传到 GitHub Release
+  # 职责: 下载安装包和更新包, 创建 Release 并上传
   # ===============================================================
   create_release:
-    needs: [build_installer, build_updater]
+    needs: [build_installer, build_updater] # 依赖安装包和更新包构建完成
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -153,9 +133,10 @@ jobs:
 
   # ===============================================================
   # Job 5: 上传到 R2
+  # 职责: 下载更新包并上传到 R2
   # ===============================================================
   upload_to_r2:
-    needs: build_updater
+    needs: build_updater # 依赖更新包构建完成
     runs-on: ubuntu-latest
     steps:
       - name: Download updater asset
