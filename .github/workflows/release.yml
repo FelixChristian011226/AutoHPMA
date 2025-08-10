@@ -91,6 +91,8 @@ jobs:
       - name: Build Updater
         shell: cmd
         run: |
+          chcp 936
+          
           set "GIT_TAG=${{ github.ref_name }}"
           for /f "tokens=2 delims=v" %%a in ("%GIT_TAG%") do set "APP_VERSION=%%a"
           powershell -Command "(Get-Content 'Update/2-打包新版本.bat') -replace 'SET \"AppVersion=.*\"', 'SET \"AppVersion=%APP_VERSION%\"' | Set-Content 'Update/2-打包新版本.bat' -Encoding oem"
