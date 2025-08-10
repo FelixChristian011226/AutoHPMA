@@ -96,6 +96,7 @@ jobs:
           powershell -Command "(Get-Content 'Update/2-打包新版本.bat') -replace 'SET \"AppVersion=.*\"', 'SET \"AppVersion=%APP_VERSION%\"' | Set-Content 'Update/2-打包新版本.bat' -Encoding oem"
           xcopy /E /I /Y publish_output Update\publish
           cd ./Update
+          cmd /c "1-创建更新器.bat"
           cmd /c "2-打包新版本.bat"
       - name: Upload updater asset
         uses: actions/upload-artifact@v4
