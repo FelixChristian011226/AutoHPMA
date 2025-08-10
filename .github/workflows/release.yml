@@ -1,25 +1,82 @@
 # .github/workflows/release.yml
 
-name: Build, Package, and Release WPF App
+name: Build, Package, and Release WPF App (with Auto Version Validation)
 
 on:
-  # 1. 当一个 'v' 开头的标签被推送到仓库时 (例如 v1.0.0, v1.2.3)
+  # 当代码被推送到 main 或 master 分支时触发
   push:
-    tags:
-      - 'v*.*.*'
-  # 2. 允许在 GitHub Actions 页面手动触发，并要求输入版本号
+    branches:
+      - 'main'
+      - 'master'
+  # 同时也允许在 GitHub Actions 页面手动触发 (无需输入版本号)
   workflow_dispatch:
-    inputs:
-      version:
-        description: '请输入要发布的版本号 (例如: 1.2.3)'
-        required: true
-        type: string
 
 jobs:
   # ===============================================================
-  # Job 1: 构建 WPF 应用 (Publish)
+  # Job 1: 校验版本号 (Validate Version)
+  # 职责: 
+  #   1. 从三个指定文件中读取版本号。
+  #   2. 确保三个版本号完全一致。
+  #   3. 获取最新的 Git Tag 版本号。
+  #   4. 确保新版本号 > 最新 Tag 版本号。
+  #   5. 如果所有检查通过，则输出版本号给后续 Job 使用。
+  # ===============================================================
+  validate_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version_number }}
+    steps:
+      # 检出代码，fetch-depth: 0 用于获取所有历史 tag
+      - name: Checkout repository with all tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Versions and Compare with Latest Tag
+        id: get_version
+        run: |
+          # --- 1. 从文件中提取版本号 ---
+          # 使用 grep 和 sed (或 perl) 从文件中安全地提取版本号
+          VERSION_CSPROJ=$(grep -oP '<Version>\K[^<]+' AutoHPMA.csproj)
+          VERSION_PROG_CS=$(grep -oP 'option.DisplayVersion = "\K[^"]+' Build/MicaSetup/Program.cs)
+          VERSION_PROG_UN_CS=$(grep -oP 'option.DisplayVersion = "\K[^"]+' Build/MicaSetup/Program.un.cs)
+
+          echo "Found version in .csproj: ${VERSION_CSPROJ}"
+          echo "Found version in Program.cs: ${VERSION_PROG_CS}"
+          echo "Found version in Program.un.cs: ${VERSION_PROG_UN_CS}"
+
+          # --- 2. 检查三个版本号是否一致 ---
+          if [[ -z "$VERSION_CSPROJ" || "$VERSION_CSPROJ" != "$VERSION_PROG_CS" || "$VERSION_CSPROJ" != "$VERSION_PROG_UN_CS" ]]; then
+            echo "##[error]Version mismatch detected across files!"
+            echo "csproj: $VERSION_CSPROJ, Program.cs: $VERSION_PROG_CS, Program.un.cs: $VERSION_PROG_UN_CS"
+            exit 1
+          fi
+          echo "✅ Version consistency check passed. Using version: ${VERSION_CSPROJ}"
+          
+          # --- 3. 获取最新的 Git Tag ---
+          # git describe 获取最新的 tag, sed 移除 'v' 前缀
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          LATEST_TAG_VERSION=${LATEST_TAG#v}
+          echo "Latest tag version: ${LATEST_TAG_VERSION}"
+
+          # --- 4. 比较新版本和最新 Tag 版本 ---
+          # 使用 sort -V (version sort) 来正确比较版本号
+          HIGHER_VERSION=$(printf '%s\n%s' "$VERSION_CSPROJ" "$LATEST_TAG_VERSION" | sort -V | tail -n1)
+
+          if [[ "$HIGHER_VERSION" != "$VERSION_CSPROJ" || "$VERSION_CSPROJ" == "$LATEST_TAG_VERSION" ]]; then
+            echo "##[error]New version (${VERSION_CSPROJ}) must be strictly greater than the latest tag version (${LATEST_TAG_VERSION})."
+            exit 1
+          fi
+          echo "✅ New version check passed. ${VERSION_CSPROJ} > ${LATEST_TAG_VERSION}"
+
+          # --- 5. 输出版本号给后续 Job ---
+          echo "version_number=${VERSION_CSPROJ}" >> $GITHUB_OUTPUT
+
+  # ===============================================================
+  # Job 2: 构建 WPF 应用 (Publish)
   # ===============================================================
   build_app:
+    needs: validate_version # 依赖版本校验
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -41,10 +98,10 @@ jobs:
           retention-days: 1
 
   # ===============================================================
-  # Job 2: 构建安装包 (Installer Build)
+  # Job 3: 构建安装包 (Installer Build)
   # ===============================================================
   build_installer:
-    needs: build_app
+    needs: [validate_version, build_app] # 依赖版本校验和应用构建
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -64,7 +121,7 @@ jobs:
       - name: Build Installer
         shell: cmd
         run: |
-          chcp 936
+          chcp 65001
           7z a ./publish.7z ./publish_output/*
           move ./publish.7z ./Build/MicaSetup/Resources/Setups/publish.7z
           cd ./Build
@@ -77,13 +134,13 @@ jobs:
           retention-days: 1
 
   # ===============================================================
-  # Job 3: 构建更新包 (Updater Build)
+  # Job 4: 构建更新包 (Updater Build)
   # ===============================================================
   build_updater:
-    needs: build_app
+    needs: [validate_version, build_app] # 依赖版本校验和应用构建
     runs-on: windows-latest
     outputs:
-      version: ${{ steps.determine_version.outputs.version_number }}
+      version: ${{ needs.validate_version.outputs.version }} # 将版本号传递给 create_release Job
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -92,50 +149,24 @@ jobs:
         with:
           name: publish-output
           path: ./publish_output
-
-      - name: Determine Version Number
-        id: determine_version
-        shell: bash
-        run: |
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            GIT_TAG="${{ github.ref_name }}"
-            VERSION_NUMBER="${GIT_TAG#v}"
-          else
-            VERSION_NUMBER="${{ inputs.version }}"
-          fi
-          echo "version_number=${VERSION_NUMBER}" >> $GITHUB_OUTPUT
-          echo "Determined version: ${VERSION_NUMBER}"
-
       - name: Build Updater and Verify Output
-        # 使用步骤级的 env 关键字，直接将上一步的输出映射为环境变量
         env:
-          APP_VERSION: ${{ steps.determine_version.outputs.version_number }}
+          # 从 validate_version Job 的输出中获取版本号
+          APP_VERSION: ${{ needs.validate_version.outputs.version }}
         shell: cmd
         run: |
-          rem 切换到中文代码页，防止 bat 脚本乱码
           chcp 65001
-          
-          rem 复制应用文件
           xcopy /E /I /Y publish_output Update\publish
-          
-          rem 运行打包脚本。现在 %APP_VERSION% 将被正确设置
           cd ./Update
-          
           echo "Running 1-updater.bat..."
           cmd /c "1-updater.bat"
-
           echo "Running 2-installer.bat with version %APP_VERSION%..."
-          rem 将版本号作为命令行参数传递给脚本
           cmd /c "2-installer.bat" %APP_VERSION%
-          
-          rem 检查输出文件是否存在
           if not exist "AutoHPMA.Install.exe" (
             echo "##[error]Build failed: AutoHPMA.Install.exe was not created."
             exit 1
           )
-          
           echo "Successfully created AutoHPMA.Install.exe."
-
       - name: Upload updater asset
         uses: actions/upload-artifact@v4
         with:
@@ -144,10 +175,10 @@ jobs:
           retention-days: 1
 
   # ===============================================================
-  # Job 4: 创建并上传到 GitHub Release
+  # Job 5: 创建并上传到 GitHub Release
   # ===============================================================
   create_release:
-    needs: [build_installer, build_updater] # 依赖安装包和更新包
+    needs: [build_installer, build_updater]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -163,9 +194,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # 使用 build_updater job 输出的版本号来创建 tag
+          # 使用从上游 Job 传递过来的、经过完整校验的版本号
           tag_name: v${{ needs.build_updater.outputs.version }}
-          name: AutoHPMA
+          name: Release v${{ needs.build_updater.outputs.version }}
           body: |
             New release v${{ needs.build_updater.outputs.version }}
             Auto-generated by GitHub Actions.
@@ -176,7 +207,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ===============================================================
-  # Job 5: 上传到 R2
+  # Job 6: 上传到 R2
   # ===============================================================
   upload_to_r2:
     needs: build_updater
