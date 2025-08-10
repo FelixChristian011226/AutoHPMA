@@ -5,16 +5,36 @@ REM =================================================================
 REM                  脚本 2: 打包WPF应用新版本
 REM =================================================================
 REM 说明: 
-REM   此脚本现在会自动从 GitHub Actions 的环境变量中获取版本号。
-REM   本地运行时，请先手动设置环境变量: set AppVersion=x.x.x
+REM   此脚本支持两种模式:
+REM   1. 自动化 (GitHub Actions): 通过命令行参数传入版本号。
+REM      (例: 2-installer.bat 1.2.3)
+REM   2. 手动模式 (本地): 如果未传入参数，会提示手动输入版本号。
 REM =================================================================
 
 REM --- 配置区域 ---
 
+REM [!!!] 版本号获取逻辑
+REM 优先从命令行第一个参数 (%1) 获取版本号
+SET "AppVersion=%1"
+
+REM 如果命令行参数为空，则提示用户手动输入
+if "%AppVersion%"=="" (
+    echo.
+    echo [信息] 未检测到命令行传入的版本号，进入手动模式。
+    set /p AppVersion=请输入要打包的版本号: 
+)
+
+REM 最后检查版本号是否为空 (防止用户直接按回车)
+if "%AppVersion%"=="" (
+    echo [错误] 版本号不能为空，操作已中止。
+    goto end
+)
+echo [信息] 已确定版本号为: %AppVersion%
+echo.
+
+
 REM 设置你的WPF应用发布后所在的目录
 SET "AppPublishDir=publish"
-
-REM [!!!] 版本号已移除，将从环境变量 %AppVersion% 中读取
 
 REM 设置你的应用ID (需要和 kachina.config.json 中的 regName 一致)
 SET "AppId=AutoHPMA"
@@ -29,7 +49,7 @@ REM --- 配置区域结束 ---
 
 
 REM =================================================================
-REM                  脚本执行区域
+REM                  脚本执行区域 (通常无需修改)
 REM =================================================================
 
 echo.
@@ -37,9 +57,6 @@ echo ========================================================
 echo           开始构建新版本: %AppVersion%
 echo ========================================================
 echo.
-
-REM 检查版本号是否已设置
-if not defined AppVersion (echo [错误] 环境变量 AppVersion 未设置！ & goto end)
 
 REM 检查依赖文件
 if not exist kachina-builder.exe (echo [错误] 未找到 kachina-builder.exe。 & goto end)
