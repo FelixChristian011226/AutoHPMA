@@ -1,0 +1,179 @@
+# .github/workflows/release.yml
+
+name: Build, Package, and Release WPF App (Modular)
+
+# 工作流触发条件
+on:
+  # 1. 当一个 'v' 开头的标签被推送到仓库时 (例如 v1.0.0, v1.2.3)
+  push:
+    tags:
+      - 'v*.*.*'
+  # 2. 允许在 GitHub Actions 页面手动触发
+  workflow_dispatch:
+
+jobs:
+  # ===============================================================
+  # Job 1: 构建 WPF 应用 (Publish)
+  # ===============================================================
+  build_app:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore, Build, and Publish
+        run: |
+          dotnet restore
+          dotnet build --configuration Release --no-restore
+          dotnet publish --configuration Release --no-build -o ./publish_output
+      - name: Upload publish output
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-output
+          path: ./publish_output
+          retention-days: 1
+
+  # ===============================================================
+  # Job 2: 构建安装包 (Installer Build)
+  # ===============================================================
+  build_installer:
+    needs: build_app
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download publish output
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-output
+          path: ./publish_output
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+      - name: Install 7-Zip
+        run: choco install 7zip.install --params "'/S'"
+      - name: Add 7-Zip to PATH
+        run: echo "C:\Program Files\7-Zip" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: pwsh
+      - name: Verify 'Build' directory exists
+        run: |
+          if (-not (Test-Path -Path ./Build -PathType Container)) {
+            echo "ERROR: 'Build' directory not found at repository root."
+            dir -Recurse
+            exit 1
+          }
+          echo "'Build' directory found."
+        shell: pwsh
+      - name: Prepare files for installer
+        run: |
+          REM Create the 7z archive and place it inside the Build directory,
+          REM where the .bat script expects to find it.
+          7z a "${{ github.workspace }}\Build\publish.7z" "${{ github.workspace }}\publish_output\*"
+        shell: cmd
+      - name: Run Installer Build Script
+        working-directory: ./Build
+        run: build_autohpma.bat
+        shell: cmd
+      - name: Upload installer asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-asset
+          path: Build/AutoHPMA-Setup.exe
+          retention-days: 1
+
+  # ===============================================================
+  # Job 3: 构建更新包 (Updater Build)
+  # ===============================================================
+  build_updater:
+    needs: build_app
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download publish output
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-output
+          path: ./publish_output
+      - name: Verify 'Update' directory exists
+        run: |
+          if (-not (Test-Path -Path ./Update -PathType Container)) {
+            echo "ERROR: 'Update' directory not found at repository root."
+            dir -Recurse
+            exit 1
+          }
+          echo "'Update' directory found."
+        shell: pwsh
+      - name: Prepare files for updater
+        run: xcopy /E /I /Y "${{ github.workspace }}\publish_output" "${{ github.workspace }}\Update\publish\"
+        shell: cmd
+      - name: Run Updater Build Script
+        working-directory: ./Update
+        shell: pwsh
+        run: |
+          $gitTag = "${{ github.ref_name }}"
+          $appVersion = $gitTag.Substring(1)
+          $batFile = ".\2-打包新版本.bat"
+          (Get-Content -LiteralPath $batFile) -replace 'SET \"AppVersion=.*\"', "SET \"AppVersion=$appVersion\"" | Set-Content -LiteralPath $batFile -Encoding oem
+          cmd /c "2-打包新版本.bat"
+      - name: Upload updater asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: updater-asset
+          path: Update/AutoHPMA.Install.exe
+          retention-days: 1
+
+  # ===============================================================
+  # Job 4: 上传到 GitHub Release
+  # ===============================================================
+  create_release:
+    needs: [build_installer, build_updater]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download installer asset
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-asset
+      - name: Download updater asset
+        uses: actions/download-artifact@v4
+        with:
+          name: updater-asset
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            AutoHPMA-Setup.exe
+            AutoHPMA.Install.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ===============================================================
+  # Job 5: 上传到 R2
+  # ===============================================================
+  upload_to_r2:
+    needs: build_updater
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download updater asset
+        uses: actions/download-artifact@v4
+        with:
+          name: updater-asset
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install awscli --upgrade --user
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Upload Update Package to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 cp AutoHPMA.Install.exe \
+            s3://${{ secrets.CLOUDFLARE_BUCKET_NAME }}/AutoHPMA.Install.exe \
+            --endpoint-url https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
