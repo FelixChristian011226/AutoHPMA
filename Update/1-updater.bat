@@ -2,49 +2,49 @@
 setlocal
 
 REM =================================================================
-REM                  ½Å±¾ 1: ´´½¨¸üÐÂÆ÷
+REM                  è„šæœ¬ 1: åˆ›å»ºæ›´æ–°å™¨
 REM =================================================================
-REM ËµÃ÷: 
-REM   ´Ë½Å±¾¸ù¾Ý kachina.config.json ÎÄ¼þÉú³É¸üÐÂ³ÌÐò¡£
-REM   Í¨³£Ö»ÐèÔÚÏîÄ¿¿ªÊ¼Ê±ÔËÐÐÒ»´Î£¬»òÔÚÐÞ¸ÄÁË config ÎÄ¼þºóÖØÐÂÔËÐÐ¡£
+REM è¯´æ˜Ž: 
+REM   æ­¤è„šæœ¬æ ¹æ® kachina.config.json æ–‡ä»¶ç”Ÿæˆæ›´æ–°ç¨‹åºã€‚
+REM   é€šå¸¸åªéœ€åœ¨é¡¹ç›®å¼€å§‹æ—¶è¿è¡Œä¸€æ¬¡ï¼Œæˆ–åœ¨ä¿®æ”¹äº† config æ–‡ä»¶åŽé‡æ–°è¿è¡Œã€‚
 REM =================================================================
 
-REM --- ÅäÖÃÇøÓò ---
+REM --- é…ç½®åŒºåŸŸ ---
 
-REM ÉèÖÃ¸üÐÂ³ÌÐò×îÖÕÉú³ÉµÄÎÄ¼þÃû (ÐèÒªºÍ kachina.config.json ÖÐµÄ updaterName Ò»ÖÂ)
+REM è®¾ç½®æ›´æ–°ç¨‹åºæœ€ç»ˆç”Ÿæˆçš„æ–‡ä»¶å (éœ€è¦å’Œ kachina.config.json ä¸­çš„ updaterName ä¸€è‡´)
 SET "UpdaterName=AutoHPMA.update.exe"
 
-REM --- ÅäÖÃÇøÓò½áÊø ---
+REM --- é…ç½®åŒºåŸŸç»“æŸ ---
 
 echo.
-echo [³õÊ¼»¯] ÕýÔÚ¸ù¾Ý kachina.config.json ´´½¨¸üÐÂÆ÷...
+echo [åˆå§‹åŒ–] æ­£åœ¨æ ¹æ® kachina.config.json åˆ›å»ºæ›´æ–°å™¨...
 echo.
 
-REM ¼ì²é kachina-builder ÊÇ·ñ´æÔÚ
+REM æ£€æŸ¥ kachina-builder æ˜¯å¦å­˜åœ¨
 if not exist kachina-builder.exe (
-    echo [´íÎó] Î´ÔÚµ±Ç°Ä¿Â¼ÕÒµ½ kachina-builder.exe¡£
+    echo [é”™è¯¯] æœªåœ¨å½“å‰ç›®å½•æ‰¾åˆ° kachina-builder.exeã€‚
     goto end
 )
 
-REM ¼ì²éÅäÖÃÎÄ¼þÊÇ·ñ´æÔÚ
+REM æ£€æŸ¥é…ç½®æ–‡ä»¶æ˜¯å¦å­˜åœ¨
 if not exist kachina.config.json (
-    echo [´íÎó] Î´ÔÚµ±Ç°Ä¿Â¼ÕÒµ½ kachina.config.json¡£
+    echo [é”™è¯¯] æœªåœ¨å½“å‰ç›®å½•æ‰¾åˆ° kachina.config.jsonã€‚
     goto end
 )
 
 kachina-builder.exe pack -c kachina.config.json -o %UpdaterName%
 
 IF %ERRORLEVEL% NEQ 0 (
-    echo [´íÎó] ´´½¨¸üÐÂÆ÷Ê§°Ü£¡Çë¼ì²é kachina.config.json µÄÅäÖÃ¡£
+    echo [é”™è¯¯] åˆ›å»ºæ›´æ–°å™¨å¤±è´¥ï¼è¯·æ£€æŸ¥ kachina.config.json çš„é…ç½®ã€‚
     goto end
 )
 
 echo.
 echo ========================================================
-echo           ¸üÐÂÆ÷ (%UpdaterName%) ´´½¨³É¹¦£¡
+echo           æ›´æ–°å™¨ (%UpdaterName%) åˆ›å»ºæˆåŠŸï¼
 echo ========================================================
 echo.
-echo   ÏÖÔÚÄú¿ÉÒÔ½øÐÐÏÂÒ»²½£¬´ò°üÄúµÄ¾ßÌåÓ¦ÓÃ°æ±¾ÁË¡£
+echo   çŽ°åœ¨æ‚¨å¯ä»¥è¿›è¡Œä¸‹ä¸€æ­¥ï¼Œæ‰“åŒ…æ‚¨çš„å…·ä½“åº”ç”¨ç‰ˆæœ¬äº†ã€‚
 echo.
 
 :end
