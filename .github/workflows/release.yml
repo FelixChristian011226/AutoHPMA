@@ -14,19 +14,12 @@ on:
 jobs:
   # ===============================================================
   # Job 1: 校验版本号 (Validate Version)
-  # 职责: 
-  #   1. 从三个指定文件中读取版本号。
-  #   2. 确保三个版本号完全一致。
-  #   3. 获取最新的 Git Tag 版本号。
-  #   4. 确保新版本号 > 最新 Tag 版本号。
-  #   5. 如果所有检查通过，则输出版本号给后续 Job 使用。
   # ===============================================================
   validate_version:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version_number }}
     steps:
-      # 检出代码，fetch-depth: 0 用于获取所有历史 tag
       - name: Checkout repository with all tags
         uses: actions/checkout@v4
         with:
@@ -36,8 +29,8 @@ jobs:
         id: get_version
         run: |
           # --- 1. 从文件中提取版本号 ---
-          # 使用 grep 和 sed (或 perl) 从文件中安全地提取版本号
-          VERSION_CSPROJ=$(grep -oP '<Version>\K[^<]+' AutoHPMA.csproj)
+          # 修正了 .csproj 文件的路径
+          VERSION_CSPROJ=$(grep -oP '<Version>\K[^<]+' AutoHPMA/AutoHPMA.csproj)
           VERSION_PROG_CS=$(grep -oP 'option.DisplayVersion = "\K[^"]+' Build/MicaSetup/Program.cs)
           VERSION_PROG_UN_CS=$(grep -oP 'option.DisplayVersion = "\K[^"]+' Build/MicaSetup/Program.un.cs)
 
@@ -54,13 +47,11 @@ jobs:
           echo "✅ Version consistency check passed. Using version: ${VERSION_CSPROJ}"
           
           # --- 3. 获取最新的 Git Tag ---
-          # git describe 获取最新的 tag, sed 移除 'v' 前缀
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           LATEST_TAG_VERSION=${LATEST_TAG#v}
           echo "Latest tag version: ${LATEST_TAG_VERSION}"
 
           # --- 4. 比较新版本和最新 Tag 版本 ---
-          # 使用 sort -V (version sort) 来正确比较版本号
           HIGHER_VERSION=$(printf '%s\n%s' "$VERSION_CSPROJ" "$LATEST_TAG_VERSION" | sort -V | tail -n1)
 
           if [[ "$HIGHER_VERSION" != "$VERSION_CSPROJ" || "$VERSION_CSPROJ" == "$LATEST_TAG_VERSION" ]]; then
@@ -87,9 +78,10 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Restore, Build, and Publish
         run: |
-          dotnet restore
-          dotnet build --configuration Release --no-restore
-          dotnet publish --configuration Release --no-build -o ./publish_output
+          # 修正了 dotnet 命令，明确指定项目文件路径
+          dotnet restore AutoHPMA/AutoHPMA.csproj
+          dotnet build AutoHPMA/AutoHPMA.csproj --configuration Release --no-restore
+          dotnet publish AutoHPMA/AutoHPMA.csproj --configuration Release --no-build -o ./publish_output
       - name: Upload publish output
         uses: actions/upload-artifact@v4
         with:
@@ -151,7 +143,6 @@ jobs:
           path: ./publish_output
       - name: Build Updater and Verify Output
         env:
-          # 从 validate_version Job 的输出中获取版本号
           APP_VERSION: ${{ needs.validate_version.outputs.version }}
         shell: cmd
         run: |
@@ -194,7 +185,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # 使用从上游 Job 传递过来的、经过完整校验的版本号
           tag_name: v${{ needs.build_updater.outputs.version }}
           name: Release v${{ needs.build_updater.outputs.version }}
           body: |
