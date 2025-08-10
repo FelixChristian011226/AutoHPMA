@@ -132,6 +132,7 @@
     <None Remove="Assets\SweetAdventure\Image\ui_gaming.png" />
     <None Remove="Assets\SweetAdventure\Image\ui_teaming.png" />
     <None Remove="AutoHPMA.ico" />
+    <None Remove="AutoHPMA.update.exe" />
     <None Remove="tessdata\eng.traineddata" />
   </ItemGroup>
 
@@ -401,6 +402,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="AutoHPMA.ico" />
+    <Content Include="AutoHPMA.update.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="tessdata\chi_sim.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

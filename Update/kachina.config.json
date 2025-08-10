@@ -1,14 +1,14 @@
 {
     "source": [
       {
+        "id": "cloudflare",
+        "name": "Cloudflare",
+        "uri": "https://pub-b10ddbeef06c43dcaec99fed416163f5.r2.dev/AutoHPMA.Install.exe"
+      },
+      {
         "id": "github",
         "name": "Github",
         "uri": "https://github.com/FelixChristian011226/AutoHPMA/releases/latest/download/AutoHPMA.Install.exe"
-      },
-      {
-        "id": "gitcode",
-        "name": "Gitcode",
-        "uri": "https://gitcode.com/Felix_Christian/AutoHPMA/releases/download/v3.2.0/AutoHPMA.Install.exe"
       }
     ],
     "appName": "AutoHPMA",
