@@ -12,7 +12,7 @@ REM =================================================================
 REM --- 配置区域 ---
 
 REM 设置你的WPF应用发布后所在的目录
-SET "AppPublishDir=AutoHPMA"
+SET "AppPublishDir=publish"
 
 REM 设置即将发布的新版本号
 SET "AppVersion=3.3.0"
