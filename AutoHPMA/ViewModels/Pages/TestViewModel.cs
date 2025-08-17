@@ -5,6 +5,7 @@ using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Messages;
 using AutoHPMA.Models;
 using AutoHPMA.Views.Windows;
+using System.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
 using OpenCvSharp;
@@ -45,26 +46,14 @@ namespace AutoHPMA.ViewModels.Pages
         
         public ObservableCollection<WindowInfo> AvailableWindows { get; } = new ObservableCollection<WindowInfo>();
 
-        // 模拟点击
+        // 鼠标模拟
         [ObservableProperty]
-        private int _clickLeft = 200;
-        [ObservableProperty]
-        private int _clickTop = 200;
-        [ObservableProperty]
-        private int _clickInterval = 500;
-        [ObservableProperty]
-        private int _clickTimes = 10;
-
-        [ObservableProperty]
-        private int _dragStartX = 200;
-        [ObservableProperty]
-        private int _dragStartY = 200;
-        [ObservableProperty]
-        private int _dragEndX = 400;
-        [ObservableProperty]
-        private int _dragEndY = 400;
-        [ObservableProperty]
-        private int _dragDuration = 500;
+        private WindowInfo? _selectedClickWindow;
+        
+        public ObservableCollection<ClickActionModel> ClickActions { get; } = new ObservableCollection<ClickActionModel>();
+        
+        public ObservableCollection<DragActionModel> DragActions { get; } = new ObservableCollection<DragActionModel>();
+        
 
         // 文字识别
         [ObservableProperty]
@@ -136,6 +125,18 @@ namespace AutoHPMA.ViewModels.Pages
         public TestViewModel()
         {
             RefreshWindowList();
+            InitializeClickActions();
+            InitializeDragActions();
+        }
+        
+        private void InitializeClickActions()
+        {
+            ClickActions.Add(new ClickActionModel(200, 200, 500, 1, "默认点击"));
+        }
+        
+        private void InitializeDragActions()
+        {
+            DragActions.Add(new DragActionModel(200, 200, 400, 400, 500, "默认拖拽"));
         }
         
         [RelayCommand]
@@ -197,42 +198,150 @@ namespace AutoHPMA.ViewModels.Pages
         }
         #endregion
 
-        #region 模拟点击
+        #region 鼠标模拟
         [RelayCommand]
         public async void OnClickTest(object sender)
         {
-            IntPtr hWnd = WindowHelper.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-            IntPtr hWndChild = WindowHelper.FindChildWindowByTitle(hWnd, "MuMuPlayer");
-            //IntPtr hWndChild = SystemControl.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
-            //IntPtr hWndChild = new IntPtr(Convert.ToInt32("004D078E", 16));
-            //WindowInteractionHelper.SetForegroundWindow(hWndChild);
-
-            if (hWndChild != IntPtr.Zero)
+            if (SelectedClickWindow == null)
             {
-                for (int i = 0; i < _clickTimes; i++)
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
                 {
-                    WindowInteractionHelper.SendMouseClick(hWndChild, (uint)_clickLeft, (uint)_clickTop);
-                    Thread.Sleep(_clickInterval);
+                    Title = "错误",
+                    Content = "请先选择要点击的窗口"
+                };
+                await uiMessageBox.ShowDialogAsync();
+                return;
+            }
+
+            var targetHwnd = SelectedClickWindow.Handle;
+            if (targetHwnd == IntPtr.Zero)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = "目标窗口句柄无效"
+                };
+                await uiMessageBox.ShowDialogAsync();
+                return;
+            }
+
+            try
+            {
+                // 窗口置顶
+                WindowInteractionHelper.SetForegroundWindow(targetHwnd);
+                
+                // 等待3秒延迟
+                await Task.Delay(3000);
+                
+                // 执行表格中的所有点击动作
+                foreach (var clickAction in ClickActions)
+                {
+                    for (int i = 0; i < clickAction.Times; i++)
+                    {
+                        WindowInteractionHelper.SendMouseClick(targetHwnd, (uint)clickAction.X, (uint)clickAction.Y);
+                        await Task.Delay(clickAction.Interval);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = $"点击测试失败：{ex.Message}"
+                };
+                await uiMessageBox.ShowDialogAsync();
             }
         }
 
         [RelayCommand]
         public async void OnDragTest(object sender)
         {
-            IntPtr hWnd = WindowHelper.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
-            IntPtr hWndChild = WindowHelper.FindChildWindowByTitle(hWnd, "MuMuPlayer");
-
-            if (hWndChild != IntPtr.Zero)
+            if (SelectedClickWindow == null)
             {
-                WindowInteractionHelper.SendMouseDrag(
-                    hWndChild,
-                    (uint)_dragStartX,
-                    (uint)_dragStartY,
-                    (uint)_dragEndX,
-                    (uint)_dragEndY,
-                    _dragDuration
-                );
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = "请先选择要拖拽的窗口"
+                };
+                await uiMessageBox.ShowDialogAsync();
+                return;
+            }
+
+            var targetHwnd = SelectedClickWindow.Handle;
+            if (targetHwnd == IntPtr.Zero)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = "目标窗口句柄无效"
+                };
+                await uiMessageBox.ShowDialogAsync();
+                return;
+            }
+
+            try
+            {
+                // 窗口置顶
+                WindowInteractionHelper.SetForegroundWindow(targetHwnd);
+                
+                // 等待3秒延迟
+                await Task.Delay(3000);
+                
+                // 执行表格中的所有拖拽动作
+                foreach (var dragAction in DragActions)
+                {
+                    WindowInteractionHelper.SendMouseDrag(
+                        targetHwnd,
+                        (uint)dragAction.StartX,
+                        (uint)dragAction.StartY,
+                        (uint)dragAction.EndX,
+                        (uint)dragAction.EndY,
+                        dragAction.Duration
+                    );
+                    
+                    // 拖拽动作之间的间隔
+                    await Task.Delay(500);
+                }
+            }
+            catch (Exception ex)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = $"拖拽测试失败：{ex.Message}"
+                };
+                await uiMessageBox.ShowDialogAsync();
+            }
+        }
+        
+        [RelayCommand]
+        public void AddClickAction()
+        {
+            ClickActions.Add(new ClickActionModel(200, 200, 500, 1, $"点击动作{ClickActions.Count + 1}"));
+        }
+        
+        [RelayCommand]
+        public void RemoveClickAction(ClickActionModel action)
+        {
+            if (action != null)
+            {
+                ClickActions.Remove(action);
+            }
+        }
+        
+        [RelayCommand]
+        public void AddDragAction()
+        {
+            DragActions.Add(new DragActionModel(200, 200, 400, 400, 500, $"拖拽动作{DragActions.Count + 1}"));
+        }
+        
+        [RelayCommand]
+        public void RemoveDragAction(DragActionModel action)
+        {
+            if (action != null)
+            {
+                DragActions.Remove(action);
             }
         }
         #endregion
