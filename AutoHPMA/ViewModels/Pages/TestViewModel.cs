@@ -3,6 +3,7 @@ using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Helpers.ImageHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Messages;
+using AutoHPMA.Models;
 using AutoHPMA.Views.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
@@ -31,15 +32,18 @@ namespace AutoHPMA.ViewModels.Pages
         #region Observable Properties
         // 截屏测试
         [ObservableProperty]
-        private int _screenshotLeft = 0;
+        private CaptureMethod _selectedCaptureMethod = CaptureMethod.WGC;
+        
+        public ObservableCollection<CaptureMethod> CaptureMethods { get; }
+            = new ObservableCollection<CaptureMethod>(
+                  (CaptureMethod[])Enum.GetValues(typeof(CaptureMethod))
+              );
+        
+        // 窗口选择
         [ObservableProperty]
-        private int _screenshotTop = 0;
-        [ObservableProperty]
-        private int _screenshotWidth = 0;
-        [ObservableProperty]
-        private int _screenshotHeight = 0;
-        [ObservableProperty]
-        private string _screenshotFilename = "CaptureTest";
+        private WindowInfo? _selectedWindow;
+        
+        public ObservableCollection<WindowInfo> AvailableWindows { get; } = new ObservableCollection<WindowInfo>();
 
         // 模拟点击
         [ObservableProperty]
@@ -128,44 +132,67 @@ namespace AutoHPMA.ViewModels.Pages
                 return System.Windows.Media.Colors.Red;
             }
         }
+        
+        public TestViewModel()
+        {
+            RefreshWindowList();
+        }
+        
+        [RelayCommand]
+        private void RefreshWindowList()
+        {
+            AvailableWindows.Clear();
+            var windows = WindowHelper.GetAllVisibleWindows();
+            foreach (var window in windows)
+            {
+                AvailableWindows.Add(window);
+            }
+        }
 
         #endregion
 
         #region 截屏测试
         [RelayCommand]
-        public async void OnScreenshotTest(object sender)
+        public void OnScreenshotTest(object sender)
         {
-            var _gameHwnd = WindowHelper.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            if (SelectedWindow == null)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = "请先选择要截屏的窗口"
+                };
+                uiMessageBox.ShowDialogAsync();
+                return;
+            }
+
+            var _gameHwnd = SelectedWindow.Handle;
             if (_gameHwnd != IntPtr.Zero)
             {
-                // 对子窗口截图会被屏蔽，只能截取父窗口
-                //_gameHwnd = SystemControl.FindChildWindowByTitle(_gameHwnd, "MuMuPlayer");
+                try
+                {
+                    // 创建并显示实时预览窗口
+                    var previewWindow = new ScreenshotPreviewWindow(_selectedCaptureMethod, _gameHwnd);
+                    previewWindow.Show();
+                }
+                catch (Exception ex)
+                {
+                    var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                    {
+                        Title = "❎ 错误",
+                        Content = "打开预览窗口失败：" + ex.Message,
+                    };
+                    _ = uiMessageBox.ShowDialogAsync();
+                }
             }
             else
             {
-                _gameHwnd = WindowHelper.FindHandleByProcessName("哈利波特：魔法觉醒", "Harry Potter Magic Awakened");
-            }
-
-            if (_gameHwnd != IntPtr.Zero)
-            {
-                //Bitmap bmp = ScreenCaptureHelper.CaptureWindow(_gameHwnd);
-                //Bitmap bmp = BitBltCaptureHelper.Capture(_gameHwnd);
-
-                var capture = new WindowsGraphicsCapture();
-                capture.Start(_gameHwnd);
-                await Task.Delay(100);
-                Mat frame = capture.Capture();
-                capture.Stop();
-                Bitmap bmp = frame.ToBitmap();
-
-                string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
-                Directory.CreateDirectory(folderPath);
-                Bitmap croppedBmp;
-                if (_screenshotWidth == 0 || _screenshotHeight == 0)
-                    croppedBmp = bmp;
-                else
-                    croppedBmp = ImageProcessingHelper.CropBitmap(bmp, _screenshotLeft, _screenshotTop, _screenshotWidth, _screenshotHeight);
-                ImageProcessingHelper.SaveBitmapAs(croppedBmp, folderPath, _screenshotFilename + ".png", ImageFormat.Png);
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "❎ 错误",
+                    Content = "未找到目标窗口",
+                };
+                _ = uiMessageBox.ShowDialogAsync();
             }
         }
         #endregion
