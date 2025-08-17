@@ -35,6 +35,19 @@ namespace AutoHPMA.Views.Windows
             
             Title = $"截屏实时预览 - {captureMethod}";
             StatusText.Text = $"截屏方式: {captureMethod}";
+            
+            // 启用窗口拖拽
+            this.MouseLeftButtonDown += (sender, e) => 
+            {
+                try
+                {
+                    this.DragMove();
+                }
+                catch (InvalidOperationException)
+                {
+                    // 忽略DragMove异常
+                }
+            };
         }
 
         private async void StartStopButton_Click(object sender, RoutedEventArgs e)
@@ -215,6 +228,18 @@ namespace AutoHPMA.Views.Windows
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            try
+            {
+                this.DragMove();
+            }
+            catch (InvalidOperationException)
+            {
+                // 忽略DragMove异常，这通常发生在鼠标按钮状态不正确时
+            }
         }
 
         protected override void OnClosed(EventArgs e)

@@ -11,6 +11,9 @@
     MinWidth="400"
     MinHeight="300"
     WindowStartupLocation="CenterScreen"
+    AllowsTransparency="False"
+    WindowStyle="SingleBorderWindow"
+    ResizeMode="CanResize"
     mc:Ignorable="d">
 
     <Grid>
@@ -22,11 +25,13 @@
 
         <!-- 标题栏 -->
         <Border
+            x:Name="TitleBar"
             Grid.Row="0"
             Padding="16,8"
             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-            BorderThickness="0,0,0,1">
+            BorderThickness="0,0,0,1"
+            MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
             <StackPanel Orientation="Horizontal">
                 <ui:SymbolIcon
                     Margin="0,0,8,0"
