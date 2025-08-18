@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using AutoHPMA.Config;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,6 +12,8 @@ using System.Collections.Generic;
 using AutoHPMA.ViewModels.Pages;
 using Microsoft.Extensions.Logging;
 using AutoHPMA.Services;
+using Wpf.Ui.Controls;
+using OpenCvSharp.Extensions;
 
 namespace AutoHPMA.ViewModels.Pages
 {
@@ -176,8 +181,50 @@ namespace AutoHPMA.ViewModels.Pages
             switch (actionName)
             {
                 case "截图":
-                    ScreenshotViewModel.TakeScreenshot();
+                {
+                    var gameHwnd = AppContextService.Instance.GameHwnd;
+                    var capture = AppContextService.Instance.Capture;
+                    
+                    if (capture == null)
+                    {
+                        var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                        {
+                            Title = "⚠️ 错误",
+                            Content = "截图失败。请先启动截图器!",
+                        };
+                        _ = uiMessageBox.ShowDialogAsync();
+                        break;
+                    }
+                    
+                    try
+                    {
+                        Task.Delay(100).Wait();
+                        using (var frame = capture.Capture())
+                        {
+                            if (frame != null)
+                            {
+                                var bitmap = frame.ToBitmap();
+                                
+                                string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                                Directory.CreateDirectory(folderPath);
+                                
+                                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                                string filename = $"screenshot_{timestamp}.png";
+                                string fullPath = Path.Combine(folderPath, filename);
+                                
+                                bitmap.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
+                                bitmap.Dispose();
+                                
+                                _logger.LogInformation($"截图已保存到: {fullPath}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "截图保存失败");
+                    }
                     break;
+                }
                 case "AutoHPMA":
                 {
                     var dashboardVM = App.Services.GetService(typeof(DashboardViewModel)) as DashboardViewModel;
@@ -310,4 +357,4 @@ namespace AutoHPMA.ViewModels.Pages
 
         public Tuple<ModifierKeys, Key> ModKeyTuple => Tuple.Create(Modifiers, Key);
     }
-} 
+}

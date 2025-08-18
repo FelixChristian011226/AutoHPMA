@@ -84,8 +84,6 @@ namespace AutoHPMA
                 services.AddSingleton<DashboardViewModel>();
                 services.AddSingleton<TaskPage>();
                 services.AddSingleton<TaskViewModel>();
-                services.AddSingleton<ScreenshotPage>();
-                services.AddSingleton<ScreenshotViewModel>();
                 services.AddSingleton<LogPage>();
                 services.AddSingleton<LogViewModel>();
                 services.AddSingleton<TestPage>();
