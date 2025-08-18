@@ -58,6 +58,11 @@ namespace AutoHPMA.ViewModels.Pages
         // 文字识别
         [ObservableProperty]
         private string _ocrResult = string.Empty;
+        
+        [ObservableProperty]
+        private string _selectedOCR = "PaddleOCR";
+        
+        public ObservableCollection<string> OCRs { get; } = new ObservableCollection<string> { "PaddleOCR", "Tesseract" };
 
         //模板匹配
         [ObservableProperty]
@@ -360,25 +365,32 @@ namespace AutoHPMA.ViewModels.Pages
                 try
                 {
                     // 加载选中的图片
-                    //Bitmap bitmap = new Bitmap(filePath);
-                    // 可选择在后台线程中执行识别，防止阻塞 UI
-                    //string text = await Task.Run(() => PaddleOCRHelper.TextRecognition(bitmap));
-                    //string text = await Task.Run(() => TesseractOCRHelper.TesseractTextRecognition(TesseractOCRHelper.PreprocessImage(bitmap)));
-                    //OcrResult = text;
-
-                    // 加载选中的图片
                     Mat mat = Cv2.ImRead(filePath);
-                    // 进行 OCR 识别
-                    PaddleOCRHelper paddleOCRHelper = new PaddleOCRHelper();
-                    string text = await Task.Run(() => paddleOCRHelper.Ocr(mat));
+                    
+                    // 根据选择的OCR引擎进行识别
+                    string text = await Task.Run(() => OcrText(mat));
                     OcrResult = text;
-
                 }
                 catch (Exception ex)
                 {
                     OcrResult = "识别出错：" + ex.Message;
                 }
             }
+        }
+        
+        private string OcrText(Mat mat)
+        {
+            if (SelectedOCR == "PaddleOCR")
+            {
+                var paddleOCRHelper = new PaddleOCRHelper();
+                return paddleOCRHelper.Ocr(mat);
+            }
+            else if (SelectedOCR == "Tesseract")
+            {
+                using var bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(mat);
+                return TesseractOCRHelper.TesseractTextRecognition(TesseractOCRHelper.PreprocessImage(bitmap));
+            }
+            return string.Empty;
         }
         #endregion
 
