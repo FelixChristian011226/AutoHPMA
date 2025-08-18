@@ -1,4 +1,5 @@
-﻿using AutoHPMA.Helpers.CaptureHelper;
+using AutoHPMA.Helpers;
+using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Helpers.ImageHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Services;
@@ -102,6 +103,7 @@ public class AutoForbiddenForest : BaseGameTask
                 GC.Collect();
                 if (round >= _autoForbiddenForestTimes)
                 {
+                    ToastNotificationHelper.ShowToast("禁林任务完成", $"已完成 {round} 轮禁林任务。");
                     Stop();
                     _logger.LogInformation("[Aquamarine]---自动禁林任务已终止---[/Aquamarine]");
                     continue;

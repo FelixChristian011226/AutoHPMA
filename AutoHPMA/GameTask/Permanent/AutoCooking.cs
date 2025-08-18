@@ -117,6 +117,7 @@ public class AutoCooking : BaseGameTask
 
                 if (round >= _autoCookingTimes)
                 {
+                    ToastNotificationHelper.ShowToast("烹饪任务完成", $"已完成 {round} 轮烹饪任务。");
                     Stop();
                     _logger.LogInformation("[Aquamarine]---自动烹饪任务已终止---[/Aquamarine]");
                     continue;
