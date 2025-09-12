@@ -1,4 +1,4 @@
-﻿using MicaSetup.Attributes;
+using MicaSetup.Attributes;
 using MicaSetup.Design.Controls;
 using MicaSetup.Extension.DependencyInjection;
 using MicaSetup.Services;
@@ -62,7 +62,7 @@ internal class Program
                 option.ExeName = "AutoHPMA.exe";
                 option.DisplayName = $"{option.AppName}";
                 option.DisplayIcon = $"{option.ExeName}";
-                option.DisplayVersion = "3.3.1";
+                option.DisplayVersion = "3.3.2";
                 option.Publisher = "FelixChristian";
                 option.SetupName = $"{option.AppName} {"Setup".Tr()}";
                 option.MessageOfPage1 = $"{option.AppName}";
