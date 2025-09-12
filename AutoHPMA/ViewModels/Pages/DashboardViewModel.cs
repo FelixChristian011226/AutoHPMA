@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the MIT License.
+// This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file, You can obtain one at https://opensource.org/licenses/MIT.
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
@@ -378,11 +378,11 @@ namespace AutoHPMA.ViewModels.Pages
          */
         private void GetGameHwnd()
         {
-            _displayHwnd = WindowHelper.FindHandleByProcessName("Mumu模拟器", "MuMuPlayer");
+            _displayHwnd = WindowHelper.FindHandleByProcessName("MuMu安卓设备", "MuMuNxDevice");
             if (_displayHwnd != IntPtr.Zero)
             {
                 _startupOption = StartupOption.MumuSimulator;
-                _gameHwnd = WindowHelper.FindChildWindowByTitle(_displayHwnd, "MuMuPlayer");
+                _gameHwnd = WindowHelper.FindChildWindowByTitle(_displayHwnd, "MuMuNxDevice");
             }
             else
             {
@@ -409,6 +409,9 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 int left, top, width, height;
                 int leftMumu, topMumu;
+                
+                _logger.LogDebug("窗口句柄信息 - DisplayHwnd: [Yellow]0x{DisplayHwnd:X}[/Yellow], GameHwnd: [Yellow]0x{GameHwnd:X}[/Yellow]", _displayHwnd.ToInt64(), _gameHwnd.ToInt64());
+
                 WindowInteractionHelper.GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
                 _logger.LogInformation("检测到游戏窗口分辨率 [Yellow]{Width}*{Height}[/Yellow]", width, height);
                 _logger.LogDebug("游戏窗口位置：左上角({Left},{Top})", left, top);
