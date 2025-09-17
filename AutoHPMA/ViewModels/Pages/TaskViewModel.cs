@@ -69,7 +69,7 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private ObservableCollection<string> _dishes = new();
         [ObservableProperty]
-        private string _autoCookingSelectedDish = "黄金海鱼焗饭";
+        private string _autoCookingSelectedDish = "海鱼黄金焗饭";
 
         [ObservableProperty]
         private string _autoCookingSelectedOCR = "Tesseract";
@@ -535,15 +535,5 @@ namespace AutoHPMA.ViewModels.Pages
             OnPropertyChanged(nameof(AutoSweetAdventureStopButtonVisibility));
         }
 
-        private string GetDishEnumValue(string dishName)
-        {
-            return dishName switch
-            {
-                "黄金海鱼焗饭" => "FishRice",
-                "果香烤乳猪" => "RoastedPig",
-                "奶油蘑菇炖饭" => "MushroomRisotto",
-                _ => "FishRice"
-            };
-        }
     }
 }

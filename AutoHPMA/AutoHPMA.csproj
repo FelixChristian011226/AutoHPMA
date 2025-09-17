@@ -233,7 +233,7 @@
     <Content Include="Assets\Cooking\Config\盐烤海虾.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Cooking\Config\黄金海鱼焗饭.json">
+    <Content Include="Assets\Cooking\Config\海鱼黄金焗饭.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\click_challenge.png">

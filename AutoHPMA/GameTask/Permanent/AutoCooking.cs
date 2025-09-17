@@ -38,13 +38,6 @@ public enum CookingStatus
     Overcooked  // 糊了
 }
 
-public enum Dishes
-{
-    FishRice,       // 黄金海鱼焗饭
-    RoastedPig,     // 果香烤乳猪
-    MushroomRisotto // 奶油蘑菇炖饭
-}
-
 public class AutoCooking : BaseGameTask
 {
     private readonly CookingConfigService _cookingConfigService;
@@ -65,7 +58,7 @@ public class AutoCooking : BaseGameTask
     private List<Rect> order_rects = new List<Rect>();
 
     private int _autoCookingTimes;
-    private string _autoCookingDish = "黄金海鱼焗饭";
+    private string _autoCookingDish;
     private int _autoCookingGap = 100;
     private DishConfig? _currentDishConfig;
 

@@ -48,7 +48,7 @@ namespace AutoHPMA.Config
         public int AutoCookingTimes { get; set; } = 2;
 
         [JsonPropertyName("autoCookingSelectedDish")]
-        public string AutoCookingSelectedDish { get; set; } = "黄金海鱼焗饭";
+        public string AutoCookingSelectedDish { get; set; } = "海鱼黄金焗饭";
 
         [JsonPropertyName("autoCookingSelectedOCR")]
         public string AutoCookingSelectedOCR { get; set; } = "Tesseract";
