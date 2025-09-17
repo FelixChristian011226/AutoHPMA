@@ -127,39 +127,54 @@
                     </TabItem.Header>
                     <StackPanel>
                         <!-- 窗口选择 -->
-                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,10,0,0" Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ui:TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        FontTypography="BodyStrong"
+                                        Text="目标窗口"
+                                        TextWrapping="Wrap" />
+                                    <ui:TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                        Text="选择要点击的窗口"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                                <ComboBox
+                                    Width="200"
+                                    Margin="10,0,10,0"
+                                    ItemsSource="{Binding ViewModel.AvailableWindows}"
+                                    SelectedItem="{Binding ViewModel.SelectedClickWindow, Mode=TwoWay}"
+                                    DisplayMemberPath="DisplayName" />
+                                <ui:Button
+                                    Command="{Binding ViewModel.RefreshWindowListCommand}"
+                                    Content="刷新"
+                                    Margin="0,0,10,0" />
+                            </StackPanel>
+                            
+                            <!-- 子窗口选择选项 -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <CheckBox 
+                                    IsChecked="{Binding ViewModel.IncludeChildWindows, Mode=TwoWay}"
+                                    Content="包含子窗口"
+                                    Margin="0,0,10,0" />
                                 <ui:TextBlock
-                                    Grid.Row="0"
-                                    Grid.Column="0"
-                                    FontTypography="BodyStrong"
-                                    Text="目标窗口"
-                                    TextWrapping="Wrap" />
-                                <ui:TextBlock
-                                    Grid.Row="1"
-                                    Grid.Column="0"
                                     Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                    Text="选择要点击的窗口"
-                                    TextWrapping="Wrap" />
-                            </Grid>
-                            <ComboBox
-                                Width="200"
-                                Margin="10,0,10,0"
-                                ItemsSource="{Binding ViewModel.AvailableWindows}"
-                                SelectedItem="{Binding ViewModel.SelectedClickWindow, Mode=TwoWay}"
-                                DisplayMemberPath="Title" />
-                            <ui:Button
-                                Command="{Binding ViewModel.RefreshWindowListCommand}"
-                                Content="刷新"
-                                Margin="0,0,10,0" />
+                                    Text="勾选此项可显示子窗口（如MuMu模拟器的实际游戏窗口）"
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
                         </StackPanel>
 
                         <!-- 分隔线 -->

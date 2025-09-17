@@ -1,4 +1,4 @@
-﻿using AutoHPMA.Helpers;
+using AutoHPMA.Helpers;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Helpers.ImageHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
@@ -49,6 +49,9 @@ namespace AutoHPMA.ViewModels.Pages
         // 鼠标模拟
         [ObservableProperty]
         private WindowInfo? _selectedClickWindow;
+        
+        [ObservableProperty]
+        private bool _includeChildWindows = false;
         
         public ObservableCollection<ClickActionModel> ClickActions { get; } = new ObservableCollection<ClickActionModel>();
         
@@ -148,11 +151,18 @@ namespace AutoHPMA.ViewModels.Pages
         private void RefreshWindowList()
         {
             AvailableWindows.Clear();
-            var windows = WindowHelper.GetAllVisibleWindows();
+            var windows = IncludeChildWindows 
+                ? WindowHelper.GetAllVisibleWindowsWithChildren() 
+                : WindowHelper.GetAllVisibleWindows();
             foreach (var window in windows)
             {
                 AvailableWindows.Add(window);
             }
+        }
+        
+        partial void OnIncludeChildWindowsChanged(bool value)
+        {
+            RefreshWindowList();
         }
 
         #endregion

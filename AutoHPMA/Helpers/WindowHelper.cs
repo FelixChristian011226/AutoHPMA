@@ -108,4 +108,79 @@ public class WindowHelper
         
         return windows.OrderBy(w => w.Title).ToList();
     }
+
+    public static List<WindowInfo> GetAllVisibleWindowsWithChildren()
+    {
+        var windows = new List<WindowInfo>();
+        
+        EnumWindows((hWnd, lParam) =>
+        {
+            if (IsWindowVisible(hWnd))
+            {
+                var windowText = new StringBuilder(255);
+                GetWindowText(hWnd, windowText, 255);
+                var title = windowText.ToString();
+                
+                // 跳过没有标题的窗口（通常是系统窗口）
+                if (string.IsNullOrEmpty(title))
+                    return true;
+                
+                GetWindowThreadProcessId(hWnd, out uint processId);
+                
+                try
+                {
+                    var process = Process.GetProcessById((int)processId);
+                    var windowInfo = new WindowInfo
+                    {
+                        Handle = hWnd,
+                        Title = title,
+                        ProcessName = process.ProcessName,
+                        ProcessId = (int)processId
+                    };
+                    
+                    windows.Add(windowInfo);
+                    
+                    // 获取子窗口
+                    var childWindows = GetChildWindows(hWnd, process.ProcessName, (int)processId);
+                    windows.AddRange(childWindows);
+                }
+                catch (ArgumentException)
+                {
+                    // 进程可能已经退出，忽略此窗口
+                }
+            }
+            
+            return true;
+        }, nint.Zero);
+        
+        return windows.OrderBy(w => w.Title).ToList();
+    }
+
+    public static List<WindowInfo> GetChildWindows(nint parentHandle, string parentProcessName, int parentProcessId)
+    {
+        var childWindows = new List<WindowInfo>();
+        
+        EnumChildWindows(parentHandle, (hWnd, lParam) =>
+        {
+            var windowText = new StringBuilder(255);
+            GetWindowText(hWnd, windowText, 255);
+            var title = windowText.ToString();
+            
+            // 包含所有子窗口，即使没有标题
+            var displayTitle = string.IsNullOrEmpty(title) ? $"[子窗口 {hWnd:X8}]" : title;
+            
+            var childWindowInfo = new WindowInfo
+            {
+                Handle = hWnd,
+                Title = displayTitle,
+                ProcessName = $"{parentProcessName} (子窗口)",
+                ProcessId = parentProcessId
+            };
+            
+            childWindows.Add(childWindowInfo);
+            return true;
+        }, nint.Zero);
+        
+        return childWindows;
+    }
 }
