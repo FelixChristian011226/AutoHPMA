@@ -78,6 +78,7 @@
     <None Remove="Assets\Cooking\Config\果香烤乳猪.json" />
     <None Remove="Assets\Cooking\Config\盐烤海虾.json" />
     <None Remove="Assets\Cooking\Config\海鱼黄金焗饭.json" />
+    <None Remove="Assets\Cooking\Config\香草战斧牛排.json" />
     <None Remove="Assets\Cooking\Image\click_challenge.png" />
     <None Remove="Assets\Cooking\Image\click_start.png" />
     <None Remove="Assets\Cooking\Image\Condiment\coconut.png" />
@@ -94,6 +95,8 @@
     <None Remove="Assets\Cooking\Image\Ingredients\pork.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\rice.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\shrimp.png" />
+    <None Remove="Assets\Cooking\Image\Ingredients\steak.png" />
+    <None Remove="Assets\Cooking\Image\Ingredients\vanilla.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\board.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\grill.png" />
     <None Remove="Assets\Cooking\Image\Kitchenware\grill_ring.png" />
@@ -236,6 +239,9 @@
     <Content Include="Assets\Cooking\Config\海鱼黄金焗饭.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Config\香草战斧牛排.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Image\click_challenge.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -276,6 +282,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\shrimp.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Ingredients\steak.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Ingredients\vanilla.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Kitchenware\grill.png">
