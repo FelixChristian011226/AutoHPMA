@@ -171,7 +171,7 @@
                                     Margin="0,0,10,0" />
                                 <ui:TextBlock
                                     Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                    Text="勾选此项可显示子窗口（如MuMu模拟器的实际游戏窗口）"
+                                    Text="勾选此项可显示游戏模拟器的子窗口（如MuMu模拟器的实际游戏窗口）"
                                     TextWrapping="Wrap"
                                     VerticalAlignment="Center" />
                             </StackPanel>
@@ -269,6 +269,54 @@
                             <ui:Button
                                 Command="{Binding ViewModel.DragTestCommand}"
                                 Content="执行拖拽测试"
+                                Margin="0,0,10,0" />
+                        </StackPanel>
+
+                        <!-- 分隔线 -->
+                        <Separator Margin="0,2,0,2" />
+                        
+                        <!-- 长按测试 -->
+                        <StackPanel Margin="0,2,0,0">
+                            <ui:TextBlock
+                                FontTypography="BodyStrong"
+                                Text="长按动作列表"
+                                Margin="0,0,0,10" />
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <ui:Button
+                                    Command="{Binding ViewModel.AddLongPressActionCommand}"
+                                    Content="添加长按"
+                                    Margin="0,0,10,0" />
+                            </StackPanel>
+                            <DataGrid
+                                ItemsSource="{Binding ViewModel.LongPressActions}"
+                                AutoGenerateColumns="False"
+                                CanUserAddRows="False"
+                                Height="150"
+                                Margin="0,0,0,10">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="描述" Binding="{Binding Description}" Width="120" />
+                                    <DataGridTextColumn Header="X坐标" Binding="{Binding X}" Width="80" />
+                                    <DataGridTextColumn Header="Y坐标" Binding="{Binding Y}" Width="80" />
+                                    <DataGridTextColumn Header="持续时间(ms)" Binding="{Binding Duration}" Width="120" />
+                                    <DataGridTextColumn Header="间隔(ms)" Binding="{Binding Interval}" Width="100" />
+                                    <DataGridTextColumn Header="次数" Binding="{Binding Times}" Width="80" />
+                                    <DataGridTemplateColumn Header="操作" Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ui:Button
+                                                    Content="删除"
+                                                    Command="{Binding DataContext.ViewModel.RemoveLongPressActionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    FontSize="12"
+                                                    Padding="5,2" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <ui:Button
+                                Command="{Binding ViewModel.LongPressTestCommand}"
+                                Content="执行长按测试"
                                 Margin="0,0,10,0" />
                         </StackPanel>
                     </StackPanel>

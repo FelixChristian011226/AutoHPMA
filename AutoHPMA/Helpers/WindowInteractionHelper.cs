@@ -1,4 +1,4 @@
-﻿using AutoHPMA.GameTask;
+using AutoHPMA.GameTask;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,6 +97,27 @@ public class WindowInteractionHelper
 
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
         Thread.Sleep(100); // 延时100毫秒
+        SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
+    }
+
+    /// <summary>
+    /// 发送鼠标长按操作
+    /// </summary>
+    /// <param name="hWnd">目标窗口句柄</param>
+    /// <param name="x">X坐标</param>
+    /// <param name="y">Y坐标</param>
+    /// <param name="duration">长按持续时间（毫秒）</param>
+    public static void SendMouseLongPress(IntPtr hWnd, uint x, uint y, int duration = 1000)
+    {
+        var lParam = MakeLParam(x, y);
+
+        // 按下鼠标左键
+        SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
+        
+        // 持续指定时间
+        Thread.Sleep(duration);
+        
+        // 释放鼠标左键
         SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
     }
     public static void SendMouseClickWithParentNotify(IntPtr hWnd, uint x, uint y)

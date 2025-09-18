@@ -70,4 +70,40 @@ namespace AutoHPMA.Models
             Description = description;
         }
     }
+    
+    /// <summary>
+/// 长按动作模型
+/// </summary>
+public partial class LongPressActionModel : ObservableObject
+{
+    [ObservableProperty]
+    private int _x;
+
+    [ObservableProperty]
+    private int _y;
+
+    [ObservableProperty]
+    private int _duration = 1000; // 默认长按1秒
+
+    [ObservableProperty]
+    private int _interval = 500; // 默认间隔500毫秒
+
+    [ObservableProperty]
+    private int _times = 1; // 默认执行1次
+
+    [ObservableProperty]
+    private string _description = "";
+
+    public LongPressActionModel() { }
+
+    public LongPressActionModel(int x, int y, int duration, int interval, int times, string description)
+    {
+        X = x;
+        Y = y;
+        Duration = duration;
+        Interval = interval;
+        Times = times;
+        Description = description;
+    }
+}
 }

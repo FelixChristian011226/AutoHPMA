@@ -57,6 +57,8 @@ namespace AutoHPMA.ViewModels.Pages
         
         public ObservableCollection<DragActionModel> DragActions { get; } = new ObservableCollection<DragActionModel>();
         
+        public ObservableCollection<LongPressActionModel> LongPressActions { get; } = new ObservableCollection<LongPressActionModel>();
+        
 
         // 文字识别
         [ObservableProperty]
@@ -135,6 +137,7 @@ namespace AutoHPMA.ViewModels.Pages
             RefreshWindowList();
             InitializeClickActions();
             InitializeDragActions();
+            InitializeLongPressActions();
         }
         
         private void InitializeClickActions()
@@ -145,6 +148,11 @@ namespace AutoHPMA.ViewModels.Pages
         private void InitializeDragActions()
         {
             DragActions.Add(new DragActionModel(200, 200, 400, 400, 500, "默认拖拽"));
+        }
+        
+        private void InitializeLongPressActions()
+        {
+            LongPressActions.Add(new LongPressActionModel(200, 200, 1000, 500, 1, "默认长按"));
         }
         
         [RelayCommand]
@@ -329,6 +337,66 @@ namespace AutoHPMA.ViewModels.Pages
                 await uiMessageBox.ShowDialogAsync();
             }
         }
+
+        [RelayCommand]
+        public async void OnLongPressTest(object sender)
+        {
+            if (SelectedClickWindow == null)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = "请先选择要长按的窗口"
+                };
+                await uiMessageBox.ShowDialogAsync();
+                return;
+            }
+
+            var targetHwnd = SelectedClickWindow.Handle;
+            if (targetHwnd == IntPtr.Zero)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = "目标窗口句柄无效"
+                };
+                await uiMessageBox.ShowDialogAsync();
+                return;
+            }
+
+            try
+            {
+                // 窗口置顶
+                WindowInteractionHelper.SetForegroundWindow(targetHwnd);
+                
+                // 等待3秒延迟
+                await Task.Delay(3000);
+                
+                // 执行表格中的所有长按动作
+                foreach (var longPressAction in LongPressActions)
+                {
+                    for (int i = 0; i < longPressAction.Times; i++)
+                    {
+                        WindowInteractionHelper.SendMouseLongPress(
+                            targetHwnd,
+                            (uint)longPressAction.X,
+                            (uint)longPressAction.Y,
+                            longPressAction.Duration
+                        );
+                        await Task.Delay(longPressAction.Interval);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "错误",
+                    Content = $"长按测试失败：{ex.Message}"
+                };
+                await uiMessageBox.ShowDialogAsync();
+            }
+        }
         
         [RelayCommand]
         public void AddClickAction()
@@ -357,6 +425,21 @@ namespace AutoHPMA.ViewModels.Pages
             if (action != null)
             {
                 DragActions.Remove(action);
+            }
+        }
+        
+        [RelayCommand]
+        public void AddLongPressAction()
+        {
+            LongPressActions.Add(new LongPressActionModel(200, 200, 1000, 500, 1, $"长按动作{LongPressActions.Count + 1}"));
+        }
+        
+        [RelayCommand]
+        public void RemoveLongPressAction(LongPressActionModel action)
+        {
+            if (action != null)
+            {
+                LongPressActions.Remove(action);
             }
         }
         #endregion
