@@ -79,6 +79,7 @@
     <None Remove="Assets\Cooking\Config\盐烤海虾.json" />
     <None Remove="Assets\Cooking\Config\海鱼黄金焗饭.json" />
     <None Remove="Assets\Cooking\Config\香草战斧牛排.json" />
+    <None Remove="Assets\Cooking\Config\香草风味烤扇贝.json" />
     <None Remove="Assets\Cooking\Image\click_challenge.png" />
     <None Remove="Assets\Cooking\Image\click_start.png" />
     <None Remove="Assets\Cooking\Image\Condiment\coconut.png" />
@@ -90,10 +91,13 @@
     <None Remove="Assets\Cooking\Image\Dishes\奶油蘑菇炖饭.png" />
     <None Remove="Assets\Cooking\Image\Dishes\果香烤乳猪.png" />
     <None Remove="Assets\Cooking\Image\Dishes\盐烤海虾.png" />
+    <None Remove="Assets\Cooking\Image\Dishes\香草战斧牛排.png" />
+    <None Remove="Assets\Cooking\Image\Dishes\香草风味烤扇贝.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\fish.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\mushroom.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\pork.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\rice.png" />
+    <None Remove="Assets\Cooking\Image\Ingredients\scallop.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\shrimp.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\steak.png" />
     <None Remove="Assets\Cooking\Image\Ingredients\vanilla.png" />
@@ -242,6 +246,9 @@
     <Content Include="Assets\Cooking\Config\香草战斧牛排.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Config\香草风味烤扇贝.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Image\click_challenge.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -269,6 +276,12 @@
     <Content Include="Assets\Cooking\Image\Dishes\盐烤海虾.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Cooking\Image\Dishes\香草战斧牛排.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Dishes\香草风味烤扇贝.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\fish.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -279,6 +292,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\rice.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Cooking\Image\Ingredients\scallop.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\Ingredients\shrimp.png">

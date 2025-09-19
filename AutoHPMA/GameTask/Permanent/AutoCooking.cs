@@ -75,6 +75,8 @@ public class AutoCooking : BaseGameTask
     private Point next_order;
 
     private Dictionary<string, (CookingStatus status, double progress)> kitchenwareStatus = new();
+    private HashSet<int> completedSteps = new(); // 跟踪已完成的烹饪步骤
+    private HashSet<int> preCookedSteps = new(); // 跟踪预烹饪的步骤
 
     private Dictionary<string, int> condimentCounts = new();
     private static PaddleOCRHelper? paddleOCRHelper;
@@ -171,37 +173,10 @@ public class AutoCooking : BaseGameTask
                             }
                         }
 
-                        // 检查是否所有厨具都为空
-                        bool allIdle = true;
-                        foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
+                        // 执行新的循环烹饪逻辑
+                        if (ExecuteCookingCycle())
                         {
-                            if (kitchenwareStatus.TryGetValue(kitchenware, out var status) && status.status != CookingStatus.Idle)
-                            {
-                                allIdle = false;
-                                break;
-                            }
-                        }
-                        if (allIdle)
-                        {
-                            CookFood();
-                            await Task.Delay(_autoCookingGap, _cts.Token);
-                            continue;
-                        }
-
-                        // 检查是否所有厨具都烹饪完成
-                        bool allCooked = true;
-                        foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
-                        {
-                            if (kitchenwareStatus.TryGetValue(kitchenware, out var status) && status.status != CookingStatus.Cooked)
-                            {
-                                allCooked = false;
-                                break;
-                            }
-                        }
-
-                        if (allCooked)
-                        {
-                            CookLoop();
+                            // 烹饪循环完成，进入最终阶段
                             await Task.Delay(_autoCookingGap, _cts.Token);
                             continue;
                         }
@@ -214,7 +189,7 @@ public class AutoCooking : BaseGameTask
                         _maskWindow?.ClearLayer("Kitchenware");
                         _maskWindow?.ClearLayer("Condiments");
                         _maskWindow?.ClearLayer("Ingredients");
-                        _maskWindow?.ClearLayer("Orders");
+                        _maskWindow?.ClearLayer("Orders");                      
                         await Task.Delay(3000, _cts.Token);
                         SendSpace(_gameHwnd);
                         await Task.Delay(3000, _cts.Token);
@@ -274,43 +249,197 @@ public class AutoCooking : BaseGameTask
         return false;
     }
 
-    private void CookLoop()
-    {
-        DefaultOrder();
-        if (CheckOver()) return;
-        GetCookedFood();
-        if (CheckOver()) return;
-        CookFood();
-        if (CheckOver()) return;
-        Seasoning();
-        if (CheckOver()) return;
-        SubmitOrder();
-    }
     /// <summary>
-    /// 将食物原料放入厨具中进行烹饪
+    /// 执行新的循环烹饪逻辑，支持食材共用厨具
     /// </summary>
-    private void CookFood()
+    private bool ExecuteCookingCycle()
     {
-        foreach (var step in _currentDishConfig.CookingSteps)
+        if (_currentDishConfig == null) return false;
+
+        // 检查是否所有步骤都已完成
+        if (IsAllStepsCompleted())
         {
-            var ingredientCenter = ingredientCenters[step.Ingredient];
-            var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
-            if (CheckOver()) return;
-            DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
+            // 所有步骤完成，执行最终处理
+            return ExecuteFinalStage();
         }
+
+        // 执行下一个可用的烹饪步骤
+        return ExecuteNextCookingStep();
     }
 
     /// <summary>
-    /// 将烹饪好的食物放到砧板上
+    /// 检查是否所有烹饪步骤都已完成
     /// </summary>
-    private void GetCookedFood()
+    private bool IsAllStepsCompleted()
     {
-        foreach (var step in _currentDishConfig.CookingSteps)
+        // 检查是否所有步骤都已开始
+        if (completedSteps.Count < _currentDishConfig.CookingSteps.Count)
+            return false;
+            
+        // 检查是否还有厨具在烹饪或已完成但未取出
+        foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
         {
-            var kitchenwareCenter = kitchenwareCenters[step.TargetKitchenware];
-            var boardCenter = kitchenwareCenters["board"];
-            if (CheckOver()) return;
-            DragMove(ref kitchenwareCenter, ref boardCenter, 100);
+            if (kitchenware == "bin" || kitchenware == "board") continue;
+            
+            if (kitchenwareStatus.TryGetValue(kitchenware, out var status))
+            {
+                if (status.status == CookingStatus.Cooking || status.status == CookingStatus.Cooked)
+                {
+                    return false; // 还有厨具在使用中
+                }
+            }
+        }
+        return true; // 所有厨具都空闲
+    }
+
+    /// <summary>
+    /// 执行下一个可用的烹饪步骤
+    /// </summary>
+    private bool ExecuteNextCookingStep()
+    {
+        for (int i = 0; i < _currentDishConfig.CookingSteps.Count; i++)
+        {
+            var step = _currentDishConfig.CookingSteps[i];
+            var targetKitchenware = step.TargetKitchenware;
+            
+            if (!kitchenwareStatus.TryGetValue(targetKitchenware, out var status))
+                continue;
+
+            switch (status.status)
+            {
+                case CookingStatus.Idle:
+                    // 厨具空闲，检查是否有未完成的步骤需要使用这个厨具
+                    if (!completedSteps.Contains(i) && !preCookedSteps.Contains(i))
+                    {
+                        PlaceIngredientInKitchenware(step.Ingredient, targetKitchenware);
+                        completedSteps.Add(i); // 标记步骤为已开始
+                        return false; // 继续循环
+                    }
+                    break;
+
+                case CookingStatus.Cooked:
+                    // 厨具烹饪完成，取出食材到砧板
+                    MoveFromKitchenwareToBoard(targetKitchenware);
+                    
+                    // 如果这是预烹饪的步骤，将其转移到正常完成步骤
+                    if (preCookedSteps.Contains(i))
+                    {
+                        preCookedSteps.Remove(i);
+                        completedSteps.Add(i);
+                    }
+                    
+                    return false; // 继续循环
+
+                case CookingStatus.Cooking:
+                    // 厨具正在烹饪，等待
+                    continue;
+
+                case CookingStatus.Overcooked:
+                    // 厨具糊了，已在主循环中处理
+                    continue;
+            }
+        }
+        
+        return false; // 继续等待
+    }
+
+    /// <summary>
+    /// 执行最终阶段：调味和提交订单
+    /// </summary>
+    private bool ExecuteFinalStage()
+    {
+        completedSteps.Clear();
+
+        DefaultOrder();
+        if (CheckOver()) return true;
+        
+        // 在调料前尝试开始下一轮的预烹饪
+        StartPreCooking();
+        
+        Seasoning();
+        if (CheckOver()) return true;
+        
+        SubmitOrder();
+        return true; // 完成整个烹饪循环
+    }
+
+    /// <summary>
+    /// 将食材放入指定厨具
+    /// </summary>
+    private void PlaceIngredientInKitchenware(string ingredient, string kitchenware)
+    {
+        if (CheckOver()) return;
+        
+        var ingredientCenter = ingredientCenters[ingredient];
+        var kitchenwareCenter = kitchenwareCenters[kitchenware];
+        
+        _logger.LogDebug("将食材 {Ingredient} 放入厨具 {Kitchenware}", ingredient, kitchenware);
+        DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
+    }
+
+    /// <summary>
+    /// 将烹饪好的食物从厨具移到砧板
+    /// </summary>
+    private void MoveFromKitchenwareToBoard(string kitchenware)
+    {
+        if (CheckOver()) return;
+        
+        var kitchenwareCenter = kitchenwareCenters[kitchenware];
+        var boardCenter = kitchenwareCenters["board"];
+        
+        _logger.LogDebug("将食物从厨具 {Kitchenware} 移到砧板", kitchenware);
+        DragMove(ref kitchenwareCenter, ref boardCenter, 100);
+    }
+
+    /// <summary>
+    /// 开始预烹饪：在当前轮调料阶段提前放入下一轮的食材
+    /// </summary>
+    private void StartPreCooking()
+    {
+        if (_currentDishConfig == null) return;
+        
+        _logger.LogDebug("开始预烹饪检查...");
+        
+        int preCookedCount = 0;
+        const int maxPreCookItems = 2; // 最多预烹饪2个食材，避免占用过多厨具
+        
+        // 跟踪本次预烹饪中已使用的厨具，确保每个厨具只预烹饪一个食材
+        var usedKitchenware = new HashSet<string>();
+        
+        // 遍历烹饪步骤，找到可以提前开始的食材
+        for (int i = 0; i < _currentDishConfig.CookingSteps.Count && preCookedCount < maxPreCookItems; i++)
+        {
+            var step = _currentDishConfig.CookingSteps[i];
+            var targetKitchenware = step.TargetKitchenware;
+            
+            // 跳过已经预烹饪的步骤
+            if (preCookedSteps.Contains(i)) continue;
+            
+            // 跳过本次预烹饪中已使用的厨具
+            if (usedKitchenware.Contains(targetKitchenware)) continue;
+            
+            // 检查厨具状态
+            if (kitchenwareStatus.TryGetValue(targetKitchenware, out var status))
+            {
+                if (status.status == CookingStatus.Idle)
+                {
+                    // 厨具空闲，可以放入下一轮的食材
+                    _logger.LogInformation("预烹饪：将食材 {Ingredient} 放入厨具 {Kitchenware}", step.Ingredient, targetKitchenware);
+                    PlaceIngredientInKitchenware(step.Ingredient, targetKitchenware);
+                    preCookedSteps.Add(i); // 标记为预烹饪步骤
+                    usedKitchenware.Add(targetKitchenware); // 标记厨具已使用
+                    preCookedCount++;
+                }
+            }
+        }
+        
+        if (preCookedCount > 0)
+        {
+            _logger.LogInformation("预烹饪完成，已放入 {Count} 个食材", preCookedCount);
+        }
+        else
+        {
+            _logger.LogDebug("没有可用的空闲厨具进行预烹饪");
         }
     }
 
@@ -460,6 +589,10 @@ public class AutoCooking : BaseGameTask
         _maskWindow?.SetLayerRects("Ingredients", ingredientRectsList);
         _maskWindow?.SetLayerRects("Condiments", condimentRectsList);
 
+        // 重置正常烹饪步骤跟踪，但保留预烹饪步骤
+        completedSteps.Clear();
+        // preCookedSteps保持不变，让预烹饪的食材在下一轮继续处理
+        
         initialized = true;
         return true;
     }
