@@ -13,11 +13,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
 using Microsoft.Extensions.Logging;
@@ -43,6 +40,7 @@ namespace AutoHPMA.ViewModels.Pages
         private readonly CookingConfigService _cookingConfigService;
 
         #region Observable Properties
+
         [ObservableProperty]
         private TaskType _currentTaskType = TaskType.None;
 
@@ -54,20 +52,19 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private int _autoForbiddenForestTimes = 30;
+
         [ObservableProperty]
         private int _autoCookingTimes = 2;
 
         [ObservableProperty]
-        private ObservableCollection<string> _teamPositions =
-            [
-                "Leader",
-                "Member"
-            ];
+        private ObservableCollection<string> _teamPositions = ["Leader", "Member"];
+
         [ObservableProperty]
         private string _selectedTeamPosition = "Leader";
 
         [ObservableProperty]
         private ObservableCollection<string> _dishes = new();
+
         [ObservableProperty]
         private string _autoCookingSelectedDish = "海鱼黄金焗饭";
 
@@ -78,59 +75,50 @@ namespace AutoHPMA.ViewModels.Pages
 
         #endregion
 
-        #region 智能按钮状态计算属性
-        /// <summary>
-        /// 自动社团答题按钮状态
-        /// </summary>
-        public Visibility AutoClubQuizStartButtonVisibility => 
-            CurrentTaskType == TaskType.AutoClubQuiz ? Visibility.Collapsed : Visibility.Visible;
-        public Visibility AutoClubQuizStopButtonVisibility => 
-            CurrentTaskType == TaskType.AutoClubQuiz ? Visibility.Visible : Visibility.Collapsed;
+        #region 按钮可见性属性
 
-        /// <summary>
-        /// 自动禁林按钮状态
-        /// </summary>
-        public Visibility AutoForbiddenForestStartButtonVisibility => 
-            CurrentTaskType == TaskType.AutoForbiddenForest ? Visibility.Collapsed : Visibility.Visible;
-        public Visibility AutoForbiddenForestStopButtonVisibility => 
-            CurrentTaskType == TaskType.AutoForbiddenForest ? Visibility.Visible : Visibility.Collapsed;
+        // 辅助方法简化按钮可见性
+        private Visibility GetStartVisibility(TaskType type) =>
+            CurrentTaskType == type ? Visibility.Collapsed : Visibility.Visible;
 
-        /// <summary>
-        /// 自动烹饪按钮状态
-        /// </summary>
-        public Visibility AutoCookingStartButtonVisibility => 
-            CurrentTaskType == TaskType.AutoCooking ? Visibility.Collapsed : Visibility.Visible;
-        public Visibility AutoCookingStopButtonVisibility => 
-            CurrentTaskType == TaskType.AutoCooking ? Visibility.Visible : Visibility.Collapsed;
+        private Visibility GetStopVisibility(TaskType type) =>
+            CurrentTaskType == type ? Visibility.Visible : Visibility.Collapsed;
 
-        /// <summary>
-        /// 甜蜜冒险按钮状态
-        /// </summary>
-        public Visibility AutoSweetAdventureStartButtonVisibility => 
-            CurrentTaskType == TaskType.AutoSweetAdventure ? Visibility.Collapsed : Visibility.Visible;
-        public Visibility AutoSweetAdventureStopButtonVisibility => 
-            CurrentTaskType == TaskType.AutoSweetAdventure ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility AutoClubQuizStartButtonVisibility => GetStartVisibility(TaskType.AutoClubQuiz);
+        public Visibility AutoClubQuizStopButtonVisibility => GetStopVisibility(TaskType.AutoClubQuiz);
+
+        public Visibility AutoForbiddenForestStartButtonVisibility => GetStartVisibility(TaskType.AutoForbiddenForest);
+        public Visibility AutoForbiddenForestStopButtonVisibility => GetStopVisibility(TaskType.AutoForbiddenForest);
+
+        public Visibility AutoCookingStartButtonVisibility => GetStartVisibility(TaskType.AutoCooking);
+        public Visibility AutoCookingStopButtonVisibility => GetStopVisibility(TaskType.AutoCooking);
+
+        public Visibility AutoSweetAdventureStartButtonVisibility => GetStartVisibility(TaskType.AutoSweetAdventure);
+        public Visibility AutoSweetAdventureStopButtonVisibility => GetStopVisibility(TaskType.AutoSweetAdventure);
 
         #endregion
+
+        #region 服务引用
 
         private IntPtr _displayHwnd => AppContextService.Instance.DisplayHwnd;
         private IntPtr _gameHwnd => AppContextService.Instance.GameHwnd;
         private LogWindow? _logWindow => AppContextService.Instance.LogWindow;
         private WindowsGraphicsCapture _capture => AppContextService.Instance.Capture;
 
-
         private IGameTask? _currentTask;
         private AppContextService appContextService;
+
+        #endregion
+
+        #region 构造函数
 
         public TaskViewModel(AppSettings settings, ILogger<TaskViewModel> logger, CookingConfigService cookingConfigService)
         {
             _settings = settings;
             _logger = logger;
             _cookingConfigService = cookingConfigService;
-            
-            // 获取单例实例
+
             appContextService = AppContextService.Instance;
-            // 订阅属性变化通知
             appContextService.PropertyChanged += AppContextService_PropertyChanged;
 
             // 注册停止所有任务的消息接收器
@@ -139,7 +127,13 @@ namespace AutoHPMA.ViewModels.Pages
                 StopAllRunningTasks();
             });
 
-            // 初始化时从设置中加载数据
+            // 从设置中加载数据
+            LoadSettings();
+            LoadDishes();
+        }
+
+        private void LoadSettings()
+        {
             AnswerDelay = _settings.AnswerDelay;
             JoinOthers = _settings.JoinOthers;
             AutoForbiddenForestTimes = _settings.AutoForbiddenForestTimes;
@@ -147,27 +141,136 @@ namespace AutoHPMA.ViewModels.Pages
             AutoCookingTimes = _settings.AutoCookingTimes;
             AutoCookingSelectedDish = _settings.AutoCookingSelectedDish;
             AutoCookingSelectedOCR = _settings.AutoCookingSelectedOCR;
-
-            // 加载菜品列表
-            LoadDishes();
         }
 
         private void LoadDishes()
         {
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Cooking/Config");
-            if (Directory.Exists(configPath))
+            if (!Directory.Exists(configPath)) return;
+
+            foreach (var file in Directory.GetFiles(configPath, "*.json"))
             {
-                var configFiles = Directory.GetFiles(configPath, "*.json");
-                foreach (var file in configFiles)
+                var json = File.ReadAllText(file);
+                var config = System.Text.Json.JsonSerializer.Deserialize<Models.Cooking.DishConfig>(json);
+                if (config != null)
                 {
-                    var json = File.ReadAllText(file);
-                    var config = System.Text.Json.JsonSerializer.Deserialize<Models.Cooking.DishConfig>(json);
-                    if (config != null)
-                    {
-                        Dishes.Add(config.Name);
-                    }
+                    Dishes.Add(config.Name);
                 }
             }
+        }
+
+        private void AppContextService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            // 当共享数据有更新时可以在这里处理
+        }
+
+        #endregion
+
+        #region 通用任务控制方法
+
+        /// <summary>
+        /// 验证必要参数是否就绪
+        /// </summary>
+        private bool ValidateRequiredParameters() =>
+            _gameHwnd != IntPtr.Zero && _displayHwnd != IntPtr.Zero && _capture != null && _logWindow != null;
+
+        /// <summary>
+        /// 检查是否有任务正在运行
+        /// </summary>
+        private bool CheckTaskRunningStatus()
+        {
+            if (_currentTask != null)
+            {
+                ShowErrorMessage("已有其他任务正在运行，请先停止当前任务！");
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 显示错误消息框
+        /// </summary>
+        private void ShowErrorMessage(string content)
+        {
+            var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+            {
+                Title = "⚠️ 提示",
+                Content = content,
+            };
+            uiMessageBox.ShowDialogAsync();
+        }
+
+        /// <summary>
+        /// 显示成功 Snackbar
+        /// </summary>
+        private void ShowSuccessSnackbar(string taskName)
+        {
+            var snackbarInfo = new SnackbarInfo
+            {
+                Title = "启动成功",
+                Message = $"{taskName}已启动。",
+                Appearance = ControlAppearance.Success,
+                Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
+                Duration = TimeSpan.FromSeconds(3)
+            };
+            WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
+        }
+
+        /// <summary>
+        /// 订阅任务完成事件
+        /// </summary>
+        private void SubscribeTaskCompleted()
+        {
+            _currentTask!.TaskCompleted += (sender, e) =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CurrentTaskType = TaskType.None;
+                    _currentTask = null;
+                });
+            };
+        }
+
+        /// <summary>
+        /// 通用任务启动方法
+        /// </summary>
+        private bool StartTask(
+            TaskType taskType,
+            string taskName,
+            Func<IGameTask> createTask,
+            Dictionary<string, object>? parameters = null)
+        {
+            if (CheckTaskRunningStatus()) return false;
+
+            if (!ValidateRequiredParameters())
+            {
+                ShowErrorMessage("任务启动失败。请先启动截图器!");
+                return false;
+            }
+
+            ShowSuccessSnackbar(taskName);
+            CurrentTaskType = taskType;
+
+            _currentTask = createTask();
+            if (parameters != null)
+            {
+                _currentTask.SetParameters(parameters);
+            }
+
+            SubscribeTaskCompleted();
+            _currentTask.Start();
+            return true;
+        }
+
+        /// <summary>
+        /// 统一的停止任务方法
+        /// </summary>
+        private void StopTask()
+        {
+            _currentTask?.Stop();
+            _currentTask = null;
+            CurrentTaskType = TaskType.None;
+            GC.Collect();
         }
 
         /// <summary>
@@ -178,168 +281,69 @@ namespace AutoHPMA.ViewModels.Pages
             if (_currentTask != null)
             {
                 _logger.LogInformation("收到停止信号，正在停止当前任务...");
-                _currentTask.Stop();
-                _currentTask = null;
-                
-                // 确保在UI线程上执行属性变化通知
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    CurrentTaskType = TaskType.None;
-                });
-                
-                GC.Collect();
+                StopTask();
             }
         }
 
-        private void AppContextService_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(AppContextService.LogWindow) ||
-                e.PropertyName == nameof(AppContextService.DisplayHwnd) ||
-                e.PropertyName == nameof(AppContextService.GameHwnd) ||
-                e.PropertyName == nameof(AppContextService.Capture))
-            {
-                // 当共享数据有更新时执行相应操作
-                // CheckRequiredParameters();
-            }
-        }
-
-        #region 自动社团答题
-        private bool CheckTaskRunningStatus()
-        {
-            if (_currentTask != null)
-            {
-                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-                {
-                    Title = "⚠️ 提示",
-                    Content = "已有其他任务正在运行，请先停止当前任务！",
-                };
-                var result = uiMessageBox.ShowDialogAsync();
-                return true;
-            }
-            return false;
-        }
-
-        [RelayCommand]
-        private void OnAutoClubQuizStartTrigger()
-        {
-            if (CheckTaskRunningStatus()) return;
-
-            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
-            {
-                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-                {
-                    Title = "⚠️ 错误",
-                    Content = "任务启动失败。请先启动截图器!",
-                };
-                var result = uiMessageBox.ShowDialogAsync();
-                return;
-            }
-            else
-            {
-                var snackbarInfo = new SnackbarInfo
-                {
-                    Title = "启动成功",
-                    Message = "自动社团答题已启动。",
-                    Appearance = ControlAppearance.Success,
-                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
-                    Duration = TimeSpan.FromSeconds(3)
-                };
-                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
-            }
-
-            CurrentTaskType = TaskType.AutoClubQuiz;
-
-            var logger = App.GetLogger<AutoClubQuiz>();
-            _currentTask = new AutoClubQuiz(logger, _displayHwnd, _gameHwnd);
-            _currentTask.SetParameters(new Dictionary<string, object>
-            {
-                { "AnswerDelay", AnswerDelay },
-                { "JoinOthers", JoinOthers }
-            });
-
-            // 订阅任务完成事件，当任务完成时更新按钮状态
-            _currentTask.TaskCompleted += (sender, e) =>
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    CurrentTaskType = TaskType.None;
-                    _currentTask = null;
-                });
-            };
-            _currentTask.Start();
-        }
-
-        [RelayCommand]
-        private void OnAutoClubQuizStopTrigger()
-        {
-            _currentTask?.Stop();
-            _currentTask = null;
-            CurrentTaskType = TaskType.None;
-
-            GC.Collect();
-        }
         #endregion
 
-        #region 自动禁林
+        #region 任务启动/停止命令
+
         [RelayCommand]
-        private void OnAutoForbiddenForestStartTrigger()
-        {
-            if (CheckTaskRunningStatus()) return;
-
-            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
-            {
-                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
+        private void OnAutoClubQuizStartTrigger() =>
+            StartTask(
+                TaskType.AutoClubQuiz,
+                "自动社团答题",
+                () => new AutoClubQuiz(App.GetLogger<AutoClubQuiz>(), _displayHwnd, _gameHwnd),
+                new Dictionary<string, object>
                 {
-                    Title = "⚠️ 错误",
-                    Content = "任务启动失败。请先启动截图器!",
-                };
-                var result = uiMessageBox.ShowDialogAsync();
-                return;
-            }
-            else
-            {
-                var snackbarInfo = new SnackbarInfo
-                {
-                    Title = "启动成功",
-                    Message = "自动禁林已启动。",
-                    Appearance = ControlAppearance.Success,
-                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
-                    Duration = TimeSpan.FromSeconds(3)
-                };
-                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
-            }
-
-            CurrentTaskType = TaskType.AutoForbiddenForest;
-
-            var logger = App.GetLogger<AutoForbiddenForest>();
-            _currentTask = new AutoForbiddenForest(logger, _displayHwnd, _gameHwnd);
-            _currentTask.SetParameters(new Dictionary<string, object>
-            {
-                { "Times", AutoForbiddenForestTimes },
-                { "TeamPosition", SelectedTeamPosition }
-            });
-
-            // 订阅任务完成事件，当任务完成时更新按钮状态
-            _currentTask.TaskCompleted += (sender, e) =>
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    CurrentTaskType = TaskType.None;
-                    _currentTask = null;
+                    { "AnswerDelay", AnswerDelay },
+                    { "JoinOthers", JoinOthers }
                 });
-            };
-            _currentTask.Start();
-        }
 
         [RelayCommand]
-        private void OnAutoForbiddenForestStopTrigger()
-        {
-            _currentTask?.Stop();
-            _currentTask = null;
-            CurrentTaskType = TaskType.None;
+        private void OnAutoClubQuizStopTrigger() => StopTask();
 
-            GC.Collect();
-        }
+        [RelayCommand]
+        private void OnAutoForbiddenForestStartTrigger() =>
+            StartTask(
+                TaskType.AutoForbiddenForest,
+                "自动禁林",
+                () => new AutoForbiddenForest(App.GetLogger<AutoForbiddenForest>(), _displayHwnd, _gameHwnd),
+                new Dictionary<string, object>
+                {
+                    { "Times", AutoForbiddenForestTimes },
+                    { "TeamPosition", SelectedTeamPosition }
+                });
+
+        [RelayCommand]
+        private void OnAutoForbiddenForestStopTrigger() => StopTask();
+
+        [RelayCommand]
+        private void OnAutoCookingStartTrigger() =>
+            StartTask(
+                TaskType.AutoCooking,
+                "自动烹饪",
+                () => new AutoCooking(App.GetLogger<AutoCooking>(), _cookingConfigService, _displayHwnd, _gameHwnd),
+                new Dictionary<string, object>
+                {
+                    { "Times", AutoCookingTimes },
+                    { "Dish", AutoCookingSelectedDish },
+                    { "OCR", AutoCookingSelectedOCR }
+                });
+
+        [RelayCommand]
+        private void OnAutoCookingStopTrigger() => StopTask();
+
+        [RelayCommand]
+        private void OnAutoSweetAdventureStartTrigger() =>
+            StartTask(
+                TaskType.AutoSweetAdventure,
+                "甜蜜冒险",
+                () => new AutoSweetAdventure(App.GetLogger<AutoSweetAdventure>(), _displayHwnd, _gameHwnd));
+
+        [RelayCommand]
+        private void OnAutoSweetAdventureStopTrigger() => StopTask();
 
         [RelayCommand]
         private void OnOpenQuestionBank(object sender)
@@ -356,169 +360,30 @@ namespace AutoHPMA.ViewModels.Pages
                 Verb = "open"
             });
         }
+
         #endregion
 
-        #region 自动烹饪
-        [RelayCommand]
-        private void OnAutoCookingStartTrigger()
-        {
-            if (CheckTaskRunningStatus()) return;
+        #region 导航
 
-            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
-            {
-                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-                {
-                    Title = "⚠️ 错误",
-                    Content = "任务启动失败。请先启动截图器!",
-                };
-                var result = uiMessageBox.ShowDialogAsync();
-                return;
-            }
-            else
-            {
-                var snackbarInfo = new SnackbarInfo
-                {
-                    Title = "启动成功",
-                    Message = "自动烹饪已启动。",
-                    Appearance = ControlAppearance.Success,
-                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
-                    Duration = TimeSpan.FromSeconds(3)
-                };
-                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
-            }
+        public Task OnNavigatedToAsync() => Task.CompletedTask;
 
-            CurrentTaskType = TaskType.AutoCooking;
+        public Task OnNavigatedFromAsync() => Task.CompletedTask;
 
-            var logger = App.GetLogger<AutoCooking>();
-            _currentTask = new AutoCooking(logger, _cookingConfigService, _displayHwnd, _gameHwnd);
-            _currentTask.SetParameters(new Dictionary<string, object>
-            {
-                { "Times", AutoCookingTimes },
-                { "Dish", AutoCookingSelectedDish },
-                { "OCR", AutoCookingSelectedOCR }
-            });
-
-            // 订阅任务完成事件，当任务完成时更新按钮状态
-            _currentTask.TaskCompleted += (sender, e) =>
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    CurrentTaskType = TaskType.None;
-                    _currentTask = null;
-                });
-            };
-            _currentTask.Start();
-        }
-
-        [RelayCommand]
-        private void OnAutoCookingStopTrigger()
-        {
-            _currentTask?.Stop();
-            _currentTask = null;
-            CurrentTaskType = TaskType.None;
-
-            GC.Collect();
-        }
         #endregion
 
-        #region 自动甜蜜冒险
-        [RelayCommand]
-        private void OnAutoSweetAdventureStartTrigger()
+        #region 设置保存
+
+        partial void OnAnswerDelayChanged(int value) => SaveSetting(() => _settings.AnswerDelay = value);
+        partial void OnJoinOthersChanged(bool value) => SaveSetting(() => _settings.JoinOthers = value);
+        partial void OnAutoForbiddenForestTimesChanged(int value) => SaveSetting(() => _settings.AutoForbiddenForestTimes = value);
+        partial void OnSelectedTeamPositionChanged(string value) => SaveSetting(() => _settings.SelectedTeamPosition = value);
+        partial void OnAutoCookingTimesChanged(int value) => SaveSetting(() => _settings.AutoCookingTimes = value);
+        partial void OnAutoCookingSelectedDishChanged(string value) => SaveSetting(() => _settings.AutoCookingSelectedDish = value);
+        partial void OnAutoCookingSelectedOCRChanged(string value) => SaveSetting(() => _settings.AutoCookingSelectedOCR = value);
+
+        private void SaveSetting(Action updateAction)
         {
-            if (CheckTaskRunningStatus()) return;
-
-            if (_gameHwnd == IntPtr.Zero || _displayHwnd == IntPtr.Zero || _capture == null || _logWindow == null)
-            {
-                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-                {
-                    Title = "⚠️ 错误",
-                    Content = "任务启动失败。请先启动截图器!",
-                };
-                var result = uiMessageBox.ShowDialogAsync();
-                return;
-            }
-            else
-            {
-                var snackbarInfo = new SnackbarInfo
-                {
-                    Title = "启动成功",
-                    Message = "甜蜜冒险已启动。",
-                    Appearance = ControlAppearance.Success,
-                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
-                    Duration = TimeSpan.FromSeconds(3)
-                };
-                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
-            }
-
-            CurrentTaskType = TaskType.AutoSweetAdventure;
-
-            var logger = App.GetLogger<AutoSweetAdventure>();
-            _currentTask = new AutoSweetAdventure(logger, _displayHwnd, _gameHwnd);
-            _currentTask.Start();
-        }
-
-        [RelayCommand]
-        private void OnAutoSweetAdventureStopTrigger()
-        {
-            _currentTask?.Stop();
-            _currentTask = null;
-            CurrentTaskType = TaskType.None;
-
-            GC.Collect();
-        }
-        #endregion
-
-        public Task OnNavigatedToAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task OnNavigatedFromAsync()
-        {
-            // 取消消息注册，避免内存泄漏
-            //WeakReferenceMessenger.Default.Unregister<StopAllTasksMessage>(this);
-            return Task.CompletedTask;
-        }
-
-        partial void OnAnswerDelayChanged(int value)
-        {
-            _settings.AnswerDelay = value;
-            _settings.Save();
-        }
-
-        partial void OnJoinOthersChanged(bool value)
-        {
-            _settings.JoinOthers = value;
-            _settings.Save();
-        }
-
-        partial void OnAutoForbiddenForestTimesChanged(int value)
-        {
-            _settings.AutoForbiddenForestTimes = value;
-            _settings.Save();
-        }
-
-        partial void OnSelectedTeamPositionChanged(string value)
-        {
-            _settings.SelectedTeamPosition = value;
-            _settings.Save();
-        }
-
-        partial void OnAutoCookingTimesChanged(int value)
-        {
-            _settings.AutoCookingTimes = value;
-            _settings.Save();
-        }
-
-        partial void OnAutoCookingSelectedDishChanged(string value)
-        {
-            _settings.AutoCookingSelectedDish = value;
-            _settings.Save();
-        }
-
-        partial void OnAutoCookingSelectedOCRChanged(string value)
-        {
-            _settings.AutoCookingSelectedOCR = value;
+            updateAction();
             _settings.Save();
         }
 
@@ -535,5 +400,6 @@ namespace AutoHPMA.ViewModels.Pages
             OnPropertyChanged(nameof(AutoSweetAdventureStopButtonVisibility));
         }
 
+        #endregion
     }
 }

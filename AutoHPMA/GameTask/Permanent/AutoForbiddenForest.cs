@@ -4,17 +4,11 @@ using AutoHPMA.Helpers.ImageHelper;
 using AutoHPMA.Helpers.RecognizeHelper;
 using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
-using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using static AutoHPMA.Helpers.WindowInteractionHelper;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
@@ -52,8 +46,6 @@ public class AutoForbiddenForest : BaseGameTask
     private AutoForbiddenForestOption _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
 
     private int round = 0;
-
-    public event EventHandler? TaskCompleted;
 
     public AutoForbiddenForest(ILogger<AutoForbiddenForest> logger, nint displayHwnd, nint gameHwnd)
         : base(logger, displayHwnd, gameHwnd)
@@ -124,27 +116,38 @@ public class AutoForbiddenForest : BaseGameTask
                         break;
 
                     case AutoForbiddenForestState.Teaming:
-                        if (FindAndClick(ref team_auto))
+                        var autoResult = Find(team_auto);
+                        if (autoResult.Success)
                         {
+                            ClickMatchCenter(autoResult);
                             _logger.LogDebug("点击自动战斗按钮。");
                         }
                         await Task.Delay(1000, _cts.Token);
+                        
                         switch (_autoForbiddenForestOption)
                         {
                             case AutoForbiddenForestOption.Leader:
-                                if (FindAndClick(ref team_start))
+                                var startResult = Find(team_start);
+                                if (startResult.Success)
                                 {
+                                    ClickMatchCenter(startResult);
                                     _logger.LogDebug("点击开始。");
                                 }
                                 await Task.Delay(1500, _cts.Token);
-                                if (FindAndClick(ref team_confirm))
+                                
+                                var confirmResult = Find(team_confirm);
+                                if (confirmResult.Success)
                                 {
+                                    ClickMatchCenter(confirmResult);
                                     _logger.LogDebug("点击是。");
                                 }
                                 break;
+                                
                             case AutoForbiddenForestOption.Member:
-                                if (FindAndClick(ref team_ready))
+                                var readyResult = Find(team_ready);
+                                if (readyResult.Success)
                                 {
+                                    ClickMatchCenter(readyResult);
                                     _logger.LogDebug("点击准备。");
                                 }
                                 await Task.Delay(1000, _cts.Token);
@@ -157,14 +160,30 @@ public class AutoForbiddenForest : BaseGameTask
                         break;
 
                     case AutoForbiddenForestState.Fighting:
-                        FindAndClickWithAlpha(ref fight_auto, 0.8);
+                        var fightResult = Find(fight_auto, new MatchOptions 
+                        { 
+                            UseAlphaMask = true, 
+                            Threshold = 0.8 
+                        });
+                        if (fightResult.Success)
+                        {
+                            ClickMatchCenter(fightResult);
+                        }
                         await Task.Delay(1000, _cts.Token);
                         break;
 
                     case AutoForbiddenForestState.Summary:
                         _logger.LogDebug("检测到点赞页面");
                         await Task.Delay(3000, _cts.Token);
-                        await FindAndClickMultiAsync(over_thumb);
+                        
+                        var thumbResult = Find(over_thumb, new MatchOptions { FindMultiple = true });
+                        if (thumbResult.Success)
+                        {
+                            ShowMatchRects(thumbResult, "MultiClick");
+                            await ClickMultiMatchCentersAsync(thumbResult);
+                            ClearMatchRects("MultiClick");
+                        }
+                        
                         await Task.Delay(1500, _cts.Token);
                         SendSpace(_gameHwnd);
                         _logger.LogInformation("第[Yellow]{Round}[/Yellow]/[Yellow]{Total}[/Yellow]次禁林任务完成。", ++round, _autoForbiddenForestTimes);
@@ -192,11 +211,7 @@ public class AutoForbiddenForest : BaseGameTask
 
     public void FindState()
     {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-
-        if( FindMatch(ref ui_explore))
+        if (Find(ui_explore).Success)
         {
             _state = AutoForbiddenForestState.Teaming;
             _logWindow?.SetGameState("禁林-组队中");
@@ -204,7 +219,7 @@ public class AutoForbiddenForest : BaseGameTask
             return;
         }
 
-        if( FindMatch(ref ui_loading))
+        if (Find(ui_loading).Success)
         {
             _state = AutoForbiddenForestState.Loading;
             _logWindow?.SetGameState("禁林-加载中");
@@ -212,7 +227,7 @@ public class AutoForbiddenForest : BaseGameTask
             return;
         }
 
-        if( FindMatch(ref ui_clock))
+        if (Find(ui_clock).Success)
         {
             _state = AutoForbiddenForestState.Fighting;
             _logWindow?.SetGameState("禁林-战斗中");
@@ -220,7 +235,7 @@ public class AutoForbiddenForest : BaseGameTask
             return;
         }
 
-        if( FindMatch(ref ui_statistics))
+        if (Find(ui_statistics).Success)
         {
             _state = AutoForbiddenForestState.Summary;
             _logWindow?.SetGameState("禁林-结算中");
@@ -232,6 +247,7 @@ public class AutoForbiddenForest : BaseGameTask
         _logWindow?.SetGameState("禁林-未知状态");
         return;
     }
+
     public override bool SetParameters(Dictionary<string, object> parameters)
     {
         try

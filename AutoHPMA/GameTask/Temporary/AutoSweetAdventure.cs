@@ -6,17 +6,14 @@ using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 using static AutoHPMA.Helpers.WindowInteractionHelper;
 using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
 
 namespace AutoHPMA.GameTask.Temporary;
+
 public enum AutoSweetAdventureState
 {
     Unknown,
@@ -37,10 +34,8 @@ public class AutoSweetAdventure : BaseGameTask
 
     private bool _waited = false;
     private bool _refreshed = true;
-    private int round=0, prev_round=0, step=1;
+    private int round = 0, prev_round = 0, step = 1;
     private int _maxStep = 12;
-
-    public event EventHandler? TaskCompleted;
 
     public AutoSweetAdventure(ILogger<AutoSweetAdventure> logger, nint displayHwnd, nint gameHwnd)
         : base(logger, displayHwnd, gameHwnd)
@@ -107,8 +102,10 @@ public class AutoSweetAdventure : BaseGameTask
                         break;
 
                     case AutoSweetAdventureState.Teaming:
-                        if(FindAndClick(ref teaming_start))
+                        var startResult = Find(teaming_start);
+                        if (startResult.Success)
                         {
+                            ClickMatchCenter(startResult);
                             await Task.Delay(3000, _cts.Token);
                         }
                         await Task.Delay(1000, _cts.Token);
@@ -117,7 +114,7 @@ public class AutoSweetAdventure : BaseGameTask
                     case AutoSweetAdventureState.Gaming:
                         _maskWindow?.ShowLayer("Round");
                         round = FindRound();
-                        if(round > prev_round)
+                        if (round > prev_round)
                         {
                             _logger.LogInformation("当前回合数：[Yellow]{Round}[/Yellow]。", round);
                             step = 1;
@@ -125,15 +122,20 @@ public class AutoSweetAdventure : BaseGameTask
                         }
                         if (step < _maxStep)
                         {
-                            if (FindAndClick(ref gaming_forward, 0.96))
+                            var forwardResult = Find(gaming_forward, new MatchOptions { Threshold = 0.96 });
+                            if (forwardResult.Success)
                             {
+                                ClickMatchCenter(forwardResult);
                                 step++;
                                 _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：前进。", step);
                                 await Task.Delay(1000, _cts.Token);
                                 continue;
                             }
-                            if (FindAndClick(ref gaming_candy, 0.96))
+                            
+                            var candyResult = Find(gaming_candy, new MatchOptions { Threshold = 0.96 });
+                            if (candyResult.Success)
                             {
+                                ClickMatchCenter(candyResult);
                                 step++;
                                 _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测糖果。", step);
                                 await Task.Delay(1000, _cts.Token);
@@ -142,15 +144,20 @@ public class AutoSweetAdventure : BaseGameTask
                         }
                         else
                         {
-                            if(FindAndClick(ref gaming_return, 0.96))
+                            var returnResult = Find(gaming_return, new MatchOptions { Threshold = 0.96 });
+                            if (returnResult.Success)
                             {
+                                ClickMatchCenter(returnResult);
                                 step++;
                                 _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：返回。", step);
                                 await Task.Delay(1000, _cts.Token);
                                 continue;
                             }
-                            if(FindAndClick(ref gaming_monster, 0.96))
+                            
+                            var monsterResult = Find(gaming_monster, new MatchOptions { Threshold = 0.96 });
+                            if (monsterResult.Success)
                             {
+                                ClickMatchCenter(monsterResult);
                                 step++;
                                 _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测怪物。", step);
                                 await Task.Delay(1000, _cts.Token);
@@ -193,11 +200,7 @@ public class AutoSweetAdventure : BaseGameTask
 
     private void FindState()
     {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGR2GRAY);
-
-        if (FindMatch(ref ui_teaming))
+        if (Find(ui_teaming).Success)
         {
             _state = AutoSweetAdventureState.Teaming;
             _logWindow?.SetGameState("甜蜜冒险-组队中");
@@ -205,7 +208,7 @@ public class AutoSweetAdventure : BaseGameTask
             return;
         }
 
-        if (FindMatch(ref ui_gaming))
+        if (Find(ui_gaming).Success)
         {
             _state = AutoSweetAdventureState.Gaming;
             _logWindow?.SetGameState("甜蜜冒险-游戏中");
@@ -213,7 +216,7 @@ public class AutoSweetAdventure : BaseGameTask
             return;
         }
 
-        if (FindMatch(ref ui_endding))
+        if (Find(ui_endding).Success)
         {
             _state = AutoSweetAdventureState.Endding;
             _logWindow?.SetGameState("甜蜜冒险-结算中");
@@ -223,52 +226,32 @@ public class AutoSweetAdventure : BaseGameTask
 
         _state = AutoSweetAdventureState.Unknown;
         return;
-
     }
-
 
     private int FindRound()
     {
-        captureMat = _capture.Capture();
-        Cv2.Resize(captureMat, captureMat, new Size(captureMat.Width / scale, captureMat.Height / scale));
-        Cv2.CvtColor(captureMat, captureMat, ColorConversionCodes.BGRA2BGR);
-        double threshold = 0.9;
+        // 使用模板数组简化重复代码
+        var roundTemplates = new[] 
+        { 
+            (gaming_round1, 1), 
+            (gaming_round2, 2), 
+            (gaming_round3, 3), 
+            (gaming_round4, 4), 
+            (gaming_round5, 5) 
+        };
 
-        var matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, gaming_round1, TemplateMatchModes.CCoeffNormed, null, threshold);
-        if (matchpoint != default)
+        foreach (var (template, roundNum) in roundTemplates)
         {
-            _maskWindow?.SetLayerRects("Round", new List<Rect> { new Rect ((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(gaming_round1.Width * scale), (int)(gaming_round1.Height * scale)) });
-            return 1;
+            var result = Find(template);
+            if (result.Success)
+            {
+                ShowMatchRects(result, "Round");
+                return roundNum;
+            }
         }
-        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, gaming_round2, TemplateMatchModes.CCoeffNormed, null, threshold);
-        if (matchpoint != default)
-        {
-            _maskWindow?.SetLayerRects("Round", new List<Rect> { new Rect ((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(gaming_round2.Width * scale), (int)(gaming_round2.Height * scale)) });
-            return 2;
-        }
-        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, gaming_round3, TemplateMatchModes.CCoeffNormed, null, threshold);
-        if (matchpoint != default)
-        {
-            _maskWindow?.SetLayerRects("Round", new List<Rect> { new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(gaming_round3.Width * scale), (int)(gaming_round3.Height * scale)) });
-            return 3;
-        }
-        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, gaming_round4, TemplateMatchModes.CCoeffNormed, null, threshold);
-        if (matchpoint != default)
-        {
-            _maskWindow?.SetLayerRects("Round", new List<Rect> { new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(gaming_round4.Width * scale), (int)(gaming_round4.Height * scale)) });
-            return 4;
-        }
-        matchpoint = MatchTemplateHelper.MatchTemplate(captureMat, gaming_round5, TemplateMatchModes.CCoeffNormed, null, threshold);
-        if (matchpoint != default)
-        {
-            _maskWindow?.SetLayerRects("Round", new List<Rect> { new Rect((int)(matchpoint.X * scale), (int)(matchpoint.Y * scale), (int)(gaming_round5.Width * scale), (int)(gaming_round5.Height * scale)) });
-            return 5;
-        }
-        //_logWindow?.AddLogMessage("WRN", "未定位到回合数！");
+
         return -1;
-
     }
-
 
     public override bool SetParameters(Dictionary<string, object> parameters)
     {

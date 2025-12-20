@@ -8,43 +8,33 @@ using AutoHPMA.Helpers;
 using AutoHPMA.Helpers.CaptureHelper;
 using AutoHPMA.Messages;
 using AutoHPMA.Services;
-using AutoHPMA.Views;
 using AutoHPMA.Views.Windows;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
 using Microsoft.Extensions.Logging;
-using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Net.WebSockets;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using Wpf.Ui.Controls;
-using Rect = OpenCvSharp.Rect;
 
 namespace AutoHPMA.ViewModels.Pages
 {
-
     public partial class DashboardViewModel : ObservableObject
     {
+        #region 字段
 
         private readonly AppSettings _settings;
         private readonly ILogger<DashboardViewModel> _logger;
         private DispatcherTimer _syncWindowTimer;
         private DispatcherTimer _captureTimer;
-
         private Bitmap? bmp;
 
-        # region Observable Properties
+        #endregion
+
+        #region Observable Properties
+
         [ObservableProperty]
         private bool _realTimeScreenshotEnabled = true;
 
@@ -63,152 +53,144 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private int _captureInterval = 500;
 
-        [ObservableProperty] 
+        [ObservableProperty]
         private Visibility _startButtonVisibility = Visibility.Visible;
-        [ObservableProperty] 
+
+        [ObservableProperty]
         private Visibility _stopButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartTriggerCommand))]
         private bool _startButtonEnabled = true;
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
         private bool _stopButtonEnabled = true;
 
         #endregion
 
-        # region argument from AppContextService
+        #region AppContextService 属性
+
         private LogWindow? _logWindow
         {
             get => AppContextService.Instance.LogWindow;
-            set
-            {
-                AppContextService.Instance.LogWindow = value;
-                OnPropertyChanged(nameof(_logWindow));
-            }
+            set => AppContextService.Instance.LogWindow = value;
         }
 
         private MaskWindow? _maskWindow
         {
             get => AppContextService.Instance.MaskWindow;
-            set
-            {
-                AppContextService.Instance.MaskWindow = value;
-                OnPropertyChanged(nameof(_maskWindow));
-            }
+            set => AppContextService.Instance.MaskWindow = value;
         }
 
         private WindowsGraphicsCapture _capture
         {
             get => AppContextService.Instance.Capture;
-            set
-            {
-                AppContextService.Instance.Capture = value;
-                OnPropertyChanged(nameof(_capture));
-            }
+            set => AppContextService.Instance.Capture = value;
         }
 
         private IntPtr _displayHwnd
         {
             get => AppContextService.Instance.DisplayHwnd;
-            set
-            {
-                AppContextService.Instance.DisplayHwnd = value;
-                OnPropertyChanged(nameof(_displayHwnd));
-            }
+            set => AppContextService.Instance.DisplayHwnd = value;
         }
 
         private IntPtr _gameHwnd
         {
             get => AppContextService.Instance.GameHwnd;
-            set
-            {
-                AppContextService.Instance.GameHwnd = value;
-                OnPropertyChanged(nameof(_gameHwnd));
-            }
+            set => AppContextService.Instance.GameHwnd = value;
         }
+
         #endregion
 
-        private enum StartupOption
-        {
-            OfficialLauncher,
-            MumuSimulator,
-            None
-        }
+        #region 枚举与事件
+
+        private enum StartupOption { OfficialLauncher, MumuSimulator, None }
         private StartupOption _startupOption = StartupOption.None;
 
-        public static event Action<Bitmap> ScreenshotUpdated;
+        public static event Action<Bitmap>? ScreenshotUpdated;
 
-        private static void OnScreenshotUpdated(ref Bitmap bmp)
-        {
-            ScreenshotUpdated?.Invoke(bmp);
-        }
+        #endregion
+
+        #region 构造函数
 
         public DashboardViewModel(AppSettings settings, ILogger<DashboardViewModel> logger)
         {
             _settings = settings;
             _logger = logger;
+            LoadSettings();
+        }
 
-            // 初始化时从设置中加载数据
+        private void LoadSettings()
+        {
             CaptureInterval = _settings.CaptureInterval;
             RealTimeScreenshotEnabled = _settings.RealTimeScreenshotEnabled;
             LogWindowEnabled = _settings.LogWindowEnabled;
             LogWindowMarqueeEnabled = _settings.LogWindowMarqueeEnabled;
             DebugLogEnabled = _settings.DebugLogEnabled;
             MaskWindowEnabled = _settings.MaskWindowEnabled;
-
         }
+
+        #endregion
+
+        #region Timer 处理
 
         private void InitializeCaptureTimer()
         {
-            _captureTimer = new DispatcherTimer();
-            _captureTimer.Interval = TimeSpan.FromMilliseconds(_captureInterval);
+            _captureTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(_captureInterval)
+            };
         }
+
         public void InitializeSyncWindowTimer()
         {
-            _syncWindowTimer = new DispatcherTimer();
-            _syncWindowTimer.Interval = TimeSpan.FromMilliseconds(50);
+            _syncWindowTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(50)
+            };
         }
+
         private void CaptureTimer_Tick(object? sender, EventArgs e)
         {
-            if (_gameHwnd != IntPtr.Zero && _realTimeScreenshotEnabled)
-            {
-                bmp?.Dispose();
-                bmp = null;
+            if (_gameHwnd == IntPtr.Zero || !_realTimeScreenshotEnabled) return;
 
-                using (var frame = _capture?.Capture())
-                {
-                    if (frame != null)
-                    {
-                        bmp = frame.ToBitmap();
-                        OnScreenshotUpdated(ref bmp);
-                    }
-                }
+            bmp?.Dispose();
+            bmp = null;
+
+            using var frame = _capture?.Capture();
+            if (frame != null)
+            {
+                bmp = frame.ToBitmap();
+                ScreenshotUpdated?.Invoke(bmp);
             }
         }
+
         private void SyncWindowTimer_Tick(object? sender, EventArgs e)
         {
-            if (_gameHwnd != IntPtr.Zero)
+            if (_gameHwnd == IntPtr.Zero) return;
+
+            bool shouldHide = NativeMethodsService.IsIconic(_gameHwnd) ||
+                             NativeMethodsService.GetForegroundWindow() != _displayHwnd;
+
+            if (shouldHide)
             {
-                if (NativeMethodsService.IsIconic(_gameHwnd)) // 最小化
-                {
-                    _logWindow?.Hide();
-                    _maskWindow?.Hide();
-                }
-                else if (NativeMethodsService.GetForegroundWindow()!= _displayHwnd) // 由于Mumu模拟器有两个句柄，真正的游戏窗口句柄是子句柄，而且不在顶层，所以需要父句柄
-                {
-                    _logWindow?.Hide();
-                    _maskWindow?.Hide();
-                }
-                else
-                {
-                    _logWindow?.Show();
-                    _maskWindow?.Show();
-                }
-                _logWindow?.RefreshPosition(_gameHwnd);
-                _maskWindow?.RefreshPosition(_displayHwnd);
+                _logWindow?.Hide();
+                _maskWindow?.Hide();
             }
+            else
+            {
+                _logWindow?.Show();
+                _maskWindow?.Show();
+            }
+
+            _logWindow?.RefreshPosition(_gameHwnd);
+            _maskWindow?.RefreshPosition(_displayHwnd);
         }
+
+        #endregion
+
+        #region 命令
 
         private bool CanStartTrigger() => StartButtonEnabled;
 
@@ -219,51 +201,36 @@ namespace AutoHPMA.ViewModels.Pages
 
             if (_gameHwnd == IntPtr.Zero)
             {
-                var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-                {
-                    Title = "⚠️ 错误",
-                    Content = "未找到游戏窗口。请先启动游戏！",
-                    
-                };
-                _ = uiMessageBox.ShowDialogAsync();
+                ShowErrorMessage("未找到游戏窗口。请先启动游戏！");
                 return;
-            } 
-            else
-            {
-                var snackbarInfo = new SnackbarInfo
-                {
-                    Title = "启动成功",
-                    Message = "截图器已启动，可启动其他任务。",
-                    Appearance = ControlAppearance.Success,
-                    Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
-                    Duration = TimeSpan.FromSeconds(3),
-                };
-                WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
             }
+
+            ShowSuccessSnackbar("截图器已启动，可启动其他任务。");
 
             StartButtonVisibility = Visibility.Collapsed;
             StopButtonVisibility = Visibility.Visible;
 
             // 当官方启动器时，将游戏窗口置于前端
-            if(_startupOption == StartupOption.OfficialLauncher)
+            if (_startupOption == StartupOption.OfficialLauncher)
             {
                 NativeMethodsService.ShowWindow(_gameHwnd, NativeMethodsService.SW_SHOW);
                 NativeMethodsService.SetForegroundWindow(_gameHwnd);
             }
 
-            // 隐藏WPF应用的主窗口。
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                Application.Current.MainWindow.Hide();
-            });
+            // 隐藏主窗口
+            Application.Current.Dispatcher.Invoke(() => Application.Current.MainWindow.Hide());
 
+            InitializeTimersAndWindows();
+        }
+
+        private void InitializeTimersAndWindows()
+        {
             InitializeCaptureTimer();
             InitializeSyncWindowTimer();
 
             _captureTimer.Tick += CaptureTimer_Tick;
             _captureTimer.Start();
 
-            // 启动日志窗口
             if (_logWindowEnabled)
             {
                 _syncWindowTimer.Tick += SyncWindowTimer_Tick;
@@ -271,12 +238,12 @@ namespace AutoHPMA.ViewModels.Pages
 
                 _logWindow = new LogWindow();
                 _logWindow.Show();
-                _logWindow.ShowInTaskbar = false;   //在ALT+TAB中不显示
-                //_logWindow.Owner = GetWindow(_gameHwnd); // 将游戏窗口设置为LogWindow的Owner
+                _logWindow.ShowInTaskbar = false;
                 _logWindow.RefreshPosition(_gameHwnd);
                 _logWindow.ShowDebugLogs = DebugLogEnabled;
                 _logWindow.ShowMarquee = LogWindowMarqueeEnabled;
-                _logger.LogInformation("检测到[Yellow]{_startupOption}[/Yellow]已启动", _startupOption);
+                
+                _logger.LogInformation("检测到[Yellow]{StartupOption}[/Yellow]已启动", _startupOption);
                 ShowGameWindowInfo();
             }
 
@@ -285,14 +252,11 @@ namespace AutoHPMA.ViewModels.Pages
                 _maskWindow = new MaskWindow();
                 _maskWindow.Show();
                 _maskWindow.ShowInTaskbar = false;
-
                 _maskWindow.RefreshPosition(_displayHwnd);
-
             }
 
             _capture = new WindowsGraphicsCapture();
             _capture.Start(_displayHwnd);
-
         }
 
         private bool CanStopTrigger() => StopButtonEnabled;
@@ -306,6 +270,11 @@ namespace AutoHPMA.ViewModels.Pages
             // 发送停止所有任务的消息
             WeakReferenceMessenger.Default.Send(new StopAllTasksMessage(true));
 
+            CleanupResources();
+        }
+
+        private void CleanupResources()
+        {
             _logWindow?.Close();
             _logWindow = null;
 
@@ -318,12 +287,11 @@ namespace AutoHPMA.ViewModels.Pages
             _syncWindowTimer.Tick -= SyncWindowTimer_Tick;
             _syncWindowTimer.Stop();
 
-            _capture.Stop();
+            _capture?.Stop();
             _capture = null;
+            
             GC.Collect();
-
         }
-
 
         [RelayCommand]
         public void OnGoToWikiUrl()
@@ -331,51 +299,33 @@ namespace AutoHPMA.ViewModels.Pages
             Process.Start(new ProcessStartInfo("https://autohpma-web.vercel.app/") { UseShellExecute = true });
         }
 
-        public void OnNavigatedFrom()
-        {
-            //throw new NotImplementedException();
-        }
+        #endregion
 
-        public void OnNavigatedTo()
-        {
-            //throw new NotImplementedException();
-        }
+        #region 辅助方法
 
-        /**
-         * @brief 获取游戏窗口
-         * @param hWnd 窗口句柄
-         * @return System.Windows.Window 窗口对象
-         */
-        private System.Windows.Window GetWindow(IntPtr hWnd)
+        private void ShowErrorMessage(string content)
         {
-            if (hWnd != IntPtr.Zero)
+            var uiMessageBox = new Wpf.Ui.Controls.MessageBox
             {
-                var hwndSource = HwndSource.FromHwnd(hWnd);
-                if (hwndSource != null)
-                {
-                    var rootVisual = hwndSource.RootVisual;
-                    if (rootVisual != null)
-                    {
-                        var parent = VisualTreeHelper.GetParent(rootVisual);
-                        if (parent is System.Windows.Window window)
-                        {
-                            return window;
-                        }
-                    }
-                }
-            }
-            throw new InvalidOperationException("无法获取窗口对象");
+                Title = "⚠️ 错误",
+                Content = content,
+            };
+            _ = uiMessageBox.ShowDialogAsync();
         }
 
-        /**
-         * @brief 获取游戏窗口句柄（Mumu模拟器或官方启动器）
-         * @param void
-         * @return void
-         * @note 直接对成员变量赋值
-         * _displayHwnd：模拟器窗口句柄
-         * _gameHwnd：游戏窗口句柄（若为Mumu模拟器，则为子句柄）
-         * _startupOption：启动选项（Mumu模拟器或官方启动器）
-         */
+        private void ShowSuccessSnackbar(string message)
+        {
+            var snackbarInfo = new SnackbarInfo
+            {
+                Title = "启动成功",
+                Message = message,
+                Appearance = ControlAppearance.Success,
+                Icon = new SymbolIcon(SymbolRegular.CheckmarkCircle24, 36),
+                Duration = TimeSpan.FromSeconds(3),
+            };
+            WeakReferenceMessenger.Default.Send(new ShowSnackbarMessage(snackbarInfo));
+        }
+
         private void GetGameHwnd()
         {
             _displayHwnd = WindowHelper.FindHandleByProcessName("MuMu安卓设备", "MuMuNxDevice");
@@ -394,28 +344,17 @@ namespace AutoHPMA.ViewModels.Pages
             }
         }
 
-        /**
-         * @brief 获取游戏窗口信息
-         * @param void
-         * @return void
-         * @note 输出方式为日志窗口
-         * 输出信息包括：
-         * 游戏窗口分辨率和坐标
-         * Mumu模拟器窗口分辨率和坐标
-         */
         private void ShowGameWindowInfo()
         {
             try
             {
-                int left, top, width, height;
-                int leftMumu, topMumu;
-                
-                _logger.LogDebug("窗口句柄信息 - DisplayHwnd: [Yellow]0x{DisplayHwnd:X}[/Yellow], GameHwnd: [Yellow]0x{GameHwnd:X}[/Yellow]", _displayHwnd.ToInt64(), _gameHwnd.ToInt64());
-
-                WindowInteractionHelper.GetWindowPositionAndSize(_gameHwnd, out left, out top, out width, out height);
+                WindowInteractionHelper.GetWindowPositionAndSize(_gameHwnd, out int left, out int top, out int width, out int height);
+                _logger.LogDebug("窗口句柄信息 - DisplayHwnd: [Yellow]0x{DisplayHwnd:X}[/Yellow], GameHwnd: [Yellow]0x{GameHwnd:X}[/Yellow]", 
+                    _displayHwnd.ToInt64(), _gameHwnd.ToInt64());
                 _logger.LogInformation("检测到游戏窗口分辨率 [Yellow]{Width}*{Height}[/Yellow]", width, height);
                 _logger.LogDebug("游戏窗口位置：左上角({Left},{Top})", left, top);
-                WindowInteractionHelper.GetWindowPositionAndSize(_displayHwnd, out leftMumu, out topMumu, out width, out height);
+
+                WindowInteractionHelper.GetWindowPositionAndSize(_displayHwnd, out int leftMumu, out int topMumu, out width, out height);
                 _logger.LogDebug("检测到模拟器窗口分辨率{Width}*{Height}", width, height);
                 _logger.LogDebug("模拟器窗口位置：左上角({Left},{Top})", leftMumu, topMumu);
             }
@@ -425,52 +364,40 @@ namespace AutoHPMA.ViewModels.Pages
             }
         }
 
+        #endregion
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        #region 设置保存
 
         partial void OnCaptureIntervalChanged(int value)
         {
-            _settings.CaptureInterval = value;
+            SaveSetting(() => _settings.CaptureInterval = value);
+            _captureTimer?.SetInterval(TimeSpan.FromMilliseconds(value));
+        }
+
+        partial void OnRealTimeScreenshotEnabledChanged(bool value) => SaveSetting(() => _settings.RealTimeScreenshotEnabled = value);
+        partial void OnLogWindowEnabledChanged(bool value) => SaveSetting(() => _settings.LogWindowEnabled = value);
+        partial void OnDebugLogEnabledChanged(bool value) => SaveSetting(() => _settings.DebugLogEnabled = value);
+        partial void OnMaskWindowEnabledChanged(bool value) => SaveSetting(() => _settings.MaskWindowEnabled = value);
+        partial void OnLogWindowMarqueeEnabledChanged(bool value) => SaveSetting(() => _settings.LogWindowMarqueeEnabled = value);
+
+        private void SaveSetting(Action updateAction)
+        {
+            updateAction();
             _settings.Save();
-            if (_captureTimer != null)
+        }
+
+        #endregion
+    }
+
+    // DispatcherTimer 扩展方法
+    internal static class DispatcherTimerExtensions
+    {
+        public static void SetInterval(this DispatcherTimer timer, TimeSpan interval)
+        {
+            if (timer != null)
             {
-                _captureTimer.Interval = TimeSpan.FromMilliseconds(value);
+                timer.Interval = interval;
             }
         }
-
-        partial void OnRealTimeScreenshotEnabledChanged(bool value)
-        {
-            _settings.RealTimeScreenshotEnabled = value;
-            _settings.Save();
-        }
-
-        partial void OnLogWindowEnabledChanged(bool value)
-        {
-            _settings.LogWindowEnabled = value;
-            _settings.Save();
-        }
-
-        partial void OnDebugLogEnabledChanged(bool value)
-        {
-            _settings.DebugLogEnabled = value;
-            _settings.Save();
-        }
-
-        partial void OnMaskWindowEnabledChanged(bool value)
-        {
-            _settings.MaskWindowEnabled = value;
-            _settings.Save();
-        }
-
-        partial void OnLogWindowMarqueeEnabledChanged(bool value)
-        {
-            _settings.LogWindowMarqueeEnabled = value;
-            _settings.Save();
-        }
-
     }
 }
