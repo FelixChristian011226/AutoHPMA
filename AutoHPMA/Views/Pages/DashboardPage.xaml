@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:AutoHPMA.ViewModels.Pages"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:controls="clr-namespace:AutoHPMA.Views.Controls"
     Title="DashboardPage"
     d:DataContext="{d:DesignInstance Type=pages:DashboardViewModel}"
     d:DesignHeight="450"
@@ -85,11 +86,8 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        TextWrapping="Wrap">
-                        <Run>
-                            启动后才能开始各项任务，点击可展开相关配置
-                        </Run>
-                    </ui:TextBlock>
+                        Text="启动后才能开始各项任务，点击可展开相关配置"
+                        TextWrapping="Wrap" />
                     <ui:Button
                         Grid.Row="0"
                         Grid.RowSpan="2"
@@ -113,64 +111,17 @@
             </ui:CardExpander.Header>
             <StackPanel>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        FontTypography="Body"
-                        Text="触发器间隔（毫秒）"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="截图器的触发间隔，默认500ms"
-                        TextWrapping="Wrap" />
-                    <ui:NumberBox
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        MinWidth="90"
-                        Margin="0,0,36,0"
-                        Value="{Binding ViewModel.CaptureInterval, Mode=TwoWay}" />
-                </Grid>
+                <controls:SettingRow Title="触发器间隔（毫秒）" Description="截图器的触发间隔，默认500ms">
+                    <controls:SettingRow.SettingContent>
+                        <ui:NumberBox MinWidth="90" Value="{Binding ViewModel.CaptureInterval, Mode=TwoWay}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        FontTypography="Body"
-                        Text="实时截屏"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="开启后，在截屏页面显示实时截屏结果"
-                        TextWrapping="Wrap" />
-                    <CheckBox
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        Margin="0,0,24,0"
-                        IsChecked="{Binding ViewModel.RealTimeScreenshotEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
+                <controls:SettingRow Title="实时截屏" Description="开启后，在截屏页面显示实时截屏结果">
+                    <controls:SettingRow.SettingContent>
+                        <CheckBox IsChecked="{Binding ViewModel.RealTimeScreenshotEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
             </StackPanel>
         </ui:CardExpander>
 
@@ -211,63 +162,17 @@
             </ui:CardExpander.Header>
             <StackPanel>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        FontTypography="Body"
-                        Text="启用日志滚动"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="超长内容自动流动显示"
-                        TextWrapping="Wrap" />
-                    <CheckBox
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        Margin="0,0,24,0"
-                        IsChecked="{Binding ViewModel.LogWindowMarqueeEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
+                <controls:SettingRow Title="启用日志滚动" Description="超长内容自动流动显示">
+                    <controls:SettingRow.SettingContent>
+                        <CheckBox IsChecked="{Binding ViewModel.LogWindowMarqueeEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        FontTypography="Body"
-                        Text="输出调试日志"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="勾选后，日志窗口会输出Debug日志信息"
-                        TextWrapping="Wrap" />
-                    <CheckBox
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        Margin="0,0,24,0"
-                        IsChecked="{Binding ViewModel.DebugLogEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
+                <controls:SettingRow Title="输出调试日志" Description="勾选后，日志窗口会输出Debug日志信息">
+                    <controls:SettingRow.SettingContent>
+                        <CheckBox IsChecked="{Binding ViewModel.DebugLogEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
             </StackPanel>
         </ui:CardExpander>
 

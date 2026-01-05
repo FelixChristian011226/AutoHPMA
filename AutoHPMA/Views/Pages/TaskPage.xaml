@@ -6,6 +6,7 @@
       xmlns:local="clr-namespace:AutoHPMA.Views.Pages"
       xmlns:pages="clr-namespace:AutoHPMA.ViewModels.Pages"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:AutoHPMA.Views.Controls"
       ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
       ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -20,407 +21,86 @@
             Margin="0,0,0,8"
             FontWeight="Bold"
             Text="常驻功能" />
-            <!--  自动社团答题  -->
-        <ui:CardExpander
-               Margin="0,0,0,12"
-               ContentPadding="0"
-               Icon="{ui:SymbolIcon QuizNew24}">
+            
+        <!--  自动社团答题  -->
+        <ui:CardExpander Margin="0,0,0,12" ContentPadding="0" Icon="{ui:SymbolIcon QuizNew24}">
             <ui:CardExpander.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                           Grid.Row="0"
-                           Grid.Column="0"
-                           FontTypography="Body"
-                           Text="自动社团答题"
-                           TextWrapping="Wrap" />
-                    <ui:TextBlock
-                           Grid.Row="1"
-                           Grid.Column="0"
-                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                           TextWrapping="Wrap">
-                        <Run>
-                            点击展开相关配置
-                        </Run>
-                    </ui:TextBlock>
-                    <ui:Button
-                           Grid.Row="0"
-                           Grid.RowSpan="2"
-                           Grid.Column="1"
-                           Margin="0,0,24,0"
-                           Command="{Binding ViewModel.AutoClubQuizToggleCommand}">
-                        <ui:Button.Style>
-                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Content" Value="启动"/>
-                                <Setter Property="Icon" Value="{ui:SymbolIcon Play24}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ViewModel.CurrentTaskType}" Value="AutoClubQuiz">
-                                        <Setter Property="Content" Value="停止"/>
-                                        <Setter Property="Icon" Value="{ui:SymbolIcon Dismiss24}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
-                </Grid>
+                <controls:TaskCardHeader 
+                    Title="自动社团答题"
+                    ToggleCommand="{Binding ViewModel.AutoClubQuizToggleCommand}"
+                    IsRunning="{Binding ViewModel.CurrentTaskType, Converter={StaticResource TaskTypeToIsRunningConverter}, ConverterParameter=AutoClubQuiz}" />
             </ui:CardExpander.Header>
             <StackPanel>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="Body"
-                            Text="答题延迟（秒）"
-                            TextWrapping="Wrap" />
-                    <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="匹配答案后的点击延时，默认为0"
-                            TextWrapping="Wrap" />
-                    <ui:NumberBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            MinWidth="100"
-                            Margin="0,0,36,0"
-                            Value="{Binding ViewModel.AnswerDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
+                <controls:SettingRow Title="答题延迟（秒）" Description="匹配答案后的点击延时，默认为0">
+                    <controls:SettingRow.SettingContent>
+                        <ui:NumberBox MinWidth="100" Value="{Binding ViewModel.AnswerDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="Body"
-                            Text="加入学院互助"
-                            TextWrapping="Wrap" />
-                    <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="当本社团未开启社团答题时，加入学院互助频道的答题活动"
-                            TextWrapping="Wrap" />
-                    <CheckBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="3"
-                            Margin="0,0,36,0"
-                            IsChecked="{Binding ViewModel.JoinOthers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                </Grid>
+                <controls:SettingRow Title="加入学院互助" Description="当本社团未开启社团答题时，加入学院互助频道的答题活动">
+                    <controls:SettingRow.SettingContent>
+                        <CheckBox IsChecked="{Binding ViewModel.JoinOthers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="Body"
-                            Text="打开题库"
-                            TextWrapping="Wrap" />
-                    <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="点击打开题库所在文件夹"
-                            TextWrapping="Wrap" />
-                    <ui:Button
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            Margin="0,0,36,0"
-                            Command="{Binding ViewModel.OpenQuestionBankCommand}"
-                            Content="打开"
-                            Icon="{ui:SymbolIcon FolderOpen24}" />
-                </Grid>
+                <controls:SettingRow Title="打开题库" Description="点击打开题库所在文件夹">
+                    <controls:SettingRow.SettingContent>
+                        <ui:Button Command="{Binding ViewModel.OpenQuestionBankCommand}" Content="打开" Icon="{ui:SymbolIcon FolderOpen24}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
             </StackPanel>
         </ui:CardExpander>
+        
         <!--  自动禁林  -->
-        <ui:CardExpander
-               Margin="0,0,0,12"
-               ContentPadding="0"
-               Icon="{ui:SymbolIcon TreeDeciduous20}">
+        <ui:CardExpander Margin="0,0,0,12" ContentPadding="0" Icon="{ui:SymbolIcon TreeDeciduous20}">
             <ui:CardExpander.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                           Grid.Row="0"
-                           Grid.Column="0"
-                           FontTypography="Body"
-                           Text="自动禁林探索"
-                           TextWrapping="Wrap" />
-                    <ui:TextBlock
-                           Grid.Row="1"
-                           Grid.Column="0"
-                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                           TextWrapping="Wrap">
-                        <Run>
-                            点击展开相关配置
-                        </Run>
-                    </ui:TextBlock>
-                    <ui:Button
-                           Grid.Row="0"
-                           Grid.RowSpan="2"
-                           Grid.Column="1"
-                           Margin="0,0,24,0"
-                           Command="{Binding ViewModel.AutoForbiddenForestToggleCommand}">
-                        <ui:Button.Style>
-                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Content" Value="启动"/>
-                                <Setter Property="Icon" Value="{ui:SymbolIcon Play24}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ViewModel.CurrentTaskType}" Value="AutoForbiddenForest">
-                                        <Setter Property="Content" Value="停止"/>
-                                        <Setter Property="Icon" Value="{ui:SymbolIcon Dismiss24}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
-                </Grid>
+                <controls:TaskCardHeader 
+                    Title="自动禁林探索"
+                    ToggleCommand="{Binding ViewModel.AutoForbiddenForestToggleCommand}"
+                    IsRunning="{Binding ViewModel.CurrentTaskType, Converter={StaticResource TaskTypeToIsRunningConverter}, ConverterParameter=AutoForbiddenForest}" />
             </ui:CardExpander.Header>
             <StackPanel>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="Body"
-                            Text="禁林次数"
-                            TextWrapping="Wrap" />
-                    <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="在执行目标次数后终止"
-                            TextWrapping="Wrap" />
-                    <ui:NumberBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            MinWidth="90"
-                            Margin="0,0,36,0"
-                            Value="{Binding ViewModel.AutoForbiddenForestTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
+                <controls:SettingRow Title="禁林次数" Description="在执行目标次数后终止">
+                    <controls:SettingRow.SettingContent>
+                        <ui:NumberBox MinWidth="90" Value="{Binding ViewModel.AutoForbiddenForestTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="Body"
-                            Text="组队身份"
-                            TextWrapping="Wrap" />
-                    <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="选择自己身份：队长或者队员"
-                            TextWrapping="Wrap" />
-                    <ComboBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            MinWidth="80"
-                            Margin="0,0,36,0"
-                            ItemsSource="{Binding ViewModel.TeamPositions}"
-                            SelectedItem="{Binding ViewModel.SelectedTeamPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
+                <controls:SettingRow Title="组队身份" Description="选择自己身份：队长或者队员">
+                    <controls:SettingRow.SettingContent>
+                        <ComboBox MinWidth="80" ItemsSource="{Binding ViewModel.TeamPositions}" SelectedItem="{Binding ViewModel.SelectedTeamPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
             </StackPanel>
         </ui:CardExpander>
+        
         <!--  自动烹饪  -->
-        <ui:CardExpander
-               Margin="0,0,0,12"
-               ContentPadding="0"
-               Icon="{ui:SymbolIcon Food24}">
+        <ui:CardExpander Margin="0,0,0,12" ContentPadding="0" Icon="{ui:SymbolIcon Food24}">
             <ui:CardExpander.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                           Grid.Row="0"
-                           Grid.Column="0"
-                           FontTypography="Body"
-                           Text="自动巫师烹饪"
-                           TextWrapping="Wrap" />
-                    <ui:TextBlock
-                           Grid.Row="1"
-                           Grid.Column="0"
-                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                           TextWrapping="Wrap">
-                        <Run>
-                            点击展开相关配置
-                        </Run>
-                    </ui:TextBlock>
-                    <ui:Button
-                           Grid.Row="0"
-                           Grid.RowSpan="2"
-                           Grid.Column="1"
-                           Margin="0,0,24,0"
-                           Command="{Binding ViewModel.AutoCookingToggleCommand}">
-                        <ui:Button.Style>
-                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Content" Value="启动"/>
-                                <Setter Property="Icon" Value="{ui:SymbolIcon Play24}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ViewModel.CurrentTaskType}" Value="AutoCooking">
-                                        <Setter Property="Content" Value="停止"/>
-                                        <Setter Property="Icon" Value="{ui:SymbolIcon Dismiss24}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
-                </Grid>
+                <controls:TaskCardHeader 
+                    Title="自动巫师烹饪"
+                    ToggleCommand="{Binding ViewModel.AutoCookingToggleCommand}"
+                    IsRunning="{Binding ViewModel.CurrentTaskType, Converter={StaticResource TaskTypeToIsRunningConverter}, ConverterParameter=AutoCooking}" />
             </ui:CardExpander.Header>
             <StackPanel>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="Body"
-                            Text="烹饪次数"
-                            TextWrapping="Wrap" />
-                    <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="在执行目标次数后终止"
-                            TextWrapping="Wrap" />
-                    <ui:NumberBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            MinWidth="90"
-                            Margin="0,0,36,0"
-                            Value="{Binding ViewModel.AutoCookingTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="Body"
-                            Text="选择菜品"
-                            TextWrapping="Wrap" />
-                    <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="选择要烹饪的菜品"
-                            TextWrapping="Wrap" />
-                    <ComboBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            MinWidth="120"
-                            Margin="0,0,36,0"
-                            ItemsSource="{Binding ViewModel.Dishes}"
-                            SelectedItem="{Binding ViewModel.AutoCookingSelectedDish, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="Body"
-                            Text="OCR引擎"
-                            TextWrapping="Wrap" />
-                    <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="选择文字识别引擎"
-                            TextWrapping="Wrap" />
-                    <ComboBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            MinWidth="120"
-                            Margin="0,0,36,0"
-                            ItemsSource="{Binding ViewModel.OCRs}"
-                            SelectedItem="{Binding ViewModel.AutoCookingSelectedOCR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
+                <controls:SettingRow Title="烹饪次数" Description="在执行目标次数后终止">
+                    <controls:SettingRow.SettingContent>
+                        <ui:NumberBox MinWidth="90" Value="{Binding ViewModel.AutoCookingTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
+                <controls:SettingRow Title="选择菜品" Description="选择要烹饪的菜品">
+                    <controls:SettingRow.SettingContent>
+                        <ComboBox MinWidth="120" ItemsSource="{Binding ViewModel.Dishes}" SelectedItem="{Binding ViewModel.AutoCookingSelectedDish, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
+                <controls:SettingRow Title="OCR引擎" Description="选择文字识别引擎">
+                    <controls:SettingRow.SettingContent>
+                        <ComboBox MinWidth="120" ItemsSource="{Binding ViewModel.OCRs}" SelectedItem="{Binding ViewModel.AutoCookingSelectedOCR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
             </StackPanel>
         </ui:CardExpander>
 
@@ -428,56 +108,14 @@
             Margin="0,0,0,8"
             FontWeight="Bold"
             Text="限时活动" />
+            
         <!--  甜蜜冒险  -->
-        <ui:CardExpander
-               Margin="0,0,0,12"
-               ContentPadding="0"
-               Icon="{ui:SymbolIcon Diversity24}">
+        <ui:CardExpander Margin="0,0,0,12" ContentPadding="0" Icon="{ui:SymbolIcon Diversity24}">
             <ui:CardExpander.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                           Grid.Row="0"
-                           Grid.Column="0"
-                           FontTypography="Body"
-                           Text="自动甜蜜冒险"
-                           TextWrapping="Wrap" />
-                    <ui:TextBlock
-                           Grid.Row="1"
-                           Grid.Column="0"
-                           Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                           TextWrapping="Wrap">
-                        <Run>
-                            点击展开相关配置
-                        </Run>
-                    </ui:TextBlock>
-                    <ui:Button
-                           Grid.Row="0"
-                           Grid.RowSpan="2"
-                           Grid.Column="1"
-                           Margin="0,0,24,0"
-                           Command="{Binding ViewModel.AutoSweetAdventureToggleCommand}">
-                        <ui:Button.Style>
-                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Content" Value="启动"/>
-                                <Setter Property="Icon" Value="{ui:SymbolIcon Play24}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ViewModel.CurrentTaskType}" Value="AutoSweetAdventure">
-                                        <Setter Property="Content" Value="停止"/>
-                                        <Setter Property="Icon" Value="{ui:SymbolIcon Dismiss24}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
-                </Grid>
+                <controls:TaskCardHeader 
+                    Title="自动甜蜜冒险"
+                    ToggleCommand="{Binding ViewModel.AutoSweetAdventureToggleCommand}"
+                    IsRunning="{Binding ViewModel.CurrentTaskType, Converter={StaticResource TaskTypeToIsRunningConverter}, ConverterParameter=AutoSweetAdventure}" />
             </ui:CardExpander.Header>
             <StackPanel>
             </StackPanel>

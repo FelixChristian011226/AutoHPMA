@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:converters="clr-namespace:AutoHPMA.Converters"
+    xmlns:helperConverters="clr-namespace:AutoHPMA.Helpers.Converters"
     DispatcherUnhandledException="OnDispatcherUnhandledException"
     Exit="OnExit"
     Startup="OnStartup">
@@ -14,6 +15,7 @@
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
             <converters:KeyToStringConverter x:Key="KeyToStringConverter" />
+            <helperConverters:TaskTypeToIsRunningConverter x:Key="TaskTypeToIsRunningConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
