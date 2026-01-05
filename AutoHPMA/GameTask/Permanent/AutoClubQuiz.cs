@@ -368,17 +368,6 @@ public class AutoClubQuiz : BaseGameTask
 
     #region 辅助方法
 
-    private bool TryClickTemplate(Mat template, double threshold = 0.9)
-    {
-        var result = Find(template, new MatchOptions { Threshold = threshold });
-        if (result.Success)
-        {
-            ClickMatchCenter(result);
-            return true;
-        }
-        return false;
-    }
-
     private async Task AcquireAnswerAsync()
     {
         await Task.Run(() => RecogniseText());

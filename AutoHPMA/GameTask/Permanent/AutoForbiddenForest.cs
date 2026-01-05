@@ -34,7 +34,6 @@ public class AutoForbiddenForest : BaseGameTask
 {
     private AutoForbiddenForestState _state = AutoForbiddenForestState.Outside;
 
-    private Mat? captureMat;
     private Mat ui_explore, ui_loading, ui_clock, ui_statistics;
     private Mat team_auto, team_start, team_confirm, team_ready;
     private Mat fight_auto;
@@ -252,9 +251,9 @@ public class AutoForbiddenForest : BaseGameTask
     {
         try
         {
-            if (parameters.ContainsKey("Times"))
+            if (parameters.TryGetValue("Times", out var timesObj))
             {
-                var times = Convert.ToInt32(parameters["Times"]);
+                var times = Convert.ToInt32(timesObj);
                 if (times < 0)
                 {
                     _logger.LogWarning("禁林次数必须大于等于0。已设置为默认值。");
@@ -264,22 +263,14 @@ public class AutoForbiddenForest : BaseGameTask
                 _logger.LogDebug("禁林次数设置为：{Times}次", _autoForbiddenForestTimes);
             }
 
-            if (parameters.ContainsKey("TeamPosition"))
+            if (parameters.TryGetValue("TeamPosition", out var positionObj))
             {
-                var teamPosition = parameters["TeamPosition"].ToString();
-                if (teamPosition == "Leader")
+                _autoForbiddenForestOption = positionObj?.ToString() switch
                 {
-                    _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
-                }
-                else if (teamPosition == "Member")
-                {
-                    _autoForbiddenForestOption = AutoForbiddenForestOption.Member;
-                }
-                else
-                {
-                    _logger.LogWarning("无效的队伍位置。已设置为默认值。");
-                    return false;
-                }
+                    "Leader" => AutoForbiddenForestOption.Leader,
+                    "Member" => AutoForbiddenForestOption.Member,
+                    _ => throw new ArgumentException("无效的队伍位置")
+                };
             }
 
             return true;

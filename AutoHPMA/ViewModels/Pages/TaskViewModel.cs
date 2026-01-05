@@ -289,6 +289,16 @@ namespace AutoHPMA.ViewModels.Pages
 
         #region 任务启动/停止命令
 
+        // 公共方法供热键调用
+        public void OnAutoClubQuizStart() => OnAutoClubQuizStartTrigger();
+        public void OnAutoClubQuizStop() => OnAutoClubQuizStopTrigger();
+        public void OnAutoForbiddenForestStart() => OnAutoForbiddenForestStartTrigger();
+        public void OnAutoForbiddenForestStop() => OnAutoForbiddenForestStopTrigger();
+        public void OnAutoCookingStart() => OnAutoCookingStartTrigger();
+        public void OnAutoCookingStop() => OnAutoCookingStopTrigger();
+        public void OnAutoSweetAdventureStart() => OnAutoSweetAdventureStartTrigger();
+        public void OnAutoSweetAdventureStop() => OnAutoSweetAdventureStopTrigger();
+
         [RelayCommand]
         private void OnAutoClubQuizStartTrigger() =>
             StartTask(

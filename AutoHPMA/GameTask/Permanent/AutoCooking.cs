@@ -216,35 +216,6 @@ public class AutoCooking : BaseGameTask
 
     #region 辅助方法
 
-    /// <summary>
-    /// 尝试查找并点击模板
-    /// </summary>
-    private bool TryClickTemplate(Mat template, double threshold = 0.9)
-    {
-        var result = Find(template, new MatchOptions { Threshold = threshold });
-        if (result.Success)
-        {
-            ClickMatchCenter(result);
-            return true;
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// 尝试查找并点击带 Alpha 通道的模板
-    /// </summary>
-    private bool TryClickTemplateWithAlpha(Mat template, double threshold = 0.9)
-    {
-        var result = Find(template, new MatchOptions { UseAlphaMask = true, Threshold = threshold });
-        if (result.Success)
-        {
-            ShowMatchRects(result, "Click");
-            ClickMatchCenter(result);
-            return true;
-        }
-        return false;
-    }
-
     private void ClearCookingLayers()
     {
         _maskWindow?.ClearLayer("Kitchenware");
@@ -791,9 +762,9 @@ public class AutoCooking : BaseGameTask
     {
         try
         {
-            if (parameters.ContainsKey("Times"))
+            if (parameters.TryGetValue("Times", out var timesObj))
             {
-                var times = Convert.ToInt32(parameters["Times"]);
+                var times = Convert.ToInt32(timesObj);
                 if (times < 0)
                 {
                     _logger.LogWarning("烹饪次数必须大于等于0。已设置为默认值。");
@@ -803,41 +774,37 @@ public class AutoCooking : BaseGameTask
                 _logger.LogDebug("烹饪次数设置为：{Times}次", _autoCookingTimes);
             }
 
-            if (parameters.ContainsKey("Dish"))
+            if (parameters.TryGetValue("Dish", out var dishObj))
             {
-                var dish = parameters["Dish"].ToString();
-                if (dish != null)
-                {
-                    _autoCookingDish = dish;
-                    _currentDishConfig = _cookingConfigService.GetDishConfig(dish);
-                    if (_currentDishConfig == null)
-                    {
-                        _logger.LogWarning("未找到菜品配置：{Dish}。已设置为默认值。", dish);
-                        return false;
-                    }
-                    _logger.LogDebug("菜品设置为：{Dish}", _autoCookingDish);
-                }
-                else
+                var dish = dishObj?.ToString();
+                if (string.IsNullOrEmpty(dish))
                 {
                     _logger.LogWarning("无效的菜品选择。已设置为默认值。");
                     return false;
                 }
+                
+                _autoCookingDish = dish;
+                _currentDishConfig = _cookingConfigService.GetDishConfig(dish);
+                if (_currentDishConfig == null)
+                {
+                    _logger.LogWarning("未找到菜品配置：{Dish}。已设置为默认值。", dish);
+                    return false;
+                }
+                _logger.LogDebug("菜品设置为：{Dish}", _autoCookingDish);
             }
 
-            if (parameters.ContainsKey("OCR"))
+            if (parameters.TryGetValue("OCR", out var ocrObj))
             {
-                var ocr = parameters["OCR"].ToString();
-                if (ocr != null)
-                {
-                    _autoCookingSelectedOCR = ocr;
-                    InitializeOCR();
-                    _logger.LogDebug("OCR引擎设置为：{OCR}", _autoCookingSelectedOCR);
-                }
-                else
+                var ocr = ocrObj?.ToString();
+                if (string.IsNullOrEmpty(ocr))
                 {
                     _logger.LogWarning("无效的OCR选择。已设置为默认值。");
                     return false;
                 }
+                
+                _autoCookingSelectedOCR = ocr;
+                InitializeOCR();
+                _logger.LogDebug("OCR引擎设置为：{OCR}", _autoCookingSelectedOCR);
             }
 
             return true;

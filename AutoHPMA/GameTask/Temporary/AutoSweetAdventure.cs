@@ -26,14 +26,12 @@ public class AutoSweetAdventure : BaseGameTask
 {
     private AutoSweetAdventureState _state = AutoSweetAdventureState.Unknown;
 
-    private Mat? captureMat;
     private Mat ui_teaming, ui_gaming, ui_endding;
     private Mat teaming_start;
     private Mat gaming_round1, gaming_round2, gaming_round3, gaming_round4, gaming_round5;
     private Mat gaming_forward, gaming_return, gaming_candy, gaming_monster;
 
     private bool _waited = false;
-    private bool _refreshed = true;
     private int round = 0, prev_round = 0, step = 1;
     private int _maxStep = 12;
 

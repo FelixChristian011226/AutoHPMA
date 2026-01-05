@@ -194,6 +194,10 @@ namespace AutoHPMA.ViewModels.Pages
 
         private bool CanStartTrigger() => StartButtonEnabled;
 
+        // 公共方法供热键调用
+        public void OnStart() => OnStartTrigger();
+        public void OnStop() => OnStopTrigger();
+
         [RelayCommand(CanExecute = nameof(CanStartTrigger))]
         private void OnStartTrigger()
         {

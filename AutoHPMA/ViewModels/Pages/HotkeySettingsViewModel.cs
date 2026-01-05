@@ -176,149 +176,106 @@ namespace AutoHPMA.ViewModels.Pages
             return binding?.Name ?? string.Empty;
         }
 
+        /// <summary>
+        /// 执行热键操作
+        /// </summary>
         public void ExecuteHotkeyAction(string actionName)
         {
-            switch (actionName)
+            if (string.IsNullOrEmpty(actionName)) return;
+
+            // 使用字典映射替代 switch-case 和反射
+            var actions = new Dictionary<string, Action>
             {
-                case "截图":
-                {
-                    var gameHwnd = AppContextService.Instance.GameHwnd;
-                    var capture = AppContextService.Instance.Capture;
-                    
-                    if (capture == null)
-                    {
-                        var uiMessageBox = new Wpf.Ui.Controls.MessageBox
-                        {
-                            Title = "⚠️ 错误",
-                            Content = "截图失败。请先启动截图器!",
-                        };
-                        _ = uiMessageBox.ShowDialogAsync();
-                        break;
-                    }
-                    
-                    try
-                    {
-                        Task.Delay(100).Wait();
-                        using (var frame = capture.Capture())
-                        {
-                            if (frame != null)
-                            {
-                                var bitmap = frame.ToBitmap();
-                                
-                                string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
-                                Directory.CreateDirectory(folderPath);
-                                
-                                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                                string filename = $"screenshot_{timestamp}.png";
-                                string fullPath = Path.Combine(folderPath, filename);
-                                
-                                bitmap.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
-                                bitmap.Dispose();
-                                
-                                _logger.LogInformation($"截图已保存到: {fullPath}");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "截图保存失败");
-                    }
-                    break;
-                }
-                case "AutoHPMA":
-                {
-                    var dashboardVM = App.Services.GetService(typeof(DashboardViewModel)) as DashboardViewModel;
-                    if (dashboardVM != null)
-                    {
-                        // 判断当前状态，切换启动/终止
-                        if (dashboardVM.StartButtonVisibility == Visibility.Visible && dashboardVM.StartButtonEnabled)
-                        {
-                            var startCmd = dashboardVM.GetType().GetMethod("OnStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            startCmd?.Invoke(dashboardVM, null);
-                        }
-                        else if (dashboardVM.StopButtonVisibility == Visibility.Visible && dashboardVM.StopButtonEnabled)
-                        {
-                            var stopCmd = dashboardVM.GetType().GetMethod("OnStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            stopCmd?.Invoke(dashboardVM, null);
-                        }
-                    }
-                    break;
-                }
-                case "社团答题":
-                {
-                    var taskVM = App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
-                    if (taskVM != null)
-                    {
-                        if (taskVM.AutoClubQuizStartButtonVisibility == Visibility.Visible)
-                        {
-                            var startCmd = taskVM.GetType().GetMethod("OnAutoClubQuizStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            startCmd?.Invoke(taskVM, null);
-                        }
-                        else if (taskVM.AutoClubQuizStopButtonVisibility == Visibility.Visible)
-                        {
-                            var stopCmd = taskVM.GetType().GetMethod("OnAutoClubQuizStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            stopCmd?.Invoke(taskVM, null);
-                        }
-                    }
-                    break;
-                }
-                case "禁林探索":
-                {
-                    var taskVM = App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
-                    if (taskVM != null)
-                    {
-                        if (taskVM.AutoForbiddenForestStartButtonVisibility == Visibility.Visible)
-                        {
-                            var startCmd = taskVM.GetType().GetMethod("OnAutoForbiddenForestStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            startCmd?.Invoke(taskVM, null);
-                        }
-                        else if (taskVM.AutoForbiddenForestStopButtonVisibility == Visibility.Visible)
-                        {
-                            var stopCmd = taskVM.GetType().GetMethod("OnAutoForbiddenForestStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            stopCmd?.Invoke(taskVM, null);
-                        }
-                    }
-                    break;
-                }
-                case "自动烹饪":
-                {
-                    var taskVM = App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
-                    if (taskVM != null)
-                    {
-                        if (taskVM.AutoCookingStartButtonVisibility == Visibility.Visible)
-                        {
-                            var startCmd = taskVM.GetType().GetMethod("OnAutoCookingStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            startCmd?.Invoke(taskVM, null);
-                        }
-                        else if (taskVM.AutoCookingStopButtonVisibility == Visibility.Visible)
-                        {
-                            var stopCmd = taskVM.GetType().GetMethod("OnAutoCookingStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            stopCmd?.Invoke(taskVM, null);
-                        }
-                    }
-                    break;
-                }
-                case "甜蜜冒险":
-                {
-                    var taskVM = App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
-                    if (taskVM != null)
-                    {
-                        if (taskVM.AutoSweetAdventureStartButtonVisibility == Visibility.Visible)
-                        {
-                            var startCmd = taskVM.GetType().GetMethod("OnAutoSweetAdventureStartTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            startCmd?.Invoke(taskVM, null);
-                        }
-                        else if (taskVM.AutoSweetAdventureStopButtonVisibility == Visibility.Visible)
-                        {
-                            var stopCmd = taskVM.GetType().GetMethod("OnAutoSweetAdventureStopTrigger", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            stopCmd?.Invoke(taskVM, null);
-                        }
-                    }
-                    break;
-                }
-                default:
-                    break;
+                ["截图"] = ExecuteScreenshot,
+                ["AutoHPMA"] = ExecuteAutoHPMAToggle,
+                ["社团答题"] = () => ToggleTaskAction(
+                    () => GetTaskVM()?.AutoClubQuizStartButtonVisibility == Visibility.Visible,
+                    () => GetTaskVM()?.OnAutoClubQuizStart(),
+                    () => GetTaskVM()?.OnAutoClubQuizStop()),
+                ["禁林探索"] = () => ToggleTaskAction(
+                    () => GetTaskVM()?.AutoForbiddenForestStartButtonVisibility == Visibility.Visible,
+                    () => GetTaskVM()?.OnAutoForbiddenForestStart(),
+                    () => GetTaskVM()?.OnAutoForbiddenForestStop()),
+                ["自动烹饪"] = () => ToggleTaskAction(
+                    () => GetTaskVM()?.AutoCookingStartButtonVisibility == Visibility.Visible,
+                    () => GetTaskVM()?.OnAutoCookingStart(),
+                    () => GetTaskVM()?.OnAutoCookingStop()),
+                ["甜蜜冒险"] = () => ToggleTaskAction(
+                    () => GetTaskVM()?.AutoSweetAdventureStartButtonVisibility == Visibility.Visible,
+                    () => GetTaskVM()?.OnAutoSweetAdventureStart(),
+                    () => GetTaskVM()?.OnAutoSweetAdventureStop()),
+            };
+
+            if (actions.TryGetValue(actionName, out var action))
+            {
+                action();
             }
+        }
+
+        private TaskViewModel? GetTaskVM() => App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
+        private DashboardViewModel? GetDashboardVM() => App.Services.GetService(typeof(DashboardViewModel)) as DashboardViewModel;
+
+        /// <summary>
+        /// 通用任务切换方法
+        /// </summary>
+        private void ToggleTaskAction(Func<bool?> isStartVisible, Action? startAction, Action? stopAction)
+        {
+            if (isStartVisible() == true)
+                startAction?.Invoke();
+            else
+                stopAction?.Invoke();
+        }
+
+        private void ExecuteScreenshot()
+        {
+            var capture = AppContextService.Instance.Capture;
+            
+            if (capture == null)
+            {
+                _ = new Wpf.Ui.Controls.MessageBox
+                {
+                    Title = "⚠️ 错误",
+                    Content = "截图失败。请先启动截图器!",
+                }.ShowDialogAsync();
+                return;
+            }
+            
+            try
+            {
+                Task.Delay(100).Wait();
+                using var frame = capture.Capture();
+                if (frame != null)
+                {
+                    var bitmap = frame.ToBitmap();
+                    
+                    string folderPath = Path.Combine(Environment.CurrentDirectory, "Captures");
+                    Directory.CreateDirectory(folderPath);
+                    
+                    string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    string filename = $"screenshot_{timestamp}.png";
+                    string fullPath = Path.Combine(folderPath, filename);
+                    
+                    bitmap.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
+                    bitmap.Dispose();
+                    
+                    _logger.LogInformation($"截图已保存到: {fullPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "截图保存失败");
+            }
+        }
+
+        private void ExecuteAutoHPMAToggle()
+        {
+            var dashboardVM = GetDashboardVM();
+            if (dashboardVM == null) return;
+
+            if (dashboardVM.StartButtonVisibility == Visibility.Visible && dashboardVM.StartButtonEnabled)
+                dashboardVM.OnStart();
+            else if (dashboardVM.StopButtonVisibility == Visibility.Visible && dashboardVM.StopButtonEnabled)
+                dashboardVM.OnStop();
         }
     }
 

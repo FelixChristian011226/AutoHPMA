@@ -254,6 +254,43 @@ namespace AutoHPMA.GameTask
             }
         }
 
+        /// <summary>
+        /// 尝试查找并点击模板
+        /// </summary>
+        /// <param name="template">模板图像</param>
+        /// <param name="threshold">匹配阈值</param>
+        /// <returns>是否成功找到并点击</returns>
+        protected bool TryClickTemplate(Mat template, double threshold = 0.9)
+        {
+            var result = Find(template, new MatchOptions { Threshold = threshold });
+            if (result.Success)
+            {
+                ClickMatchCenter(result);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 尝试查找并点击带 Alpha 通道的模板
+        /// </summary>
+        /// <param name="template">带 Alpha 通道的模板图像</param>
+        /// <param name="threshold">匹配阈值</param>
+        /// <param name="showMatch">是否显示匹配结果</param>
+        /// <returns>是否成功找到并点击</returns>
+        protected bool TryClickTemplateWithAlpha(Mat template, double threshold = 0.9, bool showMatch = false)
+        {
+            var result = Find(template, new MatchOptions { UseAlphaMask = true, Threshold = threshold });
+            if (result.Success)
+            {
+                if (showMatch)
+                    ShowMatchRects(result, "Click");
+                ClickMatchCenter(result);
+                return true;
+            }
+            return false;
+        }
+
         #endregion
 
         #region 拖拽操作
