@@ -54,18 +54,11 @@ namespace AutoHPMA.ViewModels.Pages
         private int _captureInterval = 500;
 
         [ObservableProperty]
-        private Visibility _startButtonVisibility = Visibility.Visible;
+        private bool _isRunning = false;
 
         [ObservableProperty]
-        private Visibility _stopButtonVisibility = Visibility.Collapsed;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(StartTriggerCommand))]
-        private bool _startButtonEnabled = true;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
-        private bool _stopButtonEnabled = true;
+        [NotifyCanExecuteChangedFor(nameof(ToggleTriggerCommand))]
+        private bool _toggleButtonEnabled = true;
 
         #endregion
 
@@ -192,14 +185,21 @@ namespace AutoHPMA.ViewModels.Pages
 
         #region 命令
 
-        private bool CanStartTrigger() => StartButtonEnabled;
+        private bool CanToggleTrigger() => ToggleButtonEnabled;
 
         // 公共方法供热键调用
-        public void OnStart() => OnStartTrigger();
-        public void OnStop() => OnStopTrigger();
+        public void ToggleAutoHPMA() => OnToggleTrigger();
 
-        [RelayCommand(CanExecute = nameof(CanStartTrigger))]
-        private void OnStartTrigger()
+        [RelayCommand(CanExecute = nameof(CanToggleTrigger))]
+        private void OnToggleTrigger()
+        {
+            if (IsRunning)
+                StopAutoHPMA();
+            else
+                StartAutoHPMA();
+        }
+
+        private void StartAutoHPMA()
         {
             GetGameHwnd();
 
@@ -210,9 +210,7 @@ namespace AutoHPMA.ViewModels.Pages
             }
 
             ShowSuccessSnackbar("截图器已启动，可启动其他任务。");
-
-            StartButtonVisibility = Visibility.Collapsed;
-            StopButtonVisibility = Visibility.Visible;
+            IsRunning = true;
 
             // 当官方启动器时，将游戏窗口置于前端
             if (_startupOption == StartupOption.OfficialLauncher)
@@ -263,13 +261,9 @@ namespace AutoHPMA.ViewModels.Pages
             _capture.Start(_displayHwnd);
         }
 
-        private bool CanStopTrigger() => StopButtonEnabled;
-
-        [RelayCommand(CanExecute = nameof(CanStopTrigger))]
-        private void OnStopTrigger()
+        private void StopAutoHPMA()
         {
-            StartButtonVisibility = Visibility.Visible;
-            StopButtonVisibility = Visibility.Collapsed;
+            IsRunning = false;
 
             // 发送停止所有任务的消息
             WeakReferenceMessenger.Default.Send(new StopAllTasksMessage(true));

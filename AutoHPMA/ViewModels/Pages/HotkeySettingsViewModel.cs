@@ -188,22 +188,10 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 ["截图"] = ExecuteScreenshot,
                 ["AutoHPMA"] = ExecuteAutoHPMAToggle,
-                ["社团答题"] = () => ToggleTaskAction(
-                    () => GetTaskVM()?.AutoClubQuizStartButtonVisibility == Visibility.Visible,
-                    () => GetTaskVM()?.OnAutoClubQuizStart(),
-                    () => GetTaskVM()?.OnAutoClubQuizStop()),
-                ["禁林探索"] = () => ToggleTaskAction(
-                    () => GetTaskVM()?.AutoForbiddenForestStartButtonVisibility == Visibility.Visible,
-                    () => GetTaskVM()?.OnAutoForbiddenForestStart(),
-                    () => GetTaskVM()?.OnAutoForbiddenForestStop()),
-                ["自动烹饪"] = () => ToggleTaskAction(
-                    () => GetTaskVM()?.AutoCookingStartButtonVisibility == Visibility.Visible,
-                    () => GetTaskVM()?.OnAutoCookingStart(),
-                    () => GetTaskVM()?.OnAutoCookingStop()),
-                ["甜蜜冒险"] = () => ToggleTaskAction(
-                    () => GetTaskVM()?.AutoSweetAdventureStartButtonVisibility == Visibility.Visible,
-                    () => GetTaskVM()?.OnAutoSweetAdventureStart(),
-                    () => GetTaskVM()?.OnAutoSweetAdventureStop()),
+                ["社团答题"] = () => GetTaskVM()?.ToggleAutoClubQuiz(),
+                ["禁林探索"] = () => GetTaskVM()?.ToggleAutoForbiddenForest(),
+                ["自动烹饪"] = () => GetTaskVM()?.ToggleAutoCooking(),
+                ["甜蜜冒险"] = () => GetTaskVM()?.ToggleAutoSweetAdventure(),
             };
 
             if (actions.TryGetValue(actionName, out var action))
@@ -214,17 +202,6 @@ namespace AutoHPMA.ViewModels.Pages
 
         private TaskViewModel? GetTaskVM() => App.Services.GetService(typeof(TaskViewModel)) as TaskViewModel;
         private DashboardViewModel? GetDashboardVM() => App.Services.GetService(typeof(DashboardViewModel)) as DashboardViewModel;
-
-        /// <summary>
-        /// 通用任务切换方法
-        /// </summary>
-        private void ToggleTaskAction(Func<bool?> isStartVisible, Action? startAction, Action? stopAction)
-        {
-            if (isStartVisible() == true)
-                startAction?.Invoke();
-            else
-                stopAction?.Invoke();
-        }
 
         private void ExecuteScreenshot()
         {
@@ -272,10 +249,8 @@ namespace AutoHPMA.ViewModels.Pages
             var dashboardVM = GetDashboardVM();
             if (dashboardVM == null) return;
 
-            if (dashboardVM.StartButtonVisibility == Visibility.Visible && dashboardVM.StartButtonEnabled)
-                dashboardVM.OnStart();
-            else if (dashboardVM.StopButtonVisibility == Visibility.Visible && dashboardVM.StopButtonEnabled)
-                dashboardVM.OnStop();
+            if (dashboardVM.ToggleButtonEnabled)
+                dashboardVM.ToggleAutoHPMA();
         }
     }
 

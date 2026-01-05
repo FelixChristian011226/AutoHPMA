@@ -75,28 +75,7 @@ namespace AutoHPMA.ViewModels.Pages
 
         #endregion
 
-        #region 按钮可见性属性
 
-        // 辅助方法简化按钮可见性
-        private Visibility GetStartVisibility(TaskType type) =>
-            CurrentTaskType == type ? Visibility.Collapsed : Visibility.Visible;
-
-        private Visibility GetStopVisibility(TaskType type) =>
-            CurrentTaskType == type ? Visibility.Visible : Visibility.Collapsed;
-
-        public Visibility AutoClubQuizStartButtonVisibility => GetStartVisibility(TaskType.AutoClubQuiz);
-        public Visibility AutoClubQuizStopButtonVisibility => GetStopVisibility(TaskType.AutoClubQuiz);
-
-        public Visibility AutoForbiddenForestStartButtonVisibility => GetStartVisibility(TaskType.AutoForbiddenForest);
-        public Visibility AutoForbiddenForestStopButtonVisibility => GetStopVisibility(TaskType.AutoForbiddenForest);
-
-        public Visibility AutoCookingStartButtonVisibility => GetStartVisibility(TaskType.AutoCooking);
-        public Visibility AutoCookingStopButtonVisibility => GetStopVisibility(TaskType.AutoCooking);
-
-        public Visibility AutoSweetAdventureStartButtonVisibility => GetStartVisibility(TaskType.AutoSweetAdventure);
-        public Visibility AutoSweetAdventureStopButtonVisibility => GetStopVisibility(TaskType.AutoSweetAdventure);
-
-        #endregion
 
         #region 服务引用
 
@@ -290,70 +269,74 @@ namespace AutoHPMA.ViewModels.Pages
         #region 任务启动/停止命令
 
         // 公共方法供热键调用
-        public void OnAutoClubQuizStart() => OnAutoClubQuizStartTrigger();
-        public void OnAutoClubQuizStop() => OnAutoClubQuizStopTrigger();
-        public void OnAutoForbiddenForestStart() => OnAutoForbiddenForestStartTrigger();
-        public void OnAutoForbiddenForestStop() => OnAutoForbiddenForestStopTrigger();
-        public void OnAutoCookingStart() => OnAutoCookingStartTrigger();
-        public void OnAutoCookingStop() => OnAutoCookingStopTrigger();
-        public void OnAutoSweetAdventureStart() => OnAutoSweetAdventureStartTrigger();
-        public void OnAutoSweetAdventureStop() => OnAutoSweetAdventureStopTrigger();
+        public void ToggleAutoClubQuiz() => OnAutoClubQuizToggle();
+        public void ToggleAutoForbiddenForest() => OnAutoForbiddenForestToggle();
+        public void ToggleAutoCooking() => OnAutoCookingToggle();
+        public void ToggleAutoSweetAdventure() => OnAutoSweetAdventureToggle();
 
         [RelayCommand]
-        private void OnAutoClubQuizStartTrigger() =>
-            StartTask(
-                TaskType.AutoClubQuiz,
-                "自动社团答题",
-                () => new AutoClubQuiz(App.GetLogger<AutoClubQuiz>(), _displayHwnd, _gameHwnd),
-                new Dictionary<string, object>
-                {
-                    { "AnswerDelay", AnswerDelay },
-                    { "JoinOthers", JoinOthers }
-                });
+        private void OnAutoClubQuizToggle()
+        {
+            if (CurrentTaskType == TaskType.AutoClubQuiz)
+                StopTask();
+            else
+                StartTask(
+                    TaskType.AutoClubQuiz,
+                    "自动社团答题",
+                    () => new AutoClubQuiz(App.GetLogger<AutoClubQuiz>(), _displayHwnd, _gameHwnd),
+                    new Dictionary<string, object>
+                    {
+                        { "AnswerDelay", AnswerDelay },
+                        { "JoinOthers", JoinOthers }
+                    });
+        }
 
         [RelayCommand]
-        private void OnAutoClubQuizStopTrigger() => StopTask();
+        private void OnAutoForbiddenForestToggle()
+        {
+            if (CurrentTaskType == TaskType.AutoForbiddenForest)
+                StopTask();
+            else
+                StartTask(
+                    TaskType.AutoForbiddenForest,
+                    "自动禁林",
+                    () => new AutoForbiddenForest(App.GetLogger<AutoForbiddenForest>(), _displayHwnd, _gameHwnd),
+                    new Dictionary<string, object>
+                    {
+                        { "Times", AutoForbiddenForestTimes },
+                        { "TeamPosition", SelectedTeamPosition }
+                    });
+        }
 
         [RelayCommand]
-        private void OnAutoForbiddenForestStartTrigger() =>
-            StartTask(
-                TaskType.AutoForbiddenForest,
-                "自动禁林",
-                () => new AutoForbiddenForest(App.GetLogger<AutoForbiddenForest>(), _displayHwnd, _gameHwnd),
-                new Dictionary<string, object>
-                {
-                    { "Times", AutoForbiddenForestTimes },
-                    { "TeamPosition", SelectedTeamPosition }
-                });
+        private void OnAutoCookingToggle()
+        {
+            if (CurrentTaskType == TaskType.AutoCooking)
+                StopTask();
+            else
+                StartTask(
+                    TaskType.AutoCooking,
+                    "自动烹饪",
+                    () => new AutoCooking(App.GetLogger<AutoCooking>(), _cookingConfigService, _displayHwnd, _gameHwnd),
+                    new Dictionary<string, object>
+                    {
+                        { "Times", AutoCookingTimes },
+                        { "Dish", AutoCookingSelectedDish },
+                        { "OCR", AutoCookingSelectedOCR }
+                    });
+        }
 
         [RelayCommand]
-        private void OnAutoForbiddenForestStopTrigger() => StopTask();
-
-        [RelayCommand]
-        private void OnAutoCookingStartTrigger() =>
-            StartTask(
-                TaskType.AutoCooking,
-                "自动烹饪",
-                () => new AutoCooking(App.GetLogger<AutoCooking>(), _cookingConfigService, _displayHwnd, _gameHwnd),
-                new Dictionary<string, object>
-                {
-                    { "Times", AutoCookingTimes },
-                    { "Dish", AutoCookingSelectedDish },
-                    { "OCR", AutoCookingSelectedOCR }
-                });
-
-        [RelayCommand]
-        private void OnAutoCookingStopTrigger() => StopTask();
-
-        [RelayCommand]
-        private void OnAutoSweetAdventureStartTrigger() =>
-            StartTask(
-                TaskType.AutoSweetAdventure,
-                "甜蜜冒险",
-                () => new AutoSweetAdventure(App.GetLogger<AutoSweetAdventure>(), _displayHwnd, _gameHwnd));
-
-        [RelayCommand]
-        private void OnAutoSweetAdventureStopTrigger() => StopTask();
+        private void OnAutoSweetAdventureToggle()
+        {
+            if (CurrentTaskType == TaskType.AutoSweetAdventure)
+                StopTask();
+            else
+                StartTask(
+                    TaskType.AutoSweetAdventure,
+                    "甜蜜冒险",
+                    () => new AutoSweetAdventure(App.GetLogger<AutoSweetAdventure>(), _displayHwnd, _gameHwnd));
+        }
 
         [RelayCommand]
         private void OnOpenQuestionBank(object sender)
@@ -397,18 +380,7 @@ namespace AutoHPMA.ViewModels.Pages
             _settings.Save();
         }
 
-        partial void OnCurrentTaskTypeChanged(TaskType value)
-        {
-            // 通知UI更新所有按钮状态
-            OnPropertyChanged(nameof(AutoClubQuizStartButtonVisibility));
-            OnPropertyChanged(nameof(AutoClubQuizStopButtonVisibility));
-            OnPropertyChanged(nameof(AutoForbiddenForestStartButtonVisibility));
-            OnPropertyChanged(nameof(AutoForbiddenForestStopButtonVisibility));
-            OnPropertyChanged(nameof(AutoCookingStartButtonVisibility));
-            OnPropertyChanged(nameof(AutoCookingStopButtonVisibility));
-            OnPropertyChanged(nameof(AutoSweetAdventureStartButtonVisibility));
-            OnPropertyChanged(nameof(AutoSweetAdventureStopButtonVisibility));
-        }
+
 
         #endregion
     }

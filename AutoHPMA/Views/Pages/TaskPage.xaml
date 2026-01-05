@@ -50,23 +50,25 @@
                             点击展开相关配置
                         </Run>
                     </ui:TextBlock>
-                    <StackPanel
+                    <ui:Button
                            Grid.Row="0"
                            Grid.RowSpan="2"
                            Grid.Column="1"
                            Margin="0,0,24,0"
-                           Orientation="Horizontal">
-                        <ui:Button
-                               Command="{Binding ViewModel.AutoClubQuizStartTriggerCommand}"
-                               Content="启动"
-                               Icon="{ui:SymbolIcon Play24}"
-                               Visibility="{Binding ViewModel.AutoClubQuizStartButtonVisibility}" />
-                        <ui:Button
-                               Command="{Binding ViewModel.AutoClubQuizStopTriggerCommand}"
-                               Content="停止"
-                               Icon="{ui:SymbolIcon Dismiss24}"
-                               Visibility="{Binding ViewModel.AutoClubQuizStopButtonVisibility}" />
-                    </StackPanel>
+                           Command="{Binding ViewModel.AutoClubQuizToggleCommand}">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                <Setter Property="Content" Value="启动"/>
+                                <Setter Property="Icon" Value="{ui:SymbolIcon Play24}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ViewModel.CurrentTaskType}" Value="AutoClubQuiz">
+                                        <Setter Property="Content" Value="停止"/>
+                                        <Setter Property="Icon" Value="{ui:SymbolIcon Dismiss24}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                    </ui:Button>
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel>
@@ -192,23 +194,25 @@
                             点击展开相关配置
                         </Run>
                     </ui:TextBlock>
-                    <StackPanel
+                    <ui:Button
                            Grid.Row="0"
                            Grid.RowSpan="2"
                            Grid.Column="1"
                            Margin="0,0,24,0"
-                           Orientation="Horizontal">
-                        <ui:Button
-                               Command="{Binding ViewModel.AutoForbiddenForestStartTriggerCommand}"
-                               Content="启动"
-                               Icon="{ui:SymbolIcon Play24}"
-                               Visibility="{Binding ViewModel.AutoForbiddenForestStartButtonVisibility}" />
-                        <ui:Button
-                               Command="{Binding ViewModel.AutoForbiddenForestStopTriggerCommand}"
-                               Content="停止"
-                               Icon="{ui:SymbolIcon Dismiss24}"
-                               Visibility="{Binding ViewModel.AutoForbiddenForestStopButtonVisibility}" />
-                    </StackPanel>
+                           Command="{Binding ViewModel.AutoForbiddenForestToggleCommand}">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                <Setter Property="Content" Value="启动"/>
+                                <Setter Property="Icon" Value="{ui:SymbolIcon Play24}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ViewModel.CurrentTaskType}" Value="AutoForbiddenForest">
+                                        <Setter Property="Content" Value="停止"/>
+                                        <Setter Property="Icon" Value="{ui:SymbolIcon Dismiss24}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                    </ui:Button>
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel>
@@ -305,23 +309,25 @@
                             点击展开相关配置
                         </Run>
                     </ui:TextBlock>
-                    <StackPanel
+                    <ui:Button
                            Grid.Row="0"
                            Grid.RowSpan="2"
                            Grid.Column="1"
                            Margin="0,0,24,0"
-                           Orientation="Horizontal">
-                        <ui:Button
-                               Command="{Binding ViewModel.AutoCookingStartTriggerCommand}"
-                               Content="启动"
-                               Icon="{ui:SymbolIcon Play24}"
-                               Visibility="{Binding ViewModel.AutoCookingStartButtonVisibility}" />
-                        <ui:Button
-                               Command="{Binding ViewModel.AutoCookingStopTriggerCommand}"
-                               Content="停止"
-                               Icon="{ui:SymbolIcon Dismiss24}"
-                               Visibility="{Binding ViewModel.AutoCookingStopButtonVisibility}" />
-                    </StackPanel>
+                           Command="{Binding ViewModel.AutoCookingToggleCommand}">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                <Setter Property="Content" Value="启动"/>
+                                <Setter Property="Icon" Value="{ui:SymbolIcon Play24}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ViewModel.CurrentTaskType}" Value="AutoCooking">
+                                        <Setter Property="Content" Value="停止"/>
+                                        <Setter Property="Icon" Value="{ui:SymbolIcon Dismiss24}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                    </ui:Button>
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel>
@@ -452,23 +458,25 @@
                             点击展开相关配置
                         </Run>
                     </ui:TextBlock>
-                    <StackPanel
+                    <ui:Button
                            Grid.Row="0"
                            Grid.RowSpan="2"
                            Grid.Column="1"
                            Margin="0,0,24,0"
-                           Orientation="Horizontal">
-                        <ui:Button
-                               Command="{Binding ViewModel.AutoSweetAdventureStartTriggerCommand}"
-                               Content="启动"
-                               Icon="{ui:SymbolIcon Play24}"
-                               Visibility="{Binding ViewModel.AutoSweetAdventureStartButtonVisibility}" />
-                        <ui:Button
-                               Command="{Binding ViewModel.AutoSweetAdventureStopTriggerCommand}"
-                               Content="停止"
-                               Icon="{ui:SymbolIcon Dismiss24}"
-                               Visibility="{Binding ViewModel.AutoSweetAdventureStopButtonVisibility}" />
-                    </StackPanel>
+                           Command="{Binding ViewModel.AutoSweetAdventureToggleCommand}">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                <Setter Property="Content" Value="启动"/>
+                                <Setter Property="Icon" Value="{ui:SymbolIcon Play24}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ViewModel.CurrentTaskType}" Value="AutoSweetAdventure">
+                                        <Setter Property="Content" Value="停止"/>
+                                        <Setter Property="Icon" Value="{ui:SymbolIcon Dismiss24}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                    </ui:Button>
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel>
