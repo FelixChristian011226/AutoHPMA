@@ -70,6 +70,9 @@ public class AutoClubQuiz : BaseGameTask
 
     #endregion
 
+    // 状态检测规则
+    private StateRule<AutoClubQuizState>[] _stateRules = null!;
+
     public AutoClubQuiz(ILogger<AutoClubQuiz> logger, nint displayHwnd, nint gameHwnd)
         : base(logger, displayHwnd, gameHwnd)
     {
@@ -79,6 +82,22 @@ public class AutoClubQuiz : BaseGameTask
         LoadAssets();
         CalOffset();
         AddLayersForMaskWindow();
+        InitStateRules();
+    }
+
+    private void InitStateRules()
+    {
+        _stateRules = new StateRule<AutoClubQuizState>[]
+        {
+            new(new[] { ui_club_symbol }, AutoClubQuizState.ClubScene, "社团答题-等待中"),
+            new(new[] { map_return }, AutoClubQuizState.Map, "社团答题-地图"),
+            new(new[] { chat_mail, chat_whisper }, AutoClubQuizState.ChatFrame, "社团答题-聊天框"),
+            new(new[] { badge_club_shop }, AutoClubQuizState.Events, "社团答题-活动选择"),
+            new(new[] { quiz_wait }, AutoClubQuizState.Wait, "社团答题-集结中"),
+            new(new[] { quiz_leave }, AutoClubQuizState.Quiz, "社团答题-活动中"),
+            new(new[] { quiz_over }, AutoClubQuizState.Over, "社团答题-已结束"),
+            new(new[] { quiz_victory }, AutoClubQuizState.Victory, "社团答题-结算中"),
+        };
     }
 
     private void AddLayersForMaskWindow()
@@ -132,7 +151,13 @@ public class AutoClubQuiz : BaseGameTask
     protected override async Task ExecuteLoopAsync()
     {
         await CloseDialogs();
-        FindState();
+        _state = FindStateByRules(_stateRules, AutoClubQuizState.Outside, "社团答题-未进入场景");
+        
+        // 进入有效状态时重置等待标志
+        if (_state != AutoClubQuizState.Outside)
+        {
+            _waited = false;
+        }
         
         switch (_state)
         {
@@ -185,10 +210,11 @@ public class AutoClubQuiz : BaseGameTask
             _waited = true;
             return;
         }
+        // 连续第二次仍是 Outside 状态，执行操作进入地图
         _waited = false;
         SendESC(_gameHwnd);
         await Task.Delay(2000, _cts.Token);
-        SendKey(_gameHwnd, 0x4D);
+        SendKey(_gameHwnd, 0x4D); // M键打开地图
         await Task.Delay(2000, _cts.Token);
     }
 
@@ -448,39 +474,6 @@ public class AutoClubQuiz : BaseGameTask
             await Task.Delay(1000, _cts.Token);
         if (TryClickTemplate(close_club_rank))
             await Task.Delay(1000, _cts.Token);
-    }
-
-    /// <summary>
-    /// 查找当前状态（使用模式匹配简化）
-    /// </summary>
-    public void FindState()
-    {
-        // 按优先级定义状态检测规则
-        var stateRules = new (Mat[] templates, AutoClubQuizState state, string displayName)[]
-        {
-            (new[] { ui_club_symbol }, AutoClubQuizState.ClubScene, "社团答题-等待中"),
-            (new[] { map_return }, AutoClubQuizState.Map, "社团答题-地图"),
-            (new[] { chat_mail, chat_whisper }, AutoClubQuizState.ChatFrame, "社团答题-聊天框"),
-            (new[] { badge_club_shop }, AutoClubQuizState.Events, "社团答题-活动选择"),
-            (new[] { quiz_wait }, AutoClubQuizState.Wait, "社团答题-集结中"),
-            (new[] { quiz_leave }, AutoClubQuizState.Quiz, "社团答题-活动中"),
-            (new[] { quiz_over }, AutoClubQuizState.Over, "社团答题-已结束"),
-            (new[] { quiz_victory }, AutoClubQuizState.Victory, "社团答题-结算中"),
-        };
-
-        foreach (var (templates, state, displayName) in stateRules)
-        {
-            if (templates.Any(t => Find(t).Success))
-            {
-                _state = state;
-                _logWindow?.SetGameState(displayName);
-                _waited = false;
-                return;
-            }
-        }
-
-        _state = AutoClubQuizState.Outside;
-        _logWindow?.SetGameState("社团答题-未进入场景");
     }
 
     private void FindScore()
