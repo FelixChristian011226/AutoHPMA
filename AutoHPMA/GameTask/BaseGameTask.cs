@@ -206,15 +206,27 @@ namespace AutoHPMA.GameTask
         #region 模板匹配（Find）
 
         /// <summary>
-        /// 在屏幕上查找模板
+        /// 在屏幕上查找模板（自动截屏）
         /// </summary>
         /// <param name="template">模板图像（支持 BGR 或 BGRA）</param>
         /// <param name="options">匹配选项（可选）</param>
         /// <returns>匹配结果</returns>
         protected MatchResult Find(Mat template, MatchOptions? options = null)
         {
-            options ??= new MatchOptions();
             var captureMat = CaptureAndPreprocess();
+            return FindInSource(captureMat, template, options);
+        }
+
+        /// <summary>
+        /// 在给定的图像中查找模板（不重新截屏）
+        /// </summary>
+        /// <param name="source">源图像</param>
+        /// <param name="template">模板图像（支持 BGR 或 BGRA）</param>
+        /// <param name="options">匹配选项（可选）</param>
+        /// <returns>匹配结果</returns>
+        protected MatchResult FindInSource(Mat source, Mat template, MatchOptions? options = null)
+        {
+            options ??= new MatchOptions();
 
             // 处理模板和遮罩
             Mat templateBGR;
@@ -240,7 +252,7 @@ namespace AutoHPMA.GameTask
             {
                 // 多重匹配
                 var rects = MatchTemplateHelper.MatchOnePicForOnePic(
-                    captureMat, templateBGR, options.MatchMode, mask, options.Threshold);
+                    source, templateBGR, options.MatchMode, mask, options.Threshold);
 
                 if (rects.Count == 0) return MatchResult.Failed;
 
@@ -257,7 +269,7 @@ namespace AutoHPMA.GameTask
             {
                 // 单个匹配
                 var matchPoint = MatchTemplateHelper.MatchTemplate(
-                    captureMat, templateBGR, options.MatchMode, mask, options.Threshold);
+                    source, templateBGR, options.MatchMode, mask, options.Threshold);
 
                 if (matchPoint == default) return MatchResult.Failed;
 
@@ -489,6 +501,40 @@ namespace AutoHPMA.GameTask
         // 子类必须实现
         public abstract void Start();
         public abstract bool SetParameters(Dictionary<string, object> parameters);
+
+        /// <summary>
+        /// 尝试从参数字典中获取指定类型的值
+        /// </summary>
+        /// <typeparam name="T">目标类型</typeparam>
+        /// <param name="parameters">参数字典</param>
+        /// <param name="key">参数键名</param>
+        /// <param name="value">输出值</param>
+        /// <returns>是否成功获取</returns>
+        protected bool TryGetParameter<T>(Dictionary<string, object> parameters, string key, out T value)
+        {
+            value = default!;
+            if (!parameters.TryGetValue(key, out var obj) || obj == null) 
+                return false;
+
+            try
+            {
+                if (typeof(T) == typeof(bool) && obj is string strVal)
+                {
+                    // 特殊处理布尔类型的字符串转换
+                    value = (T)(object)bool.Parse(strVal);
+                }
+                else
+                {
+                    value = (T)Convert.ChangeType(obj, typeof(T));
+                }
+                return true;
+            }
+            catch
+            {
+                _logger.LogWarning("参数 {Key} 类型转换失败", key);
+                return false;
+            }
+        }
 
         #endregion
     }

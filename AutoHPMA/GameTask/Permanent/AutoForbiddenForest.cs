@@ -193,9 +193,8 @@ public class AutoForbiddenForest : BaseGameTask
     {
         try
         {
-            if (parameters.TryGetValue("Times", out var timesObj))
+            if (TryGetParameter(parameters, "Times", out int times))
             {
-                var times = Convert.ToInt32(timesObj);
                 if (times < 0)
                 {
                     _logger.LogWarning("禁林次数必须大于等于0。已设置为默认值。");
@@ -205,9 +204,9 @@ public class AutoForbiddenForest : BaseGameTask
                 _logger.LogDebug("禁林次数设置为：{Times}次", _autoForbiddenForestTimes);
             }
 
-            if (parameters.TryGetValue("TeamPosition", out var positionObj))
+            if (TryGetParameter(parameters, "TeamPosition", out string position))
             {
-                _autoForbiddenForestOption = positionObj?.ToString() switch
+                _autoForbiddenForestOption = position switch
                 {
                     "Leader" => AutoForbiddenForestOption.Leader,
                     "Member" => AutoForbiddenForestOption.Member,

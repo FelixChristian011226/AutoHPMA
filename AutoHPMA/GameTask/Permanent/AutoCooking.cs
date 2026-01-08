@@ -489,7 +489,7 @@ public class AutoCooking : BaseGameTask
                 return false;
             }
 
-            var result = FindInMat(captureMat, template, new MatchOptions 
+            var result = FindInSource(captureMat, template, new MatchOptions 
             { 
                 UseAlphaMask = true, 
                 MatchMode = matchMode 
@@ -510,42 +510,6 @@ public class AutoCooking : BaseGameTask
         return true;
     }
 
-    /// <summary>
-    /// 在给定的 Mat 中查找模板（不重新截屏）
-    /// </summary>
-    private MatchResult FindInMat(Mat source, Mat template, MatchOptions? options = null)
-    {
-        options ??= new MatchOptions();
-
-        Mat templateBGR;
-        Mat? mask = options.Mask;
-
-        if (template.Channels() == 4)
-        {
-            if (options.UseAlphaMask && mask == null)
-            {
-                mask = MatchTemplateHelper.GenerateMask(template);
-            }
-            templateBGR = new Mat();
-            Cv2.CvtColor(template, templateBGR, ColorConversionCodes.BGRA2BGR);
-        }
-        else
-        {
-            templateBGR = template;
-        }
-
-        var matchPoint = MatchTemplateHelper.MatchTemplate(
-            source, templateBGR, options.MatchMode, mask, options.Threshold);
-
-        if (matchPoint == default) return MatchResult.Failed;
-
-        return new MatchResult
-        {
-            Success = true,
-            Location = matchPoint,
-            TemplateSize = new Size(template.Width, template.Height)
-        };
-    }
 
     private Mat GetKitchenwareMat(string kitchenware)
     {
@@ -703,9 +667,8 @@ public class AutoCooking : BaseGameTask
     {
         try
         {
-            if (parameters.TryGetValue("Times", out var timesObj))
+            if (TryGetParameter(parameters, "Times", out int times))
             {
-                var times = Convert.ToInt32(timesObj);
                 if (times < 0)
                 {
                     _logger.LogWarning("烹饪次数必须大于等于0。已设置为默认值。");
@@ -715,9 +678,8 @@ public class AutoCooking : BaseGameTask
                 _logger.LogDebug("烹饪次数设置为：{Times}次", _autoCookingTimes);
             }
 
-            if (parameters.TryGetValue("Dish", out var dishObj))
+            if (TryGetParameter(parameters, "Dish", out string dish))
             {
-                var dish = dishObj?.ToString();
                 if (string.IsNullOrEmpty(dish))
                 {
                     _logger.LogWarning("无效的菜品选择。已设置为默认值。");
@@ -734,9 +696,8 @@ public class AutoCooking : BaseGameTask
                 _logger.LogDebug("菜品设置为：{Dish}", _autoCookingDish);
             }
 
-            if (parameters.TryGetValue("OCR", out var ocrObj))
+            if (TryGetParameter(parameters, "OCR", out string ocr))
             {
-                var ocr = ocrObj?.ToString();
                 if (string.IsNullOrEmpty(ocr))
                 {
                     _logger.LogWarning("无效的OCR选择。已设置为默认值。");

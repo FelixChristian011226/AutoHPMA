@@ -474,9 +474,8 @@ public class AutoClubQuiz : BaseGameTask
     {
         try
         {
-            if (parameters.TryGetValue("AnswerDelay", out var delayObj))
+            if (TryGetParameter(parameters, "AnswerDelay", out int answerDelay))
             {
-                var answerDelay = Convert.ToInt32(delayObj);
                 if (answerDelay < 0)
                 {
                     _logger.LogWarning("答题延迟不能小于0。已设置为默认值。");
@@ -486,9 +485,9 @@ public class AutoClubQuiz : BaseGameTask
                 _logger.LogDebug("答题延迟设置为：{AnswerDelay}秒", _answerDelay);
             }
 
-            if (parameters.TryGetValue("JoinOthers", out var joinObj))
+            if (TryGetParameter(parameters, "JoinOthers", out bool joinOthers))
             {
-                _joinOthers = Convert.ToBoolean(joinObj);
+                _joinOthers = joinOthers;
             }
 
             return true;
