@@ -31,7 +31,6 @@ public class AutoSweetAdventure : BaseGameTask
     private Mat gaming_round1, gaming_round2, gaming_round3, gaming_round4, gaming_round5;
     private Mat gaming_forward, gaming_return, gaming_candy, gaming_monster;
 
-    private bool _waited = false;
     private int round = 0, prev_round = 0, step = 1;
     private int _maxStep = 12;
 
@@ -91,7 +90,11 @@ public class AutoSweetAdventure : BaseGameTask
 
     protected override async Task ExecuteLoopAsync()
     {
-        _state = FindStateByRules(_stateRules, AutoSweetAdventureState.Unknown, "甜蜜冒险-未知状态");
+        _state = FindStateByRules(_stateRules, AutoSweetAdventureState.Unknown, "甘蜜冒险-未知状态");
+        
+        // 进入有效状态时重置等待标志
+        if (_state != AutoSweetAdventureState.Unknown)
+            _waited = false;
         
         switch (_state)
         {
@@ -107,7 +110,6 @@ public class AutoSweetAdventure : BaseGameTask
                 break;
 
             case AutoSweetAdventureState.Teaming:
-                _waited = false;
                 var startResult = Find(teaming_start);
                 if (startResult.Success)
                 {
@@ -118,7 +120,6 @@ public class AutoSweetAdventure : BaseGameTask
                 break;
 
             case AutoSweetAdventureState.Gaming:
-                _waited = false;
                 _maskWindow?.ShowLayer("Round");
                 round = FindRound();
                 if (round > prev_round)
@@ -176,7 +177,6 @@ public class AutoSweetAdventure : BaseGameTask
                 break;
 
             case AutoSweetAdventureState.Endding:
-                _waited = false;
                 _maskWindow?.ClearLayer("Round");
                 _maskWindow?.HideLayer("Round");
                 round = 0;

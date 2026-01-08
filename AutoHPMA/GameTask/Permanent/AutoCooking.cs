@@ -63,7 +63,6 @@ public class AutoCooking : BaseGameTask
     // 状态追踪
     private bool initialized = false;
     private int round = 0;
-    private bool _waited = false;
 
     // 定位结果
     private Dictionary<string, Rect> kitchenwareRects = new();
@@ -128,6 +127,10 @@ public class AutoCooking : BaseGameTask
         
         _state = FindStateByRules(_stateRules, AutoCookingState.Unknown, "烹饪-未知状态");
         
+        // 进入有效状态时重置等待标志
+        if (_state != AutoCookingState.Unknown)
+            _waited = false;
+        
         switch (_state)
         {
             case AutoCookingState.Unknown:
@@ -137,19 +140,17 @@ public class AutoCooking : BaseGameTask
                     _waited = true;
                     return;
                 }
-                _logger.LogInformation("状态未知，请手动进入烹饪界面。");
                 _waited = false;
+                _logger.LogInformation("状态未知，请手动进入烹饪界面。");
                 await Task.Delay(1000, _cts.Token);
                 break;
 
             case AutoCookingState.Workbench:
-                _waited = false;
                 TryClickTemplate(click_challenge);
                 await Task.Delay(1000, _cts.Token);
                 break;
 
             case AutoCookingState.Challenge:
-                _waited = false;
                 ChooseDish();
                 await Task.Delay(1500, _cts.Token);
                 TryClickTemplate(click_start);
@@ -157,7 +158,6 @@ public class AutoCooking : BaseGameTask
                 break;
 
             case AutoCookingState.Cooking:
-                _waited = false;
                 if (!initialized)
                 {
                     Initialize();
@@ -190,7 +190,6 @@ public class AutoCooking : BaseGameTask
                 break;
 
             case AutoCookingState.Summary:
-                _waited = false;
                 round++;
                 _logger.LogInformation("第 {round} 轮烹饪完成。", round);
                 ClearCookingLayers();

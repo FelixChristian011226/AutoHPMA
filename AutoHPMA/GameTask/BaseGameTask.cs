@@ -89,6 +89,7 @@ namespace AutoHPMA.GameTask
         protected int offsetX, offsetY;
         protected double scale;
         protected CancellationTokenSource _cts;
+        protected bool _waited = false;
 
         public event EventHandler? TaskCompleted;
 
@@ -421,6 +422,7 @@ namespace AutoHPMA.GameTask
             {
                 _maskWindow?.ClearAllLayers();
                 _logWindow?.SetGameState("空闲");
+                _waited = false;
                 _cts.Dispose();
                 _cts = new CancellationTokenSource();
             }

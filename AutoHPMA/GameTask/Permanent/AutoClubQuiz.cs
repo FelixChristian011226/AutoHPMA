@@ -22,7 +22,7 @@ namespace AutoHPMA.GameTask.Permanent;
 
 public enum AutoClubQuizState
 {
-    Outside,
+    Unknown,
     Map,
     ClubScene,
     ChatFrame,
@@ -40,7 +40,7 @@ public class AutoClubQuiz : BaseGameTask
     private static ExcelHelper excelHelper;
     private static PaddleOCRHelper paddleOCRHelper;
 
-    private AutoClubQuizState _state = AutoClubQuizState.Outside;
+    private AutoClubQuizState _state = AutoClubQuizState.Unknown;
 
     // 模板图像
     private Mat close_quiz_info, close_club_rank;
@@ -57,7 +57,7 @@ public class AutoClubQuiz : BaseGameTask
     private char bestOption;
     private string? q, a, b, c, d, answer, i;
     private bool _optionLocated = false, _questionLocated = false;
-    private bool _waited = false, _quiz_over = true;
+    private bool _quiz_over = true;
     private Dictionary<char, Rect> optionRects = new();
     private Rect question_rect;
     private Rect index_rect;
@@ -144,25 +144,23 @@ public class AutoClubQuiz : BaseGameTask
 
     public override async void Start()
     {
-        _state = AutoClubQuizState.Outside;
+        _state = AutoClubQuizState.Unknown;
         await RunTaskAsync("社团答题");
     }
 
     protected override async Task ExecuteLoopAsync()
     {
         await CloseDialogs();
-        _state = FindStateByRules(_stateRules, AutoClubQuizState.Outside, "社团答题-未进入场景");
+        _state = FindStateByRules(_stateRules, AutoClubQuizState.Unknown, "社团答题-未进入场景");
         
         // 进入有效状态时重置等待标志
-        if (_state != AutoClubQuizState.Outside)
-        {
+        if (_state != AutoClubQuizState.Unknown)
             _waited = false;
-        }
         
         switch (_state)
         {
-            case AutoClubQuizState.Outside:
-                await HandleOutsideState();
+            case AutoClubQuizState.Unknown:
+                await HandleUnknownState();
                 break;
 
             case AutoClubQuizState.Map:
@@ -201,7 +199,7 @@ public class AutoClubQuiz : BaseGameTask
 
     #region 状态处理方法
 
-    private async Task HandleOutsideState()
+    private async Task HandleUnknownState()
     {
         if (!_waited)
         {
@@ -210,7 +208,7 @@ public class AutoClubQuiz : BaseGameTask
             _waited = true;
             return;
         }
-        // 连续第二次仍是 Outside 状态，执行操作进入地图
+        // 已等待过，执行操作进入地图
         _waited = false;
         SendESC(_gameHwnd);
         await Task.Delay(2000, _cts.Token);

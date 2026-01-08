@@ -17,7 +17,7 @@ namespace AutoHPMA.GameTask.Permanent;
 
 public enum AutoForbiddenForestState
 {
-    Outside,
+    Unknown,
     Teaming,
     Loading,
     Fighting,
@@ -32,14 +32,12 @@ public enum AutoForbiddenForestOption
 
 public class AutoForbiddenForest : BaseGameTask
 {
-    private AutoForbiddenForestState _state = AutoForbiddenForestState.Outside;
+    private AutoForbiddenForestState _state = AutoForbiddenForestState.Unknown;
 
     private Mat ui_explore, ui_loading, ui_clock, ui_statistics;
     private Mat team_auto, team_start, team_confirm, team_ready;
     private Mat fight_auto;
     private Mat over_thumb;
-
-    private bool _waited = false;
 
     private int _autoForbiddenForestTimes;
     private AutoForbiddenForestOption _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
@@ -94,7 +92,7 @@ public class AutoForbiddenForest : BaseGameTask
 
     public override async void Start()
     {
-        _state = AutoForbiddenForestState.Outside;
+        _state = AutoForbiddenForestState.Unknown;
         await RunTaskAsync("禁林");
     }
 
@@ -107,11 +105,15 @@ public class AutoForbiddenForest : BaseGameTask
             return;
         }
 
-        _state = FindStateByRules(_stateRules, AutoForbiddenForestState.Outside, "禁林-未知状态");
+        _state = FindStateByRules(_stateRules, AutoForbiddenForestState.Unknown, "禁林-未知状态");
+        
+        // 进入有效状态时重置等待标志
+        if (_state != AutoForbiddenForestState.Unknown)
+            _waited = false;
 
         switch (_state)
         {
-            case AutoForbiddenForestState.Outside:
+            case AutoForbiddenForestState.Unknown:
                 if (!_waited)
                 {
                     await Task.Delay(5000, _cts.Token);
@@ -123,7 +125,6 @@ public class AutoForbiddenForest : BaseGameTask
                 break;
 
             case AutoForbiddenForestState.Teaming:
-                _waited = false;
                 var autoResult = Find(team_auto);
                 if (autoResult.Success)
                 {
@@ -164,12 +165,10 @@ public class AutoForbiddenForest : BaseGameTask
                 break;
 
             case AutoForbiddenForestState.Loading:
-                _waited = false;
                 await Task.Delay(1000, _cts.Token);
                 break;
 
             case AutoForbiddenForestState.Fighting:
-                _waited = false;
                 var fightResult = Find(fight_auto, new MatchOptions 
                 { 
                     UseAlphaMask = true, 
@@ -183,7 +182,6 @@ public class AutoForbiddenForest : BaseGameTask
                 break;
 
             case AutoForbiddenForestState.Summary:
-                _waited = false;
                 _logger.LogDebug("检测到点赞页面");
                 await Task.Delay(3000, _cts.Token);
                 
