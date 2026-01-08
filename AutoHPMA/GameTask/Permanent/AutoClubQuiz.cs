@@ -123,75 +123,54 @@ public class AutoClubQuiz : BaseGameTask
         quiz_victory = Cv2.ImRead(folder + "quiz_victory.png", ImreadModes.Color);
     }
 
-    public override void Stop() => base.Stop();
-
     public override async void Start()
     {
         _state = AutoClubQuizState.Outside;
-        _logWindow?.SetGameState("社团答题");
-        _logger.LogInformation("[Aquamarine]---社团答题任务已启动---[/Aquamarine]");
-        try
+        await RunTaskAsync("社团答题");
+    }
+
+    protected override async Task ExecuteLoopAsync()
+    {
+        await CloseDialogs();
+        FindState();
+        
+        switch (_state)
         {
-            while (!_cts.Token.IsCancellationRequested)
-            {
-                GC.Collect();
-                await CloseDialogs();
-                FindState();
-                
-                switch (_state)
-                {
-                    case AutoClubQuizState.Outside:
-                        await HandleOutsideState();
-                        break;
+            case AutoClubQuizState.Outside:
+                await HandleOutsideState();
+                break;
 
-                    case AutoClubQuizState.Map:
-                        await HandleMapState();
-                        break;
+            case AutoClubQuizState.Map:
+                await HandleMapState();
+                break;
 
-                    case AutoClubQuizState.ClubScene:
-                        await HandleClubSceneState();
-                        break;
+            case AutoClubQuizState.ClubScene:
+                await HandleClubSceneState();
+                break;
 
-                    case AutoClubQuizState.ChatFrame:
-                        await HandleChatFrameState();
-                        break;
+            case AutoClubQuizState.ChatFrame:
+                await HandleChatFrameState();
+                break;
 
-                    case AutoClubQuizState.Events:
-                        await HandleEventsState();
-                        break;
+            case AutoClubQuizState.Events:
+                await HandleEventsState();
+                break;
 
-                    case AutoClubQuizState.Wait:
-                        await Task.Delay(1000, _cts.Token);
-                        break;
+            case AutoClubQuizState.Wait:
+                await Task.Delay(1000, _cts.Token);
+                break;
 
-                    case AutoClubQuizState.Quiz:
-                        await HandleQuizState();
-                        break;
+            case AutoClubQuizState.Quiz:
+                await HandleQuizState();
+                break;
 
-                    case AutoClubQuizState.Over:
-                        await HandleOverState();
-                        break;
+            case AutoClubQuizState.Over:
+                await HandleOverState();
+                break;
 
-                    case AutoClubQuizState.Victory:
-                        await HandleVictoryState();
-                        break;
-                }
-            }
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("[Aquamarine]---社团答题任务已终止---[/Aquamarine]");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("发生异常：{ex}", ex.Message);
-        }
-        finally
-        {
-            _maskWindow?.ClearAllLayers();
-            _logWindow?.SetGameState("空闲");
-            _cts.Dispose();
-            _cts = new CancellationTokenSource();
+            case AutoClubQuizState.Victory:
+                await HandleVictoryState();
+                break;
         }
     }
 

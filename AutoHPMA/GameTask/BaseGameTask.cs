@@ -63,6 +63,21 @@ namespace AutoHPMA.GameTask
 
     #endregion
 
+    #region 状态规则
+
+    /// <summary>
+    /// 状态检测规则
+    /// </summary>
+    /// <typeparam name="TState">状态枚举类型</typeparam>
+    public record StateRule<TState>(
+        Mat[] Templates,
+        TState State,
+        string DisplayName,
+        double Threshold = 0.9
+    );
+
+    #endregion
+
     public abstract class BaseGameTask : IGameTask
     {
         protected static LogWindow _logWindow => AppContextService.Instance.LogWindow;
@@ -340,6 +355,35 @@ namespace AutoHPMA.GameTask
 
         #endregion
 
+        #region 状态检测
+
+        /// <summary>
+        /// 通用状态检测方法，使用规则数组匹配状态
+        /// </summary>
+        /// <typeparam name="TState">状态枚举类型</typeparam>
+        /// <param name="rules">状态规则数组</param>
+        /// <param name="defaultState">默认状态</param>
+        /// <param name="defaultDisplayName">默认显示名称</param>
+        /// <returns>匹配到的状态</returns>
+        protected TState FindStateByRules<TState>(
+            StateRule<TState>[] rules,
+            TState defaultState,
+            string defaultDisplayName)
+        {
+            foreach (var (templates, state, displayName, threshold) in rules)
+            {
+                if (templates.Any(t => Find(t, new MatchOptions { Threshold = threshold }).Success))
+                {
+                    _logWindow?.SetGameState(displayName);
+                    return state;
+                }
+            }
+            _logWindow?.SetGameState(defaultDisplayName);
+            return defaultState;
+        }
+
+        #endregion
+
         #region 任务控制
 
         public virtual void Stop()
@@ -347,6 +391,45 @@ namespace AutoHPMA.GameTask
             _cts.Cancel();
             TaskCompleted?.Invoke(this, EventArgs.Empty);
         }
+
+        /// <summary>
+        /// 运行任务的模板方法，统一处理任务生命周期
+        /// </summary>
+        /// <param name="taskName">任务名称（用于日志显示）</param>
+        protected async Task RunTaskAsync(string taskName)
+        {
+            _logWindow?.SetGameState(taskName);
+            _logger.LogInformation("[Aquamarine]---{TaskName}任务已启动---[/Aquamarine]", taskName);
+
+            try
+            {
+                while (!_cts.Token.IsCancellationRequested)
+                {
+                    GC.Collect();
+                    await ExecuteLoopAsync();
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                _logger.LogInformation("[Aquamarine]---{TaskName}任务已终止---[/Aquamarine]", taskName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发生异常：{Message}", ex.Message);
+            }
+            finally
+            {
+                _maskWindow?.ClearAllLayers();
+                _logWindow?.SetGameState("空闲");
+                _cts.Dispose();
+                _cts = new CancellationTokenSource();
+            }
+        }
+
+        /// <summary>
+        /// 任务循环执行逻辑，子类必须实现
+        /// </summary>
+        protected abstract Task ExecuteLoopAsync();
 
         // 子类必须实现
         public abstract void Start();

@@ -87,6 +87,9 @@ public class AutoCooking : BaseGameTask
 
     #endregion
 
+    // 状态检测规则
+    private StateRule<AutoCookingState>[] _stateRules = null!;
+
     public AutoCooking(ILogger<AutoCooking> logger, CookingConfigService cookingConfigService, nint displayHwnd, nint gameHwnd)
         : base(logger, displayHwnd, gameHwnd)
     {
@@ -94,123 +97,109 @@ public class AutoCooking : BaseGameTask
         LoadAssets();
         CalOffset();
         AddLayersForMaskWindow();
+        InitStateRules();
     }
 
-    public override void Stop()
+    private void InitStateRules()
     {
-        base.Stop();
+        _stateRules = new StateRule<AutoCookingState>[]
+        {
+            new(new[] { ui_clock }, AutoCookingState.Cooking, "烹饪-烹饪中"),
+            new(new[] { ui_shop }, AutoCookingState.Workbench, "烹饪-工作台"),
+            new(new[] { ui_challenge }, AutoCookingState.Challenge, "烹饪-订单挑战"),
+            new(new[] { ui_continue1, ui_continue2 }, AutoCookingState.Summary, "烹饪-结算中"),
+        };
     }
 
     public override async void Start()
     {
         _state = AutoCookingState.Unknown;
-        _logWindow?.SetGameState("自动烹饪");
-        _logger.LogInformation("[Aquamarine]---自动烹饪任务已启动---[/Aquamarine]");
-        try
+        await RunTaskAsync("自动烹饪");
+    }
+
+    protected override async Task ExecuteLoopAsync()
+    {
+        if (round >= _autoCookingTimes)
         {
-            while (!_cts.Token.IsCancellationRequested)
-            {
-                GC.Collect();
-
-                if (round >= _autoCookingTimes)
+            ToastNotificationHelper.ShowToast("烹饪任务完成", $"已完成 {round} 轮烹饪任务。");
+            Stop();
+            return;
+        }
+        
+        _state = FindStateByRules(_stateRules, AutoCookingState.Unknown, "烹饪-未知状态");
+        
+        switch (_state)
+        {
+            case AutoCookingState.Unknown:
+                if (!_waited)
                 {
-                    ToastNotificationHelper.ShowToast("烹饪任务完成", $"已完成 {round} 轮烹饪任务。");
-                    Stop();
-                    _logger.LogInformation("[Aquamarine]---自动烹饪任务已终止---[/Aquamarine]");
-                    continue;
+                    await Task.Delay(2000, _cts.Token);
+                    _waited = true;
+                    return;
                 }
-                
-                FindState();
-                
-                switch (_state)
+                _logger.LogInformation("状态未知，请手动进入烹饪界面。");
+                _waited = false;
+                await Task.Delay(1000, _cts.Token);
+                break;
+
+            case AutoCookingState.Workbench:
+                _waited = false;
+                TryClickTemplate(click_challenge);
+                await Task.Delay(1000, _cts.Token);
+                break;
+
+            case AutoCookingState.Challenge:
+                _waited = false;
+                ChooseDish();
+                await Task.Delay(1500, _cts.Token);
+                TryClickTemplate(click_start);
+                await Task.Delay(2000, _cts.Token);
+                break;
+
+            case AutoCookingState.Cooking:
+                _waited = false;
+                if (!initialized)
                 {
-                    case AutoCookingState.Unknown:
-                        if (!_waited)
-                        {
-                            await Task.Delay(2000, _cts.Token);
-                            _waited = true;
-                            break;
-                        }
-                        _logger.LogInformation("状态未知，请手动进入烹饪界面。");
-                        _waited = false;
-                        await Task.Delay(1000, _cts.Token);
-                        break;
+                    Initialize();
+                    await Task.Delay(500, _cts.Token);
+                    return;
+                }
 
-                    case AutoCookingState.Workbench:
-                        TryClickTemplate(click_challenge);
-                        await Task.Delay(1000, _cts.Token);
-                        break;
+                // 更新所有厨具状态
+                foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
+                {
+                    if (kitchenware == "bin" || kitchenware == "board") continue;
+                    kitchenwareStatus[kitchenware] = GetKitchenwareStatus(kitchenware);
+                }
+                UpdateKitchenwareStatusDisplay();
 
-                    case AutoCookingState.Challenge:
-                        ChooseDish();
-                        await Task.Delay(1500, _cts.Token);
-                        TryClickTemplate(click_start);
-                        await Task.Delay(2000, _cts.Token);
-                        break;
-
-                    case AutoCookingState.Cooking:
-                        if (!initialized)
-                        {
-                            Initialize();
-                            await Task.Delay(500, _cts.Token);
-                            continue;
-                        }
-
-                        // 更新所有厨具状态
-                        foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
-                        {
-                            if (kitchenware == "bin" || kitchenware == "board") continue;
-                            kitchenwareStatus[kitchenware] = GetKitchenwareStatus(kitchenware);
-                        }
-                        UpdateKitchenwareStatusDisplay();
-
-                        // 检查是否有厨具糊了
-                        foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
-                        {
-                            if (kitchenwareStatus.TryGetValue(kitchenware, out var status) && status.status == CookingStatus.Overcooked)
-                            {
-                                DiscardAllFood();
-                                await Task.Delay(_autoCookingGap, _cts.Token);
-                                break;
-                            }
-                        }
-
-                        // 执行烹饪循环
-                        if (ExecuteCookingCycle())
-                        {
-                            await Task.Delay(_autoCookingGap, _cts.Token);
-                            continue;
-                        }
+                // 检查是否有厨具糊了
+                foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
+                {
+                    if (kitchenwareStatus.TryGetValue(kitchenware, out var status) && status.status == CookingStatus.Overcooked)
+                    {
+                        DiscardAllFood();
                         await Task.Delay(_autoCookingGap, _cts.Token);
-                        break;
-
-                    case AutoCookingState.Summary:
-                        round++;
-                        _logger.LogInformation("第 {round} 轮烹饪完成。", round);
-                        ClearCookingLayers();
-                        await Task.Delay(3000, _cts.Token);
-                        SendSpace(_gameHwnd);
-                        await Task.Delay(3000, _cts.Token);
-                        SendSpace(_gameHwnd);
-                        await Task.Delay(3000, _cts.Token);
-                        break;
+                        return;
+                    }
                 }
-            }
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("[Aquamarine]---自动烹饪任务已终止---[/Aquamarine]");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "发生异常：{ex}", ex.Message);
-        }
-        finally
-        {
-            _maskWindow?.ClearAllLayers();
-            _logWindow?.SetGameState("空闲");
-            _cts.Dispose();
-            _cts = new CancellationTokenSource();
+
+                // 执行烹饪循环
+                ExecuteCookingCycle();
+                await Task.Delay(_autoCookingGap, _cts.Token);
+                break;
+
+            case AutoCookingState.Summary:
+                _waited = false;
+                round++;
+                _logger.LogInformation("第 {round} 轮烹饪完成。", round);
+                ClearCookingLayers();
+                await Task.Delay(3000, _cts.Token);
+                SendSpace(_gameHwnd);
+                await Task.Delay(3000, _cts.Token);
+                SendSpace(_gameHwnd);
+                await Task.Delay(3000, _cts.Token);
+                break;
         }
     }
 
@@ -227,43 +216,6 @@ public class AutoCooking : BaseGameTask
     #endregion
 
     #region 状态检测
-
-    private void FindState()
-    {
-        if (Find(ui_clock).Success)
-        {
-            _state = AutoCookingState.Cooking;
-            _logWindow?.SetGameState("烹饪-烹饪中");
-            _waited = false;
-            return;
-        }
-
-        if (Find(ui_shop).Success)
-        {
-            _state = AutoCookingState.Workbench;
-            _logWindow?.SetGameState("烹饪-工作台");
-            _waited = false;
-            return;
-        }
-
-        if (Find(ui_challenge).Success)
-        {
-            _state = AutoCookingState.Challenge;
-            _logWindow?.SetGameState("烹饪-订单挑战");
-            _waited = false;
-            return;
-        }
-
-        if (Find(ui_continue1).Success || Find(ui_continue2).Success)
-        {
-            _state = AutoCookingState.Summary;
-            _logWindow?.SetGameState("烹饪-结算中");
-            _waited = false;
-            return;
-        }
-
-        _state = AutoCookingState.Unknown;
-    }
 
     private bool CheckOver() => !Find(ui_clock).Success;
 

@@ -35,12 +35,16 @@ public class AutoSweetAdventure : BaseGameTask
     private int round = 0, prev_round = 0, step = 1;
     private int _maxStep = 12;
 
+    // 状态检测规则
+    private StateRule<AutoSweetAdventureState>[] _stateRules = null!;
+
     public AutoSweetAdventure(ILogger<AutoSweetAdventure> logger, nint displayHwnd, nint gameHwnd)
         : base(logger, displayHwnd, gameHwnd)
     {
         LoadAssets();
         CalOffset();
         AddLayersForMaskWindow();
+        InitStateRules();
     }
 
     private void AddLayersForMaskWindow()
@@ -48,6 +52,16 @@ public class AutoSweetAdventure : BaseGameTask
         _maskWindow?.AddLayer("Match");
         _maskWindow?.AddLayer("Click");
         _maskWindow?.AddLayer("Round");
+    }
+
+    private void InitStateRules()
+    {
+        _stateRules = new StateRule<AutoSweetAdventureState>[]
+        {
+            new(new[] { ui_teaming }, AutoSweetAdventureState.Teaming, "甜蜜冒险-组队中"),
+            new(new[] { ui_gaming }, AutoSweetAdventureState.Gaming, "甜蜜冒险-游戏中"),
+            new(new[] { ui_endding }, AutoSweetAdventureState.Endding, "甜蜜冒险-结算中"),
+        };
     }
 
     private void LoadAssets()
@@ -69,161 +83,110 @@ public class AutoSweetAdventure : BaseGameTask
         gaming_monster = Cv2.ImRead(image_folder + "gaming_monster.png", ImreadModes.Color);
     }
 
-    public override void Stop()
-    {
-        base.Stop();
-    }
-
     public override async void Start()
     {
         _state = AutoSweetAdventureState.Unknown;
-        _logWindow?.SetGameState("甜蜜冒险");
-        _logger.LogInformation("[Aquamarine]---甜蜜冒险任务已启动---[/Aquamarine]");
-        try
-        {
-            while (!_cts.Token.IsCancellationRequested)
-            {
-                GC.Collect();
-                FindState();
-                switch (_state)
-                {
-                    case AutoSweetAdventureState.Unknown:
-                        if (!_waited)
-                        {
-                            await Task.Delay(5000, _cts.Token);
-                            _waited = true;
-                            break;
-                        }
-                        _logWindow?.SetGameState("甜蜜冒险-未知状态");
-                        _waited = false;
-                        await Task.Delay(1000, _cts.Token);
-                        break;
-
-                    case AutoSweetAdventureState.Teaming:
-                        var startResult = Find(teaming_start);
-                        if (startResult.Success)
-                        {
-                            ClickMatchCenter(startResult);
-                            await Task.Delay(3000, _cts.Token);
-                        }
-                        await Task.Delay(1000, _cts.Token);
-                        break;
-
-                    case AutoSweetAdventureState.Gaming:
-                        _maskWindow?.ShowLayer("Round");
-                        round = FindRound();
-                        if (round > prev_round)
-                        {
-                            _logger.LogInformation("当前回合数：[Yellow]{Round}[/Yellow]。", round);
-                            step = 1;
-                            prev_round = round;
-                        }
-                        if (step < _maxStep)
-                        {
-                            var forwardResult = Find(gaming_forward, new MatchOptions { Threshold = 0.96 });
-                            if (forwardResult.Success)
-                            {
-                                ClickMatchCenter(forwardResult);
-                                step++;
-                                _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：前进。", step);
-                                await Task.Delay(1000, _cts.Token);
-                                continue;
-                            }
-                            
-                            var candyResult = Find(gaming_candy, new MatchOptions { Threshold = 0.96 });
-                            if (candyResult.Success)
-                            {
-                                ClickMatchCenter(candyResult);
-                                step++;
-                                _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测糖果。", step);
-                                await Task.Delay(1000, _cts.Token);
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            var returnResult = Find(gaming_return, new MatchOptions { Threshold = 0.96 });
-                            if (returnResult.Success)
-                            {
-                                ClickMatchCenter(returnResult);
-                                step++;
-                                _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：返回。", step);
-                                await Task.Delay(1000, _cts.Token);
-                                continue;
-                            }
-                            
-                            var monsterResult = Find(gaming_monster, new MatchOptions { Threshold = 0.96 });
-                            if (monsterResult.Success)
-                            {
-                                ClickMatchCenter(monsterResult);
-                                step++;
-                                _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测怪物。", step);
-                                await Task.Delay(1000, _cts.Token);
-                                continue;
-                            }
-                        }
-                        await Task.Delay(1000, _cts.Token);
-                        _maskWindow?.HideLayer("Round");
-                        break;
-
-                    case AutoSweetAdventureState.Endding:
-                        _maskWindow?.ClearLayer("Round");
-                        _maskWindow?.HideLayer("Round");
-                        round = 0;
-                        prev_round = 0;
-                        step = 1;
-                        _logger.LogInformation("游戏结束，正在结算中...");
-                        SendSpace(_gameHwnd);
-                        await Task.Delay(2000, _cts.Token);
-                        break;
-                }
-            }
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("[Aquamarine]---甜蜜冒险任务已终止---[/Aquamarine]");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "发生异常");
-        }
-        finally
-        {
-            _maskWindow?.ClearAllLayers();
-            _logWindow?.SetGameState("空闲");
-            _cts.Dispose();
-            _cts = new CancellationTokenSource();
-        }
+        await RunTaskAsync("甜蜜冒险");
     }
 
-    private void FindState()
+    protected override async Task ExecuteLoopAsync()
     {
-        if (Find(ui_teaming).Success)
+        _state = FindStateByRules(_stateRules, AutoSweetAdventureState.Unknown, "甜蜜冒险-未知状态");
+        
+        switch (_state)
         {
-            _state = AutoSweetAdventureState.Teaming;
-            _logWindow?.SetGameState("甜蜜冒险-组队中");
-            _waited = false;
-            return;
-        }
+            case AutoSweetAdventureState.Unknown:
+                if (!_waited)
+                {
+                    await Task.Delay(5000, _cts.Token);
+                    _waited = true;
+                    return;
+                }
+                _waited = false;
+                await Task.Delay(1000, _cts.Token);
+                break;
 
-        if (Find(ui_gaming).Success)
-        {
-            _state = AutoSweetAdventureState.Gaming;
-            _logWindow?.SetGameState("甜蜜冒险-游戏中");
-            _waited = false;
-            return;
-        }
+            case AutoSweetAdventureState.Teaming:
+                _waited = false;
+                var startResult = Find(teaming_start);
+                if (startResult.Success)
+                {
+                    ClickMatchCenter(startResult);
+                    await Task.Delay(3000, _cts.Token);
+                }
+                await Task.Delay(1000, _cts.Token);
+                break;
 
-        if (Find(ui_endding).Success)
-        {
-            _state = AutoSweetAdventureState.Endding;
-            _logWindow?.SetGameState("甜蜜冒险-结算中");
-            _waited = false;
-            return;
-        }
+            case AutoSweetAdventureState.Gaming:
+                _waited = false;
+                _maskWindow?.ShowLayer("Round");
+                round = FindRound();
+                if (round > prev_round)
+                {
+                    _logger.LogInformation("当前回合数：[Yellow]{Round}[/Yellow]。", round);
+                    step = 1;
+                    prev_round = round;
+                }
+                if (step < _maxStep)
+                {
+                    var forwardResult = Find(gaming_forward, new MatchOptions { Threshold = 0.96 });
+                    if (forwardResult.Success)
+                    {
+                        ClickMatchCenter(forwardResult);
+                        step++;
+                        _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：前进。", step);
+                        await Task.Delay(1000, _cts.Token);
+                        return;
+                    }
+                    
+                    var candyResult = Find(gaming_candy, new MatchOptions { Threshold = 0.96 });
+                    if (candyResult.Success)
+                    {
+                        ClickMatchCenter(candyResult);
+                        step++;
+                        _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测糖果。", step);
+                        await Task.Delay(1000, _cts.Token);
+                        return;
+                    }
+                }
+                else
+                {
+                    var returnResult = Find(gaming_return, new MatchOptions { Threshold = 0.96 });
+                    if (returnResult.Success)
+                    {
+                        ClickMatchCenter(returnResult);
+                        step++;
+                        _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：返回。", step);
+                        await Task.Delay(1000, _cts.Token);
+                        return;
+                    }
+                    
+                    var monsterResult = Find(gaming_monster, new MatchOptions { Threshold = 0.96 });
+                    if (monsterResult.Success)
+                    {
+                        ClickMatchCenter(monsterResult);
+                        step++;
+                        _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测怪物。", step);
+                        await Task.Delay(1000, _cts.Token);
+                        return;
+                    }
+                }
+                await Task.Delay(1000, _cts.Token);
+                _maskWindow?.HideLayer("Round");
+                break;
 
-        _state = AutoSweetAdventureState.Unknown;
-        return;
+            case AutoSweetAdventureState.Endding:
+                _waited = false;
+                _maskWindow?.ClearLayer("Round");
+                _maskWindow?.HideLayer("Round");
+                round = 0;
+                prev_round = 0;
+                step = 1;
+                _logger.LogInformation("游戏结束，正在结算中...");
+                SendSpace(_gameHwnd);
+                await Task.Delay(2000, _cts.Token);
+                break;
+        }
     }
 
     private int FindRound()

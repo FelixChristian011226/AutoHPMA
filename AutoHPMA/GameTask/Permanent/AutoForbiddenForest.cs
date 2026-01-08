@@ -46,12 +46,16 @@ public class AutoForbiddenForest : BaseGameTask
 
     private int round = 0;
 
+    // 状态检测规则
+    private StateRule<AutoForbiddenForestState>[] _stateRules = null!;
+
     public AutoForbiddenForest(ILogger<AutoForbiddenForest> logger, nint displayHwnd, nint gameHwnd)
         : base(logger, displayHwnd, gameHwnd)
     {
         LoadAssets();
         CalOffset();
         AddLayersForMaskWindow();
+        InitStateRules();
     }
 
     private void AddLayersForMaskWindow()
@@ -59,6 +63,17 @@ public class AutoForbiddenForest : BaseGameTask
         _maskWindow?.AddLayer("Match");
         _maskWindow?.AddLayer("Click");
         _maskWindow?.AddLayer("MultiClick");
+    }
+
+    private void InitStateRules()
+    {
+        _stateRules = new StateRule<AutoForbiddenForestState>[]
+        {
+            new(new[] { ui_explore }, AutoForbiddenForestState.Teaming, "禁林-组队中"),
+            new(new[] { ui_loading }, AutoForbiddenForestState.Loading, "禁林-加载中"),
+            new(new[] { ui_clock }, AutoForbiddenForestState.Fighting, "禁林-战斗中"),
+            new(new[] { ui_statistics }, AutoForbiddenForestState.Summary, "禁林-结算中"),
+        };
     }
 
     private void LoadAssets()
@@ -77,174 +92,115 @@ public class AutoForbiddenForest : BaseGameTask
         over_thumb = Cv2.ImRead(image_folder + "over_thumb.png", ImreadModes.Color);
     }
 
-    public override void Stop()
-    {
-        base.Stop();
-    }
-
     public override async void Start()
     {
         _state = AutoForbiddenForestState.Outside;
-        _logWindow?.SetGameState("禁林");
-        _logger.LogInformation("[Aquamarine]---自动禁林任务已启动---[/Aquamarine]");
-        try
-        {
-            while (!_cts.Token.IsCancellationRequested)
-            {
-                GC.Collect();
-                if (round >= _autoForbiddenForestTimes)
-                {
-                    ToastNotificationHelper.ShowToast("禁林任务完成", $"已完成 {round} 轮禁林任务。");
-                    Stop();
-                    _logger.LogInformation("[Aquamarine]---自动禁林任务已终止---[/Aquamarine]");
-                    continue;
-                }
-                FindState();
-                switch (_state)
-                {
-                    case AutoForbiddenForestState.Outside:
-                        if (!_waited)
-                        {
-                            await Task.Delay(5000, _cts.Token);
-                            _waited = true;
-                            break;
-                        }
-                        _logWindow?.SetGameState("禁林-未知状态");
-                        _waited = false;
-                        await Task.Delay(1000, _cts.Token);
-                        break;
-
-                    case AutoForbiddenForestState.Teaming:
-                        var autoResult = Find(team_auto);
-                        if (autoResult.Success)
-                        {
-                            ClickMatchCenter(autoResult);
-                            _logger.LogDebug("点击自动战斗按钮。");
-                        }
-                        await Task.Delay(1000, _cts.Token);
-                        
-                        switch (_autoForbiddenForestOption)
-                        {
-                            case AutoForbiddenForestOption.Leader:
-                                var startResult = Find(team_start);
-                                if (startResult.Success)
-                                {
-                                    ClickMatchCenter(startResult);
-                                    _logger.LogDebug("点击开始。");
-                                }
-                                await Task.Delay(1500, _cts.Token);
-                                
-                                var confirmResult = Find(team_confirm);
-                                if (confirmResult.Success)
-                                {
-                                    ClickMatchCenter(confirmResult);
-                                    _logger.LogDebug("点击是。");
-                                }
-                                break;
-                                
-                            case AutoForbiddenForestOption.Member:
-                                var readyResult = Find(team_ready);
-                                if (readyResult.Success)
-                                {
-                                    ClickMatchCenter(readyResult);
-                                    _logger.LogDebug("点击准备。");
-                                }
-                                await Task.Delay(1000, _cts.Token);
-                                break;
-                        }
-                        break;
-
-                    case AutoForbiddenForestState.Loading:
-                        await Task.Delay(1000, _cts.Token);
-                        break;
-
-                    case AutoForbiddenForestState.Fighting:
-                        var fightResult = Find(fight_auto, new MatchOptions 
-                        { 
-                            UseAlphaMask = true, 
-                            Threshold = 0.8 
-                        });
-                        if (fightResult.Success)
-                        {
-                            ClickMatchCenter(fightResult);
-                        }
-                        await Task.Delay(1000, _cts.Token);
-                        break;
-
-                    case AutoForbiddenForestState.Summary:
-                        _logger.LogDebug("检测到点赞页面");
-                        await Task.Delay(3000, _cts.Token);
-                        
-                        var thumbResult = Find(over_thumb, new MatchOptions { FindMultiple = true });
-                        if (thumbResult.Success)
-                        {
-                            ShowMatchRects(thumbResult, "MultiClick");
-                            await ClickMultiMatchCentersAsync(thumbResult);
-                            ClearMatchRects("MultiClick");
-                        }
-                        
-                        await Task.Delay(1500, _cts.Token);
-                        SendSpace(_gameHwnd);
-                        _logger.LogInformation("第[Yellow]{Round}[/Yellow]/[Yellow]{Total}[/Yellow]次禁林任务完成。", ++round, _autoForbiddenForestTimes);
-                        await Task.Delay(2000, _cts.Token);
-                        break;
-                }
-            }
-        }
-        catch (TaskCanceledException)
-        {
-            _logger.LogInformation("[Aquamarine]---自动禁林任务已终止---[/Aquamarine]");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "发生异常");
-        }
-        finally
-        {
-            _maskWindow?.ClearAllLayers();
-            _logWindow?.SetGameState("空闲");
-            _cts.Dispose();
-            _cts = new CancellationTokenSource();
-        }
+        await RunTaskAsync("禁林");
     }
 
-    public void FindState()
+    protected override async Task ExecuteLoopAsync()
     {
-        if (Find(ui_explore).Success)
+        if (round >= _autoForbiddenForestTimes)
         {
-            _state = AutoForbiddenForestState.Teaming;
-            _logWindow?.SetGameState("禁林-组队中");
-            _waited = false;
+            ToastNotificationHelper.ShowToast("禁林任务完成", $"已完成 {round} 轮禁林任务。");
+            Stop();
             return;
         }
 
-        if (Find(ui_loading).Success)
-        {
-            _state = AutoForbiddenForestState.Loading;
-            _logWindow?.SetGameState("禁林-加载中");
-            _waited = false;
-            return;
-        }
+        _state = FindStateByRules(_stateRules, AutoForbiddenForestState.Outside, "禁林-未知状态");
 
-        if (Find(ui_clock).Success)
+        switch (_state)
         {
-            _state = AutoForbiddenForestState.Fighting;
-            _logWindow?.SetGameState("禁林-战斗中");
-            _waited = false;
-            return;
-        }
+            case AutoForbiddenForestState.Outside:
+                if (!_waited)
+                {
+                    await Task.Delay(5000, _cts.Token);
+                    _waited = true;
+                    return;
+                }
+                _waited = false;
+                await Task.Delay(1000, _cts.Token);
+                break;
 
-        if (Find(ui_statistics).Success)
-        {
-            _state = AutoForbiddenForestState.Summary;
-            _logWindow?.SetGameState("禁林-结算中");
-            _waited = false;
-            return;
-        }
+            case AutoForbiddenForestState.Teaming:
+                _waited = false;
+                var autoResult = Find(team_auto);
+                if (autoResult.Success)
+                {
+                    ClickMatchCenter(autoResult);
+                    _logger.LogDebug("点击自动战斗按钮。");
+                }
+                await Task.Delay(1000, _cts.Token);
+                
+                switch (_autoForbiddenForestOption)
+                {
+                    case AutoForbiddenForestOption.Leader:
+                        var startResult = Find(team_start);
+                        if (startResult.Success)
+                        {
+                            ClickMatchCenter(startResult);
+                            _logger.LogDebug("点击开始。");
+                        }
+                        await Task.Delay(1500, _cts.Token);
+                        
+                        var confirmResult = Find(team_confirm);
+                        if (confirmResult.Success)
+                        {
+                            ClickMatchCenter(confirmResult);
+                            _logger.LogDebug("点击是。");
+                        }
+                        break;
+                        
+                    case AutoForbiddenForestOption.Member:
+                        var readyResult = Find(team_ready);
+                        if (readyResult.Success)
+                        {
+                            ClickMatchCenter(readyResult);
+                            _logger.LogDebug("点击准备。");
+                        }
+                        await Task.Delay(1000, _cts.Token);
+                        break;
+                }
+                break;
 
-        _state = AutoForbiddenForestState.Outside;
-        _logWindow?.SetGameState("禁林-未知状态");
-        return;
+            case AutoForbiddenForestState.Loading:
+                _waited = false;
+                await Task.Delay(1000, _cts.Token);
+                break;
+
+            case AutoForbiddenForestState.Fighting:
+                _waited = false;
+                var fightResult = Find(fight_auto, new MatchOptions 
+                { 
+                    UseAlphaMask = true, 
+                    Threshold = 0.8 
+                });
+                if (fightResult.Success)
+                {
+                    ClickMatchCenter(fightResult);
+                }
+                await Task.Delay(1000, _cts.Token);
+                break;
+
+            case AutoForbiddenForestState.Summary:
+                _waited = false;
+                _logger.LogDebug("检测到点赞页面");
+                await Task.Delay(3000, _cts.Token);
+                
+                var thumbResult = Find(over_thumb, new MatchOptions { FindMultiple = true });
+                if (thumbResult.Success)
+                {
+                    ShowMatchRects(thumbResult, "MultiClick");
+                    await ClickMultiMatchCentersAsync(thumbResult);
+                    ClearMatchRects("MultiClick");
+                }
+                
+                await Task.Delay(1500, _cts.Token);
+                SendSpace(_gameHwnd);
+                _logger.LogInformation("第[Yellow]{Round}[/Yellow]/[Yellow]{Total}[/Yellow]次禁林任务完成。", ++round, _autoForbiddenForestTimes);
+                await Task.Delay(2000, _cts.Token);
+                break;
+        }
     }
 
     public override bool SetParameters(Dictionary<string, object> parameters)
