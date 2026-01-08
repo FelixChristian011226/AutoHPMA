@@ -34,11 +34,6 @@ public class AutoForbiddenForest : BaseGameTask
 {
     private AutoForbiddenForestState _state = AutoForbiddenForestState.Unknown;
 
-    private Mat ui_explore, ui_loading, ui_clock, ui_statistics;
-    private Mat team_auto, team_start, team_confirm, team_ready;
-    private Mat fight_auto;
-    private Mat over_thumb;
-
     private int _autoForbiddenForestTimes;
     private AutoForbiddenForestOption _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
 
@@ -67,27 +62,20 @@ public class AutoForbiddenForest : BaseGameTask
     {
         _stateRules = new StateRule<AutoForbiddenForestState>[]
         {
-            new(new[] { ui_explore }, AutoForbiddenForestState.Teaming, "禁林-组队中"),
-            new(new[] { ui_loading }, AutoForbiddenForestState.Loading, "禁林-加载中"),
-            new(new[] { ui_clock }, AutoForbiddenForestState.Fighting, "禁林-战斗中"),
-            new(new[] { ui_statistics }, AutoForbiddenForestState.Summary, "禁林-结算中"),
+            new(new[] { GetImage("ui_explore") }, AutoForbiddenForestState.Teaming, "禁林-组队中"),
+            new(new[] { GetImage("ui_loading") }, AutoForbiddenForestState.Loading, "禁林-加载中"),
+            new(new[] { GetImage("ui_clock") }, AutoForbiddenForestState.Fighting, "禁林-战斗中"),
+            new(new[] { GetImage("ui_statistics") }, AutoForbiddenForestState.Summary, "禁林-结算中"),
         };
     }
 
     private void LoadAssets()
     {
-        string image_folder = "Assets/ForbiddenForest/Image/";
-
-        ui_explore = Cv2.ImRead(image_folder + "ui_explore.png", ImreadModes.Color);
-        ui_loading = Cv2.ImRead(image_folder + "ui_loading.png", ImreadModes.Color);
-        ui_clock = Cv2.ImRead(image_folder + "ui_clock.png", ImreadModes.Color);
-        ui_statistics = Cv2.ImRead(image_folder + "ui_statistics.png", ImreadModes.Color);
-        team_auto = Cv2.ImRead(image_folder + "team_auto.png", ImreadModes.Color);
-        team_start = Cv2.ImRead(image_folder + "team_start.png", ImreadModes.Color);
-        team_confirm = Cv2.ImRead(image_folder + "team_confirm.png", ImreadModes.Color);
-        team_ready = Cv2.ImRead(image_folder + "team_ready.png", ImreadModes.Color);
-        fight_auto = Cv2.ImRead(image_folder + "fight_auto.png", ImreadModes.Unchanged);
-        over_thumb = Cv2.ImRead(image_folder + "over_thumb.png", ImreadModes.Color);
+        string imageFolder = "Assets/ForbiddenForest/Image/";
+        // 加载普通图片（Color模式）
+        LoadImagesFromDirectory(imageFolder);
+        // 单独加载需要 Alpha 通道的图片
+        _images["fight_auto"] = Cv2.ImRead(imageFolder + "fight_auto.png", ImreadModes.Unchanged);
     }
 
     public override async void Start()
@@ -125,7 +113,7 @@ public class AutoForbiddenForest : BaseGameTask
                 break;
 
             case AutoForbiddenForestState.Teaming:
-                var autoResult = Find(team_auto);
+                var autoResult = Find(GetImage("team_auto"));
                 if (autoResult.Success)
                 {
                     ClickMatchCenter(autoResult);
@@ -136,7 +124,7 @@ public class AutoForbiddenForest : BaseGameTask
                 switch (_autoForbiddenForestOption)
                 {
                     case AutoForbiddenForestOption.Leader:
-                        var startResult = Find(team_start);
+                        var startResult = Find(GetImage("team_start"));
                         if (startResult.Success)
                         {
                             ClickMatchCenter(startResult);
@@ -144,7 +132,7 @@ public class AutoForbiddenForest : BaseGameTask
                         }
                         await Task.Delay(1500, _cts.Token);
                         
-                        var confirmResult = Find(team_confirm);
+                        var confirmResult = Find(GetImage("team_confirm"));
                         if (confirmResult.Success)
                         {
                             ClickMatchCenter(confirmResult);
@@ -153,7 +141,7 @@ public class AutoForbiddenForest : BaseGameTask
                         break;
                         
                     case AutoForbiddenForestOption.Member:
-                        var readyResult = Find(team_ready);
+                        var readyResult = Find(GetImage("team_ready"));
                         if (readyResult.Success)
                         {
                             ClickMatchCenter(readyResult);
@@ -169,7 +157,7 @@ public class AutoForbiddenForest : BaseGameTask
                 break;
 
             case AutoForbiddenForestState.Fighting:
-                var fightResult = Find(fight_auto, new MatchOptions 
+                var fightResult = Find(GetImage("fight_auto"), new MatchOptions 
                 { 
                     UseAlphaMask = true, 
                     Threshold = 0.8 
@@ -185,7 +173,7 @@ public class AutoForbiddenForest : BaseGameTask
                 _logger.LogDebug("检测到点赞页面");
                 await Task.Delay(3000, _cts.Token);
                 
-                var thumbResult = Find(over_thumb, new MatchOptions { FindMultiple = true });
+                var thumbResult = Find(GetImage("over_thumb"), new MatchOptions { FindMultiple = true });
                 if (thumbResult.Success)
                 {
                     ShowMatchRects(thumbResult, "MultiClick");

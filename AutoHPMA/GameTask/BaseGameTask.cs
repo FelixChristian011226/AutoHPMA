@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
@@ -90,6 +91,7 @@ namespace AutoHPMA.GameTask
         protected double scale;
         protected CancellationTokenSource _cts;
         protected bool _waited = false;
+        protected Dictionary<string, Mat> _images = new();
 
         public event EventHandler? TaskCompleted;
 
@@ -130,6 +132,57 @@ namespace AutoHPMA.GameTask
             offsetY = top - topMumu;
             scale = width / 1280.0;
         }
+
+        #endregion
+
+        #region 资源加载
+
+        /// <summary>
+        /// 从指定目录加载所有 PNG 图片到 _images 字典
+        /// </summary>
+        /// <param name="directory">目录路径</param>
+        /// <param name="mode">图像读取模式（默认 Color）</param>
+        protected void LoadImagesFromDirectory(string directory, ImreadModes mode = ImreadModes.Color)
+        {
+            if (!Directory.Exists(directory))
+            {
+                _logger.LogWarning("目录不存在：{Directory}", directory);
+                return;
+            }
+
+            foreach (var file in Directory.GetFiles(directory, "*.png"))
+            {
+                var key = Path.GetFileNameWithoutExtension(file);
+                _images[key] = Cv2.ImRead(file, mode);
+            }
+        }
+
+        /// <summary>
+        /// 从指定目录递归加载所有 PNG 图片到 _images 字典，使用相对路径作为键
+        /// </summary>
+        /// <param name="directory">目录路径</param>
+        /// <param name="mode">图像读取模式（默认 Color）</param>
+        protected void LoadImagesFromDirectoryRecursive(string directory, ImreadModes mode = ImreadModes.Color)
+        {
+            if (!Directory.Exists(directory))
+            {
+                _logger.LogWarning("目录不存在：{Directory}", directory);
+                return;
+            }
+
+            foreach (var file in Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories))
+            {
+                // 使用相对于根目录的路径作为键，不含扩展名
+                var relativePath = Path.GetRelativePath(directory, file);
+                var key = Path.ChangeExtension(relativePath, null).Replace("\\", "/");
+                _images[key] = Cv2.ImRead(file, mode);
+            }
+        }
+
+        /// <summary>
+        /// 获取已加载的图片
+        /// </summary>
+        protected Mat GetImage(string name) => _images.TryGetValue(name, out var mat) ? mat : throw new KeyNotFoundException($"图片未找到：{name}");
 
         #endregion
 

@@ -42,16 +42,6 @@ public class AutoClubQuiz : BaseGameTask
 
     private AutoClubQuizState _state = AutoClubQuizState.Unknown;
 
-    // 模板图像
-    private Mat close_quiz_info, close_club_rank;
-    private Mat map_castle_symbol, map_club_symbol, map_club_enter, map_return;
-    private Mat ui_club_symbol, ui_badge;
-    private Mat chat_mail, chat_whisper, chat_club, chat_club_quiz, chat_college, chat_college_help;
-    private Mat badge_club_shop, badge_enter, badge_enter_mask;
-    private Mat quiz_wait, quiz_leave, quiz_over, quiz_victory;
-    private Mat quiz_option_a, quiz_option_b, quiz_option_c, quiz_option_d, quiz_option_mask;
-    private Mat quiz_time0, quiz_time20;
-
     // 状态字段
     private string? excelPath;
     private char bestOption;
@@ -89,14 +79,14 @@ public class AutoClubQuiz : BaseGameTask
     {
         _stateRules = new StateRule<AutoClubQuizState>[]
         {
-            new(new[] { ui_club_symbol }, AutoClubQuizState.ClubScene, "社团答题-等待中"),
-            new(new[] { map_return }, AutoClubQuizState.Map, "社团答题-地图"),
-            new(new[] { chat_mail, chat_whisper }, AutoClubQuizState.ChatFrame, "社团答题-聊天框"),
-            new(new[] { badge_club_shop }, AutoClubQuizState.Events, "社团答题-活动选择"),
-            new(new[] { quiz_wait }, AutoClubQuizState.Wait, "社团答题-集结中"),
-            new(new[] { quiz_leave }, AutoClubQuizState.Quiz, "社团答题-活动中"),
-            new(new[] { quiz_over }, AutoClubQuizState.Over, "社团答题-已结束"),
-            new(new[] { quiz_victory }, AutoClubQuizState.Victory, "社团答题-结算中"),
+            new(new[] { GetImage("ui_club_symbol") }, AutoClubQuizState.ClubScene, "社团答题-等待中"),
+            new(new[] { GetImage("map_return") }, AutoClubQuizState.Map, "社团答题-地图"),
+            new(new[] { GetImage("chat_mail"), GetImage("chat_whisper") }, AutoClubQuizState.ChatFrame, "社团答题-聊天框"),
+            new(new[] { GetImage("badge_club_shop") }, AutoClubQuizState.Events, "社团答题-活动选择"),
+            new(new[] { GetImage("quiz_wait") }, AutoClubQuizState.Wait, "社团答题-集结中"),
+            new(new[] { GetImage("quiz_leave") }, AutoClubQuizState.Quiz, "社团答题-活动中"),
+            new(new[] { GetImage("quiz_over") }, AutoClubQuizState.Over, "社团答题-已结束"),
+            new(new[] { GetImage("quiz_victory") }, AutoClubQuizState.Victory, "社团答题-结算中"),
         };
     }
 
@@ -110,36 +100,7 @@ public class AutoClubQuiz : BaseGameTask
 
     public void LoadAssets()
     {
-        string folder = "Assets/ClubQuiz/Image/";
-
-        close_club_rank = Cv2.ImRead(folder + "close_club_rank.png", ImreadModes.Color);
-        close_quiz_info = Cv2.ImRead(folder + "close_quiz_info.png", ImreadModes.Color);
-        map_castle_symbol = Cv2.ImRead(folder + "map_castle_symbol.png", ImreadModes.Color);
-        map_club_symbol = Cv2.ImRead(folder + "map_club_symbol.png", ImreadModes.Color);
-        map_club_enter = Cv2.ImRead(folder + "map_club_enter.png", ImreadModes.Color);
-        map_return = Cv2.ImRead(folder + "map_return.png", ImreadModes.Color);
-        ui_club_symbol = Cv2.ImRead(folder + "ui_club_symbol.png", ImreadModes.Color);
-        ui_badge = Cv2.ImRead(folder + "ui_badge.png", ImreadModes.Color);
-        chat_mail = Cv2.ImRead(folder + "chat_mail.png", ImreadModes.Color);
-        chat_whisper = Cv2.ImRead(folder + "chat_whisper.png", ImreadModes.Color);
-        chat_club = Cv2.ImRead(folder + "chat_club.png", ImreadModes.Color);
-        chat_club_quiz = Cv2.ImRead(folder + "chat_club_quiz.png", ImreadModes.Color);
-        chat_college = Cv2.ImRead(folder + "chat_college.png", ImreadModes.Color);
-        chat_college_help = Cv2.ImRead(folder + "chat_college_help.png", ImreadModes.Color);
-        badge_club_shop = Cv2.ImRead(folder + "badge_club_shop.png", ImreadModes.Color);
-        badge_enter = Cv2.ImRead(folder + "badge_enter.png", ImreadModes.Color);
-        badge_enter_mask = Cv2.ImRead(folder + "badge_enter_mask.png", ImreadModes.Color);
-        quiz_wait = Cv2.ImRead(folder + "quiz_wait.png", ImreadModes.Color);
-        quiz_leave = Cv2.ImRead(folder + "quiz_leave.png", ImreadModes.Color);
-        quiz_option_a = Cv2.ImRead(folder + "quiz_option_a.png", ImreadModes.Color);
-        quiz_option_b = Cv2.ImRead(folder + "quiz_option_b.png", ImreadModes.Color);
-        quiz_option_c = Cv2.ImRead(folder + "quiz_option_c.png", ImreadModes.Color);
-        quiz_option_d = Cv2.ImRead(folder + "quiz_option_d.png", ImreadModes.Color);
-        quiz_option_mask = Cv2.ImRead(folder + "quiz_option_mask.png", ImreadModes.Color);
-        quiz_time0 = Cv2.ImRead(folder + "quiz_time0.png", ImreadModes.Color);
-        quiz_time20 = Cv2.ImRead(folder + "quiz_time20.png", ImreadModes.Color);
-        quiz_over = Cv2.ImRead(folder + "quiz_over.png", ImreadModes.Color);
-        quiz_victory = Cv2.ImRead(folder + "quiz_victory.png", ImreadModes.Color);
+        LoadImagesFromDirectory("Assets/ClubQuiz/Image/");
     }
 
     public override async void Start()
@@ -218,11 +179,11 @@ public class AutoClubQuiz : BaseGameTask
 
     private async Task HandleMapState()
     {
-        TryClickTemplate(map_castle_symbol);
+        TryClickTemplate(GetImage("map_castle_symbol"));
         await Task.Delay(1000, _cts.Token);
-        TryClickTemplate(map_club_symbol);
+        TryClickTemplate(GetImage("map_club_symbol"));
         await Task.Delay(1000, _cts.Token);
-        TryClickTemplate(map_club_enter);
+        TryClickTemplate(GetImage("map_club_enter"));
         await Task.Delay(1000, _cts.Token);
         SendESC(_gameHwnd);
         await Task.Delay(2000, _cts.Token);
@@ -247,7 +208,7 @@ public class AutoClubQuiz : BaseGameTask
                 _gatherRefreshMode = GatherRefreshMode.Badge;
                 break;
             case GatherRefreshMode.Badge:
-                TryClickTemplate(ui_badge);
+                TryClickTemplate(GetImage("ui_badge"));
                 await Task.Delay(3000, _cts.Token);
                 _gatherRefreshMode = GatherRefreshMode.ChatBox;
                 break;
@@ -257,10 +218,10 @@ public class AutoClubQuiz : BaseGameTask
     private async Task HandleChatFrameState()
     {
         // 点击展开社团频道
-        if (TryClickTemplate(chat_club, 0.88))
+        if (TryClickTemplate(GetImage("chat_club"), 0.88))
             await Task.Delay(2000, _cts.Token);
         // 点击前往活动面板
-        if (TryClickTemplate(chat_club_quiz, 0.98))
+        if (TryClickTemplate(GetImage("chat_club_quiz"), 0.98))
             await Task.Delay(2000, _cts.Token);
 
         if (_joinOthers)
@@ -276,19 +237,19 @@ public class AutoClubQuiz : BaseGameTask
     private async Task TryJoinOthersQuiz()
     {
         // 尝试在学院互助频道找到社团答题
-        if (TryClickTemplate(chat_college_help, 0.88) || TryClickTemplate(chat_college, 0.88))
+        if (TryClickTemplate(GetImage("chat_college_help"), 0.88) || TryClickTemplate(GetImage("chat_college"), 0.88))
         {
             await Task.Delay(1500, _cts.Token);
             
             // 如果是学院频道，先点学院互助
-            if (TryClickTemplate(chat_college_help))
+            if (TryClickTemplate(GetImage("chat_college_help")))
                 await Task.Delay(1500, _cts.Token);
             
             // 尝试点击前往活动
-            if (TryClickTemplate(chat_club_quiz, 0.98))
+            if (TryClickTemplate(GetImage("chat_club_quiz"), 0.98))
             {
                 await Task.Delay(2000, _cts.Token);
-                if (Find(chat_club_quiz, new MatchOptions { Threshold = 0.98 }).Success)
+                if (Find(GetImage("chat_club_quiz"), new MatchOptions { Threshold = 0.98 }).Success)
                 {
                     SendESC(_gameHwnd);
                     await Task.Delay(1500, _cts.Token);
@@ -299,7 +260,7 @@ public class AutoClubQuiz : BaseGameTask
 
     private async Task HandleEventsState()
     {
-        var enterResult = Find(badge_enter, new MatchOptions { Mask = badge_enter_mask });
+        var enterResult = Find(GetImage("badge_enter"), new MatchOptions { Mask = GetImage("badge_enter_mask") });
         if (!enterResult.Success)
         {
             SendESC(_gameHwnd);
@@ -353,7 +314,7 @@ public class AutoClubQuiz : BaseGameTask
         _maskWindow?.ClearLayer("Time");
         _maskWindow?.ClearLayer("Question");
         await Task.Delay(1000, _cts.Token);
-        TryClickTemplate(quiz_over);
+        TryClickTemplate(GetImage("quiz_over"));
         await Task.Delay(2000, _cts.Token);
     }
 
@@ -393,10 +354,10 @@ public class AutoClubQuiz : BaseGameTask
         
         var optionTemplates = new (char key, Mat template)[]
         {
-            ('A', quiz_option_a),
-            ('B', quiz_option_b),
-            ('C', quiz_option_c),
-            ('D', quiz_option_d)
+            ('A', GetImage("quiz_option_a")),
+            ('B', GetImage("quiz_option_b")),
+            ('C', GetImage("quiz_option_c")),
+            ('D', GetImage("quiz_option_d"))
         };
 
         optionRects.Clear();
@@ -404,7 +365,7 @@ public class AutoClubQuiz : BaseGameTask
         foreach (var (key, template) in optionTemplates)
         {
             var matchPoint = MatchTemplateHelper.MatchTemplate(
-                captureMat, template, TemplateMatchModes.CCoeffNormed, quiz_option_mask, 0.85);
+                captureMat, template, TemplateMatchModes.CCoeffNormed, GetImage("quiz_option_mask"), 0.85);
             
             if (matchPoint == default || !IsValidPoint(matchPoint, captureMat))
                 return false;
@@ -461,16 +422,16 @@ public class AutoClubQuiz : BaseGameTask
     private void ClickOption()
     {
         var targetRect = optionRects.GetValueOrDefault(bestOption, optionRects['A']);
-        var centerX = targetRect.X + quiz_option_mask.Width / 4;
-        var centerY = targetRect.Y + quiz_option_mask.Height / 2;
+        var centerX = targetRect.X + GetImage("quiz_option_mask").Width / 4;
+        var centerY = targetRect.Y + GetImage("quiz_option_mask").Height / 2;
         Click(new Point(centerX, centerY));
     }
 
     public async Task CloseDialogs()
     {
-        if (TryClickTemplate(close_quiz_info))
+        if (TryClickTemplate(GetImage("close_quiz_info")))
             await Task.Delay(1000, _cts.Token);
-        if (TryClickTemplate(close_club_rank))
+        if (TryClickTemplate(GetImage("close_club_rank")))
             await Task.Delay(1000, _cts.Token);
     }
 
@@ -496,11 +457,12 @@ public class AutoClubQuiz : BaseGameTask
 
     private bool FindTime20AndIndex()
     {
-        var result = Find(quiz_time20);
+        var result = Find(GetImage("quiz_time20"));
         if (!result.Success) return false;
 
         _maskWindow?.SetLayerRects("Time", result.Rects);
-        index_rect = new Rect(result.Location.X, result.Location.Y + quiz_time20.Height, quiz_time20.Width, quiz_time20.Height);
+        var time20 = GetImage("quiz_time20");
+        index_rect = new Rect(result.Location.X, result.Location.Y + time20.Height, time20.Width, time20.Height);
         return true;
     }
 

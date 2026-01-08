@@ -26,11 +26,6 @@ public class AutoSweetAdventure : BaseGameTask
 {
     private AutoSweetAdventureState _state = AutoSweetAdventureState.Unknown;
 
-    private Mat ui_teaming, ui_gaming, ui_endding;
-    private Mat teaming_start;
-    private Mat gaming_round1, gaming_round2, gaming_round3, gaming_round4, gaming_round5;
-    private Mat gaming_forward, gaming_return, gaming_candy, gaming_monster;
-
     private int round = 0, prev_round = 0, step = 1;
     private int _maxStep = 12;
 
@@ -57,29 +52,15 @@ public class AutoSweetAdventure : BaseGameTask
     {
         _stateRules = new StateRule<AutoSweetAdventureState>[]
         {
-            new(new[] { ui_teaming }, AutoSweetAdventureState.Teaming, "甜蜜冒险-组队中"),
-            new(new[] { ui_gaming }, AutoSweetAdventureState.Gaming, "甜蜜冒险-游戏中"),
-            new(new[] { ui_endding }, AutoSweetAdventureState.Endding, "甜蜜冒险-结算中"),
+            new(new[] { GetImage("ui_teaming") }, AutoSweetAdventureState.Teaming, "甜蜜冒险-组队中"),
+            new(new[] { GetImage("ui_gaming") }, AutoSweetAdventureState.Gaming, "甜蜜冒险-游戏中"),
+            new(new[] { GetImage("ui_endding") }, AutoSweetAdventureState.Endding, "甜蜜冒险-结算中"),
         };
     }
 
     private void LoadAssets()
     {
-        string image_folder = "Assets/SweetAdventure/Image/";
-
-        ui_teaming = Cv2.ImRead(image_folder + "ui_teaming.png", ImreadModes.Color);
-        ui_gaming = Cv2.ImRead(image_folder + "ui_gaming.png", ImreadModes.Color);
-        ui_endding = Cv2.ImRead(image_folder + "ui_endding.png", ImreadModes.Color);
-        teaming_start = Cv2.ImRead(image_folder + "teaming_start.png", ImreadModes.Color);
-        gaming_round1 = Cv2.ImRead(image_folder + "gaming_round1.png", ImreadModes.Color);
-        gaming_round2 = Cv2.ImRead(image_folder + "gaming_round2.png", ImreadModes.Color);
-        gaming_round3 = Cv2.ImRead(image_folder + "gaming_round3.png", ImreadModes.Color);
-        gaming_round4 = Cv2.ImRead(image_folder + "gaming_round4.png", ImreadModes.Color);
-        gaming_round5 = Cv2.ImRead(image_folder + "gaming_round5.png", ImreadModes.Color);
-        gaming_forward = Cv2.ImRead(image_folder + "gaming_forward.png", ImreadModes.Color);
-        gaming_return = Cv2.ImRead(image_folder + "gaming_return.png", ImreadModes.Color);
-        gaming_candy = Cv2.ImRead(image_folder + "gaming_candy.png", ImreadModes.Color);
-        gaming_monster = Cv2.ImRead(image_folder + "gaming_monster.png", ImreadModes.Color);
+        LoadImagesFromDirectory("Assets/SweetAdventure/Image/");
     }
 
     public override async void Start()
@@ -110,7 +91,7 @@ public class AutoSweetAdventure : BaseGameTask
                 break;
 
             case AutoSweetAdventureState.Teaming:
-                var startResult = Find(teaming_start);
+                var startResult = Find(GetImage("teaming_start"));
                 if (startResult.Success)
                 {
                     ClickMatchCenter(startResult);
@@ -130,7 +111,7 @@ public class AutoSweetAdventure : BaseGameTask
                 }
                 if (step < _maxStep)
                 {
-                    var forwardResult = Find(gaming_forward, new MatchOptions { Threshold = 0.96 });
+                    var forwardResult = Find(GetImage("gaming_forward"), new MatchOptions { Threshold = 0.96 });
                     if (forwardResult.Success)
                     {
                         ClickMatchCenter(forwardResult);
@@ -140,7 +121,7 @@ public class AutoSweetAdventure : BaseGameTask
                         return;
                     }
                     
-                    var candyResult = Find(gaming_candy, new MatchOptions { Threshold = 0.96 });
+                    var candyResult = Find(GetImage("gaming_candy"), new MatchOptions { Threshold = 0.96 });
                     if (candyResult.Success)
                     {
                         ClickMatchCenter(candyResult);
@@ -152,7 +133,7 @@ public class AutoSweetAdventure : BaseGameTask
                 }
                 else
                 {
-                    var returnResult = Find(gaming_return, new MatchOptions { Threshold = 0.96 });
+                    var returnResult = Find(GetImage("gaming_return"), new MatchOptions { Threshold = 0.96 });
                     if (returnResult.Success)
                     {
                         ClickMatchCenter(returnResult);
@@ -162,7 +143,7 @@ public class AutoSweetAdventure : BaseGameTask
                         return;
                     }
                     
-                    var monsterResult = Find(gaming_monster, new MatchOptions { Threshold = 0.96 });
+                    var monsterResult = Find(GetImage("gaming_monster"), new MatchOptions { Threshold = 0.96 });
                     if (monsterResult.Success)
                     {
                         ClickMatchCenter(monsterResult);
@@ -194,11 +175,11 @@ public class AutoSweetAdventure : BaseGameTask
         // 使用模板数组简化重复代码
         var roundTemplates = new[] 
         { 
-            (gaming_round1, 1), 
-            (gaming_round2, 2), 
-            (gaming_round3, 3), 
-            (gaming_round4, 4), 
-            (gaming_round5, 5) 
+            (GetImage("gaming_round1"), 1), 
+            (GetImage("gaming_round2"), 2), 
+            (GetImage("gaming_round3"), 3), 
+            (GetImage("gaming_round4"), 4), 
+            (GetImage("gaming_round5"), 5) 
         };
 
         foreach (var (template, roundNum) in roundTemplates)

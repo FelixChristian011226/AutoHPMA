@@ -50,8 +50,6 @@ public class AutoCooking : BaseGameTask
     private Dictionary<string, Mat> ingredients = new();
     private Dictionary<string, Mat> condiments = new();
     private Mat order, red_order;
-    private Mat ui_shop, ui_challenge, ui_clock, ui_continue1, ui_continue2;
-    private Mat click_challenge, click_start;
     private Dictionary<string, Mat> dishImages = new();
 
     // 任务参数
@@ -103,10 +101,10 @@ public class AutoCooking : BaseGameTask
     {
         _stateRules = new StateRule<AutoCookingState>[]
         {
-            new(new[] { ui_clock }, AutoCookingState.Cooking, "烹饪-烹饪中"),
-            new(new[] { ui_shop }, AutoCookingState.Workbench, "烹饪-工作台"),
-            new(new[] { ui_challenge }, AutoCookingState.Challenge, "烹饪-订单挑战"),
-            new(new[] { ui_continue1, ui_continue2 }, AutoCookingState.Summary, "烹饪-结算中"),
+            new(new[] { GetImage("ui_clock") }, AutoCookingState.Cooking, "烹饪-烹饪中"),
+            new(new[] { GetImage("ui_shop") }, AutoCookingState.Workbench, "烹饪-工作台"),
+            new(new[] { GetImage("ui_challenge") }, AutoCookingState.Challenge, "烹饪-订单挑战"),
+            new(new[] { GetImage("ui_continue1"), GetImage("ui_continue2") }, AutoCookingState.Summary, "烹饪-结算中"),
         };
     }
 
@@ -146,14 +144,14 @@ public class AutoCooking : BaseGameTask
                 break;
 
             case AutoCookingState.Workbench:
-                TryClickTemplate(click_challenge);
+                TryClickTemplate(GetImage("click_challenge"));
                 await Task.Delay(1000, _cts.Token);
                 break;
 
             case AutoCookingState.Challenge:
                 ChooseDish();
                 await Task.Delay(1500, _cts.Token);
-                TryClickTemplate(click_start);
+                TryClickTemplate(GetImage("click_start"));
                 await Task.Delay(2000, _cts.Token);
                 break;
 
@@ -216,7 +214,7 @@ public class AutoCooking : BaseGameTask
 
     #region 状态检测
 
-    private bool CheckOver() => !Find(ui_clock).Success;
+    private bool CheckOver() => !Find(GetImage("ui_clock")).Success;
 
     #endregion
 
@@ -644,16 +642,8 @@ public class AutoCooking : BaseGameTask
         string image_folder = "Assets/Cooking/Image/";
         _logger.LogInformation("开始加载图片资源");
 
-        // UI
-        ui_shop = Cv2.ImRead(image_folder + "ui_shop.png");
-        ui_challenge = Cv2.ImRead(image_folder + "ui_challenge.png");
-        ui_clock = Cv2.ImRead(image_folder + "ui_clock.png");
-        ui_continue1 = Cv2.ImRead(image_folder + "ui_continue1.png");
-        ui_continue2 = Cv2.ImRead(image_folder + "ui_continue2.png");
-
-        // Click
-        click_challenge = Cv2.ImRead(image_folder + "click_challenge.png");
-        click_start = Cv2.ImRead(image_folder + "click_start.png");
+        // 加载根目录的UI图片到_images字典
+        LoadImagesFromDirectory(image_folder);
 
         // Dishes
         var dishDir = Path.Combine(image_folder, "Dishes");
