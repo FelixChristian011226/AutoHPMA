@@ -91,23 +91,26 @@ public class WindowInteractionHelper
         return (IntPtr)((y << 16) | (x & 0xFFFF));
     }
 
-    public static void SendMouseClick(IntPtr hWnd, uint x, uint y)
+    /// <summary>
+    /// 异步发送鼠标点击
+    /// </summary>
+    public static async Task SendMouseClickAsync(IntPtr hWnd, uint x, uint y)
     {
         var lParam = MakeLParam(x, y);
 
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
-        Thread.Sleep(100); // 延时100毫秒
+        await Task.Delay(100);
         SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
     }
 
     /// <summary>
-    /// 发送鼠标长按操作
+    /// 异步发送鼠标长按操作
     /// </summary>
     /// <param name="hWnd">目标窗口句柄</param>
     /// <param name="x">X坐标</param>
     /// <param name="y">Y坐标</param>
     /// <param name="duration">长按持续时间（毫秒）</param>
-    public static void SendMouseLongPress(IntPtr hWnd, uint x, uint y, int duration = 1000)
+    public static async Task SendMouseLongPressAsync(IntPtr hWnd, uint x, uint y, int duration = 1000)
     {
         var lParam = MakeLParam(x, y);
 
@@ -115,12 +118,16 @@ public class WindowInteractionHelper
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
         
         // 持续指定时间
-        Thread.Sleep(duration);
+        await Task.Delay(duration);
         
         // 释放鼠标左键
         SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
     }
-    public static void SendMouseClickWithParentNotify(IntPtr hWnd, uint x, uint y)
+
+    /// <summary>
+    /// 异步发送带 ParentNotify 的鼠标点击
+    /// </summary>
+    public static async Task SendMouseClickWithParentNotifyAsync(IntPtr hWnd, uint x, uint y)
     {
         IntPtr lParam = MakeLParam(x, y);
 
@@ -128,31 +135,42 @@ public class WindowInteractionHelper
         uint wParamForParentNotify = (uint)WM_LBUTTONDOWN | ((y & 0xFFFF) << 16) | (x & 0xFFFF);
         IntPtr wParam = new IntPtr(wParamForParentNotify);
         PostMessage(hWnd, WM_PARENTNOTIFY, wParam, lParam);
-        Thread.Sleep(50); // 延时
+        await Task.Delay(50);
 
         PostMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
-        Thread.Sleep(100); // 模拟点击持续时间
+        await Task.Delay(100);
 
         PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
-
     }
 
-    public static void SendEnter(IntPtr hWnd)
+    /// <summary>
+    /// 异步发送回车键
+    /// </summary>
+    public static async Task SendEnterAsync(IntPtr hWnd)
     {
-        SendKey(hWnd, VK_RETURN);
+        await SendKeyAsync(hWnd, VK_RETURN);
     }
 
-    public static void SendESC(IntPtr hWnd)
+    /// <summary>
+    /// 异步发送 ESC 键
+    /// </summary>
+    public static async Task SendESCAsync(IntPtr hWnd)
     {
-        SendKey(hWnd, VK_ESCAPE);
+        await SendKeyAsync(hWnd, VK_ESCAPE);
     }
 
-    public static void SendSpace(IntPtr hWnd)
+    /// <summary>
+    /// 异步发送空格键
+    /// </summary>
+    public static async Task SendSpaceAsync(IntPtr hWnd)
     {
-        SendKey(hWnd, VK_SPACE);
+        await SendKeyAsync(hWnd, VK_SPACE);
     }
 
-    public static void SendKey(IntPtr hWnd, int virtualKey)
+    /// <summary>
+    /// 异步发送按键
+    /// </summary>
+    public static async Task SendKeyAsync(IntPtr hWnd, int virtualKey)
     {
         const uint MAPVK_VK_TO_VSC = 0x00;
         uint scanCode = MapVirtualKey((uint)virtualKey, MAPVK_VK_TO_VSC);
@@ -160,11 +178,8 @@ public class WindowInteractionHelper
         IntPtr lParamDown = (IntPtr)(1 | (scanCode << 16));
         IntPtr lParamUp = (IntPtr)(0xC0000001 | (scanCode << 16));
 
-        //SetForegroundWindow(hWnd);
-        //Thread.Sleep(20);
-
         PostMessage(hWnd, WM_KEYDOWN, (IntPtr)virtualKey, lParamDown);
-        Thread.Sleep(50);
+        await Task.Delay(50);
         PostMessage(hWnd, WM_KEYUP, (IntPtr)virtualKey, lParamUp);
     }
 

@@ -147,14 +147,14 @@ public class AutoCooking : BaseGameTask
                 break;
 
             case AutoCookingState.Workbench:
-                TryClickTemplate(GetImage("click_challenge"));
+                await TryClickTemplateAsync(GetImage("click_challenge"));
                 await Task.Delay(1000, _cts.Token);
                 break;
 
             case AutoCookingState.Challenge:
-                ChooseDish();
+                await ChooseDishAsync();
                 await Task.Delay(1500, _cts.Token);
-                TryClickTemplate(GetImage("click_start"));
+                await TryClickTemplateAsync(GetImage("click_start"));
                 await Task.Delay(2000, _cts.Token);
                 break;
 
@@ -187,9 +187,9 @@ public class AutoCooking : BaseGameTask
                 _logger.LogInformation("第 {round} 轮烹饪完成。", round);
                 ClearCookingLayers();
                 await Task.Delay(3000, _cts.Token);
-                SendSpace(_gameHwnd);
+                await SendSpaceAsync(_gameHwnd);
                 await Task.Delay(3000, _cts.Token);
-                SendSpace(_gameHwnd);
+                await SendSpaceAsync(_gameHwnd);
                 await Task.Delay(3000, _cts.Token);
                 break;
         }
@@ -258,7 +258,7 @@ public class AutoCooking : BaseGameTask
 
     #region 菜品选择
 
-    private bool ChooseDish()
+    private async Task<bool> ChooseDishAsync()
     {
         if (_currentDishConfig == null) return false;
 
@@ -267,7 +267,7 @@ public class AutoCooking : BaseGameTask
             var result = Find(dishImage, new MatchOptions { UseAlphaMask = true });
             if (result.Success)
             {
-                ClickMatchCenter(result);
+                await ClickMatchCenterAsync(result);
                 return true;
             }
         }

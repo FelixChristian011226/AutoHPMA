@@ -104,7 +104,7 @@ public class AutoClubQuiz : BaseGameTask
 
     protected override async Task ExecuteLoopAsync()
     {
-        await CloseDialogs();
+        await CloseDialogsAsync();
         _state = FindStateByRules(_stateRules, AutoClubQuizState.Unknown, "社团答题-未进入场景");
         
         // 进入有效状态时重置等待标志
@@ -164,21 +164,21 @@ public class AutoClubQuiz : BaseGameTask
         }
         // 已等待过，执行操作进入地图
         _waited = false;
-        SendESC(_gameHwnd);
+        await SendESCAsync(_gameHwnd);
         await Task.Delay(2000, _cts.Token);
-        SendKey(_gameHwnd, 0x4D); // M键打开地图
+        await SendKeyAsync(_gameHwnd, 0x4D); // M键打开地图
         await Task.Delay(2000, _cts.Token);
     }
 
     private async Task HandleMapState()
     {
-        TryClickTemplate(GetImage("map_castle_symbol"));
+        await TryClickTemplateAsync(GetImage("map_castle_symbol"));
         await Task.Delay(1000, _cts.Token);
-        TryClickTemplate(GetImage("map_club_symbol"));
+        await TryClickTemplateAsync(GetImage("map_club_symbol"));
         await Task.Delay(1000, _cts.Token);
-        TryClickTemplate(GetImage("map_club_enter"));
+        await TryClickTemplateAsync(GetImage("map_club_enter"));
         await Task.Delay(1000, _cts.Token);
-        SendESC(_gameHwnd);
+        await SendESCAsync(_gameHwnd);
         await Task.Delay(2000, _cts.Token);
     }
 
@@ -196,12 +196,12 @@ public class AutoClubQuiz : BaseGameTask
         switch (_gatherRefreshMode)
         {
             case GatherRefreshMode.ChatBox:
-                SendEnter(_gameHwnd);
+                await SendEnterAsync(_gameHwnd);
                 await Task.Delay(2000, _cts.Token);
                 _gatherRefreshMode = GatherRefreshMode.Badge;
                 break;
             case GatherRefreshMode.Badge:
-                TryClickTemplate(GetImage("ui_badge"));
+                await TryClickTemplateAsync(GetImage("ui_badge"));
                 await Task.Delay(3000, _cts.Token);
                 _gatherRefreshMode = GatherRefreshMode.ChatBox;
                 break;
@@ -211,10 +211,10 @@ public class AutoClubQuiz : BaseGameTask
     private async Task HandleChatFrameState()
     {
         // 点击展开社团频道
-        if (TryClickTemplate(GetImage("chat_club"), 0.88))
+        if (await TryClickTemplateAsync(GetImage("chat_club"), 0.88))
             await Task.Delay(2000, _cts.Token);
         // 点击前往活动面板
-        if (TryClickTemplate(GetImage("chat_club_quiz"), 0.98))
+        if (await TryClickTemplateAsync(GetImage("chat_club_quiz"), 0.98))
             await Task.Delay(2000, _cts.Token);
 
         if (_joinOthers)
@@ -223,28 +223,28 @@ public class AutoClubQuiz : BaseGameTask
         }
 
         // 关闭聊天框
-        SendESC(_gameHwnd);
+        await SendESCAsync(_gameHwnd);
         await Task.Delay(1500, _cts.Token);
     }
 
     private async Task TryJoinOthersQuiz()
     {
         // 尝试在学院互助频道找到社团答题
-        if (TryClickTemplate(GetImage("chat_college_help"), 0.88) || TryClickTemplate(GetImage("chat_college"), 0.88))
+        if (await TryClickTemplateAsync(GetImage("chat_college_help"), 0.88) || await TryClickTemplateAsync(GetImage("chat_college"), 0.88))
         {
             await Task.Delay(1500, _cts.Token);
             
             // 如果是学院频道，先点学院互助
-            if (TryClickTemplate(GetImage("chat_college_help")))
+            if (await TryClickTemplateAsync(GetImage("chat_college_help")))
                 await Task.Delay(1500, _cts.Token);
             
             // 尝试点击前往活动
-            if (TryClickTemplate(GetImage("chat_club_quiz"), 0.98))
+            if (await TryClickTemplateAsync(GetImage("chat_club_quiz"), 0.98))
             {
                 await Task.Delay(2000, _cts.Token);
                 if (Find(GetImage("chat_club_quiz"), new MatchOptions { Threshold = 0.98 }).Success)
                 {
-                    SendESC(_gameHwnd);
+                    await SendESCAsync(_gameHwnd);
                     await Task.Delay(1500, _cts.Token);
                 }
             }
@@ -256,11 +256,11 @@ public class AutoClubQuiz : BaseGameTask
         var enterResult = Find(GetImage("badge_enter"), new MatchOptions { Mask = GetImage("badge_enter_mask") });
         if (!enterResult.Success)
         {
-            SendESC(_gameHwnd);
+            await SendESCAsync(_gameHwnd);
         }
         else
         {
-            ClickMatchCenter(enterResult);
+            await ClickMatchCenterAsync(enterResult);
         }
         await Task.Delay(1500, _cts.Token);
     }
@@ -304,7 +304,7 @@ public class AutoClubQuiz : BaseGameTask
     {
         ClearStateRects();
         await Task.Delay(1000, _cts.Token);
-        TryClickTemplate(GetImage("quiz_over"));
+        await TryClickTemplateAsync(GetImage("quiz_over"));
         await Task.Delay(2000, _cts.Token);
     }
 
@@ -314,7 +314,7 @@ public class AutoClubQuiz : BaseGameTask
         roundIndex++;
         _quiz_over = true;
         FindScore();
-        SendESC(_gameHwnd);
+        await SendESCAsync(_gameHwnd);
         await Task.Delay(1000, _cts.Token);
     }
 
@@ -332,7 +332,7 @@ public class AutoClubQuiz : BaseGameTask
         await Task.Delay(_answerDelay * 1000, _cts.Token);
         i = Regex.Match(i, @"\d+/\d+").Value;
         _logger.LogInformation("进度：[Yellow]{i}[/Yellow]。答案：[Lime]{bestOption}[/Lime]。", i, bestOption);
-        ClickOption();
+        await ClickOptionAsync();
     }
 
     /// <summary>
@@ -412,19 +412,19 @@ public class AutoClubQuiz : BaseGameTask
         _logger.LogDebug("选项D：{d}", d);
     }
 
-    private void ClickOption()
+    private async Task ClickOptionAsync()
     {
         var targetRect = optionRects.GetValueOrDefault(bestOption, optionRects['A']);
         var centerX = targetRect.X + GetImage("quiz_option_mask").Width / 4;
         var centerY = targetRect.Y + GetImage("quiz_option_mask").Height / 2;
-        Click(new Point(centerX, centerY));
+        await ClickAsync(new Point(centerX, centerY));
     }
 
-    public async Task CloseDialogs()
+    public async Task CloseDialogsAsync()
     {
-        if (TryClickTemplate(GetImage("close_quiz_info")))
+        if (await TryClickTemplateAsync(GetImage("close_quiz_info")))
             await Task.Delay(1000, _cts.Token);
-        if (TryClickTemplate(GetImage("close_club_rank")))
+        if (await TryClickTemplateAsync(GetImage("close_club_rank")))
             await Task.Delay(1000, _cts.Token);
     }
 

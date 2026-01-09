@@ -247,7 +247,7 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 for (int i = 0; i < action.Times; i++)
                 {
-                    WindowInteractionHelper.SendMouseClick(hwnd, (uint)action.X, (uint)action.Y);
+                    await WindowInteractionHelper.SendMouseClickAsync(hwnd, (uint)action.X, (uint)action.Y);
                     await Task.Delay(action.Interval);
                 }
             });
@@ -274,7 +274,7 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 for (int i = 0; i < action.Times; i++)
                 {
-                    WindowInteractionHelper.SendMouseLongPress(hwnd, (uint)action.X, (uint)action.Y, action.Duration);
+                    await WindowInteractionHelper.SendMouseLongPressAsync(hwnd, (uint)action.X, (uint)action.Y, action.Duration);
                     await Task.Delay(action.Interval);
                 }
             });

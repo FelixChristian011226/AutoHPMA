@@ -110,7 +110,7 @@ public class AutoForbiddenForest : BaseGameTask
                 var autoResult = Find(GetImage("team_auto"));
                 if (autoResult.Success)
                 {
-                    ClickMatchCenter(autoResult);
+                    await ClickMatchCenterAsync(autoResult);
                     _logger.LogDebug("点击自动战斗按钮。");
                 }
                 await Task.Delay(1000, _cts.Token);
@@ -121,7 +121,7 @@ public class AutoForbiddenForest : BaseGameTask
                         var startResult = Find(GetImage("team_start"));
                         if (startResult.Success)
                         {
-                            ClickMatchCenter(startResult);
+                            await ClickMatchCenterAsync(startResult);
                             _logger.LogDebug("点击开始。");
                         }
                         await Task.Delay(1500, _cts.Token);
@@ -129,7 +129,7 @@ public class AutoForbiddenForest : BaseGameTask
                         var confirmResult = Find(GetImage("team_confirm"));
                         if (confirmResult.Success)
                         {
-                            ClickMatchCenter(confirmResult);
+                            await ClickMatchCenterAsync(confirmResult);
                             _logger.LogDebug("点击是。");
                         }
                         break;
@@ -138,7 +138,7 @@ public class AutoForbiddenForest : BaseGameTask
                         var readyResult = Find(GetImage("team_ready"));
                         if (readyResult.Success)
                         {
-                            ClickMatchCenter(readyResult);
+                            await ClickMatchCenterAsync(readyResult);
                             _logger.LogDebug("点击准备。");
                         }
                         await Task.Delay(1000, _cts.Token);
@@ -158,7 +158,7 @@ public class AutoForbiddenForest : BaseGameTask
                 });
                 if (fightResult.Success)
                 {
-                    ClickMatchCenter(fightResult);
+                    await ClickMatchCenterAsync(fightResult);
                 }
                 await Task.Delay(1000, _cts.Token);
                 break;
@@ -175,7 +175,7 @@ public class AutoForbiddenForest : BaseGameTask
                 }
                 
                 await Task.Delay(1500, _cts.Token);
-                SendSpace(_gameHwnd);
+                await SendSpaceAsync(_gameHwnd);
                 _logger.LogInformation("第[Yellow]{Round}[/Yellow]/[Yellow]{Total}[/Yellow]次禁林任务完成。", ++round, _autoForbiddenForestTimes);
                 await Task.Delay(2000, _cts.Token);
                 break;

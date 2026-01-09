@@ -88,7 +88,7 @@ public class AutoSweetAdventure : BaseGameTask
                 var startResult = Find(GetImage("teaming_start"));
                 if (startResult.Success)
                 {
-                    ClickMatchCenter(startResult);
+                    await ClickMatchCenterAsync(startResult);
                     await Task.Delay(3000, _cts.Token);
                 }
                 await Task.Delay(1000, _cts.Token);
@@ -107,7 +107,7 @@ public class AutoSweetAdventure : BaseGameTask
                     var forwardResult = Find(GetImage("gaming_forward"), new MatchOptions { Threshold = 0.96 });
                     if (forwardResult.Success)
                     {
-                        ClickMatchCenter(forwardResult);
+                        await ClickMatchCenterAsync(forwardResult);
                         step++;
                         _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：前进。", step);
                         await Task.Delay(1000, _cts.Token);
@@ -117,7 +117,7 @@ public class AutoSweetAdventure : BaseGameTask
                     var candyResult = Find(GetImage("gaming_candy"), new MatchOptions { Threshold = 0.96 });
                     if (candyResult.Success)
                     {
-                        ClickMatchCenter(candyResult);
+                        await ClickMatchCenterAsync(candyResult);
                         step++;
                         _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测糖果。", step);
                         await Task.Delay(1000, _cts.Token);
@@ -129,7 +129,7 @@ public class AutoSweetAdventure : BaseGameTask
                     var returnResult = Find(GetImage("gaming_return"), new MatchOptions { Threshold = 0.96 });
                     if (returnResult.Success)
                     {
-                        ClickMatchCenter(returnResult);
+                        await ClickMatchCenterAsync(returnResult);
                         step++;
                         _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：返回。", step);
                         await Task.Delay(1000, _cts.Token);
@@ -139,7 +139,7 @@ public class AutoSweetAdventure : BaseGameTask
                     var monsterResult = Find(GetImage("gaming_monster"), new MatchOptions { Threshold = 0.96 });
                     if (monsterResult.Success)
                     {
-                        ClickMatchCenter(monsterResult);
+                        await ClickMatchCenterAsync(monsterResult);
                         step++;
                         _logger.LogInformation("第[Yellow]{Step}[/Yellow]步：预测怪物。", step);
                         await Task.Delay(1000, _cts.Token);
@@ -155,7 +155,7 @@ public class AutoSweetAdventure : BaseGameTask
                 prev_round = 0;
                 step = 1;
                 _logger.LogInformation("游戏结束，正在结算中...");
-                SendSpace(_gameHwnd);
+                await SendSpaceAsync(_gameHwnd);
                 await Task.Delay(2000, _cts.Token);
                 break;
         }

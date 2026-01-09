@@ -291,13 +291,13 @@ namespace AutoHPMA.GameTask
         #region 点击操作（Click）
 
         /// <summary>
-        /// 点击指定位置（未缩放坐标）
+        /// 异步点击指定位置（未缩放坐标）
         /// </summary>
         /// <param name="location">未缩放的坐标位置</param>
-        protected void Click(Point location)
+        protected async Task ClickAsync(Point location)
         {
             _cts.Token.ThrowIfCancellationRequested();
-            WindowInteractionHelper.SendMouseClick(
+            await WindowInteractionHelper.SendMouseClickAsync(
                 _gameHwnd,
                 (uint)(location.X * scale - offsetX),
                 (uint)(location.Y * scale - offsetY)
@@ -305,16 +305,16 @@ namespace AutoHPMA.GameTask
         }
 
         /// <summary>
-        /// 根据匹配结果点击模板中心位置，自动显示检测框
+        /// 异步根据匹配结果点击模板中心位置，自动显示检测框
         /// </summary>
         /// <param name="result">匹配结果</param>
-        protected void ClickMatchCenter(MatchResult result)
+        protected async Task ClickMatchCenterAsync(MatchResult result)
         {
             if (!result.Success) return;
             ShowMatchRects(result);
             var centerX = result.Location.X + result.TemplateSize.Width / 2.0;
             var centerY = result.Location.Y + result.TemplateSize.Height / 2.0;
-            Click(new Point((int)centerX, (int)centerY));
+            await ClickAsync(new Point((int)centerX, (int)centerY));
         }
 
         /// <summary>
@@ -331,7 +331,7 @@ namespace AutoHPMA.GameTask
                 _cts.Token.ThrowIfCancellationRequested();
                 var centerX = rect.X + result.TemplateSize.Width / 2.0;
                 var centerY = rect.Y + result.TemplateSize.Height / 2.0;
-                Click(new Point((int)centerX, (int)centerY));
+                await ClickAsync(new Point((int)centerX, (int)centerY));
                 await Task.Delay(delayMs, _cts.Token);
             }
         }
@@ -342,12 +342,12 @@ namespace AutoHPMA.GameTask
         /// <param name="template">模板图像</param>
         /// <param name="threshold">匹配阈值</param>
         /// <returns>是否成功找到并点击</returns>
-        protected bool TryClickTemplate(Mat template, double threshold = 0.9)
+        protected async Task<bool> TryClickTemplateAsync(Mat template, double threshold = 0.9)
         {
             var result = Find(template, new MatchOptions { Threshold = threshold });
             if (result.Success)
             {
-                ClickMatchCenter(result);
+                await ClickMatchCenterAsync(result);
                 return true;
             }
             return false;
@@ -359,12 +359,12 @@ namespace AutoHPMA.GameTask
         /// <param name="template">带 Alpha 通道的模板图像</param>
         /// <param name="threshold">匹配阈值</param>
         /// <returns>是否成功找到并点击</returns>
-        protected bool TryClickTemplateWithAlpha(Mat template, double threshold = 0.9)
+        protected async Task<bool> TryClickTemplateWithAlphaAsync(Mat template, double threshold = 0.9)
         {
             var result = Find(template, new MatchOptions { UseAlphaMask = true, Threshold = threshold });
             if (result.Success)
             {
-                ClickMatchCenter(result);
+                await ClickMatchCenterAsync(result);
                 return true;
             }
             return false;
