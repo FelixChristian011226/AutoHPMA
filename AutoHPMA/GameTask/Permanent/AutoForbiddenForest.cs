@@ -32,7 +32,7 @@ public enum AutoForbiddenForestOption
 
 public class AutoForbiddenForest : BaseGameTask
 {
-    private AutoForbiddenForestState _state = AutoForbiddenForestState.Unknown;
+    private volatile AutoForbiddenForestState _state = AutoForbiddenForestState.Unknown;
 
     private int _autoForbiddenForestTimes;
     private AutoForbiddenForestOption _autoForbiddenForestOption = AutoForbiddenForestOption.Leader;
@@ -75,7 +75,15 @@ public class AutoForbiddenForest : BaseGameTask
     public override async void Start()
     {
         _state = AutoForbiddenForestState.Unknown;
+        StartStateMonitor(_stateRules, OnStateDetected, AutoForbiddenForestState.Unknown, "禁林-未知状态");
         await RunTaskAsync("禁林");
+    }
+
+    private void OnStateDetected(AutoForbiddenForestState newState)
+    {
+        _state = newState;
+        if (newState != AutoForbiddenForestState.Unknown)
+            _waited = false;
     }
 
     protected override async Task ExecuteLoopAsync()
@@ -87,12 +95,7 @@ public class AutoForbiddenForest : BaseGameTask
             return;
         }
 
-        _state = FindStateByRules(_stateRules, AutoForbiddenForestState.Unknown, "禁林-未知状态");
-        
-        // 进入有效状态时重置等待标志
-        if (_state != AutoForbiddenForestState.Unknown)
-            _waited = false;
-
+        // 状态由后台监测任务更新，直接使用 _state
         switch (_state)
         {
             case AutoForbiddenForestState.Unknown:

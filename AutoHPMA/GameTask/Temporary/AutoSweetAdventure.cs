@@ -24,7 +24,7 @@ public enum AutoSweetAdventureState
 
 public class AutoSweetAdventure : BaseGameTask
 {
-    private AutoSweetAdventureState _state = AutoSweetAdventureState.Unknown;
+    private volatile AutoSweetAdventureState _state = AutoSweetAdventureState.Unknown;
 
     private int round = 0, prev_round = 0, step = 1;
     private int _maxStep = 12;
@@ -60,17 +60,20 @@ public class AutoSweetAdventure : BaseGameTask
     public override async void Start()
     {
         _state = AutoSweetAdventureState.Unknown;
+        StartStateMonitor(_stateRules, OnStateDetected, AutoSweetAdventureState.Unknown, "甜蜜冒险-未知状态");
         await RunTaskAsync("甜蜜冒险");
+    }
+
+    private void OnStateDetected(AutoSweetAdventureState newState)
+    {
+        _state = newState;
+        if (newState != AutoSweetAdventureState.Unknown)
+            _waited = false;
     }
 
     protected override async Task ExecuteLoopAsync()
     {
-        _state = FindStateByRules(_stateRules, AutoSweetAdventureState.Unknown, "甘蜜冒险-未知状态");
-        
-        // 进入有效状态时重置等待标志
-        if (_state != AutoSweetAdventureState.Unknown)
-            _waited = false;
-        
+        // 状态由后台监测任务更新，直接使用 _state
         switch (_state)
         {
             case AutoSweetAdventureState.Unknown:

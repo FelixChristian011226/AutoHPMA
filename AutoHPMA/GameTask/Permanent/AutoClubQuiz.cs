@@ -40,7 +40,7 @@ public class AutoClubQuiz : BaseGameTask
     private static ExcelHelper excelHelper;
     private static PaddleOCRHelper paddleOCRHelper;
 
-    private AutoClubQuizState _state = AutoClubQuizState.Unknown;
+    private volatile AutoClubQuizState _state = AutoClubQuizState.Unknown;
 
     // 状态字段
     private string? excelPath;
@@ -99,18 +99,21 @@ public class AutoClubQuiz : BaseGameTask
     public override async void Start()
     {
         _state = AutoClubQuizState.Unknown;
+        StartStateMonitor(_stateRules, OnStateDetected, AutoClubQuizState.Unknown, "社团答题-未进入场景");
         await RunTaskAsync("社团答题");
+    }
+
+    private void OnStateDetected(AutoClubQuizState newState)
+    {
+        _state = newState;
+        if (newState != AutoClubQuizState.Unknown)
+            _waited = false;
     }
 
     protected override async Task ExecuteLoopAsync()
     {
         await CloseDialogsAsync();
-        _state = FindStateByRules(_stateRules, AutoClubQuizState.Unknown, "社团答题-未进入场景");
-        
-        // 进入有效状态时重置等待标志
-        if (_state != AutoClubQuizState.Unknown)
-            _waited = false;
-        
+        // 状态由后台监测任务更新，直接使用 _state
         switch (_state)
         {
             case AutoClubQuizState.Unknown:

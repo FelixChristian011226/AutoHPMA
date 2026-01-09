@@ -93,6 +93,11 @@ namespace AutoHPMA.GameTask
         protected bool _waited = false;
         protected Dictionary<string, Mat> _images = new();
 
+        // 状态监测任务
+        private Task? _stateMonitorTask;
+        private volatile bool _isStateMonitoring = false;
+        protected int _stateMonitorIntervalMs = 200;
+
         public event EventHandler? TaskCompleted;
 
         public BaseGameTask(ILogger logger, nint displayHwnd, nint gameHwnd)
@@ -465,6 +470,59 @@ namespace AutoHPMA.GameTask
 
         #endregion
 
+        #region 状态监测
+
+        /// <summary>
+        /// 启动状态监测后台任务
+        /// </summary>
+        /// <typeparam name="TState">状态枚举类型</typeparam>
+        /// <param name="rules">状态检测规则数组</param>
+        /// <param name="onStateDetected">状态更新回调</param>
+        /// <param name="defaultState">默认状态</param>
+        /// <param name="defaultDisplayName">默认显示名称</param>
+        /// <param name="intervalMs">检测间隔（毫秒），默认200ms</param>
+        protected void StartStateMonitor<TState>(
+            StateRule<TState>[] rules,
+            Action<TState> onStateDetected,
+            TState defaultState,
+            string defaultDisplayName,
+            int intervalMs = 200) where TState : struct
+        {
+            if (_isStateMonitoring) return;
+            _isStateMonitoring = true;
+            _stateMonitorIntervalMs = intervalMs;
+            _stateMonitorTask = Task.Run(async () =>
+            {
+                while (_isStateMonitoring && !_cts.Token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var newState = FindStateByRules(rules, defaultState, defaultDisplayName);
+                        onStateDetected(newState);
+                        await Task.Delay(_stateMonitorIntervalMs, _cts.Token);
+                    }
+                    catch (OperationCanceledException) { break; }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug("状态监测异常：{Message}", ex.Message);
+                    }
+                }
+            });
+            _logger.LogDebug("状态监测已启动，间隔：{Interval}ms", _stateMonitorIntervalMs);
+        }
+
+        /// <summary>
+        /// 停止状态监测后台任务
+        /// </summary>
+        protected void StopStateMonitor()
+        {
+            if (!_isStateMonitoring) return;
+            _isStateMonitoring = false;
+            _logger.LogDebug("状态监测已停止");
+        }
+
+        #endregion
+
         #region 任务控制
 
         public virtual void Stop()
@@ -500,6 +558,7 @@ namespace AutoHPMA.GameTask
             }
             finally
             {
+                StopStateMonitor();
                 _logger.LogInformation("[Aquamarine]---{TaskName}任务已终止---[/Aquamarine]", taskName);
                 _maskWindow?.ClearAll();
                 _logWindow?.SetGameState("空闲");

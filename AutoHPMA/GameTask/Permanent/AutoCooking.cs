@@ -41,7 +41,7 @@ public class AutoCooking : BaseGameTask
     #region 字段
 
     private readonly CookingConfigService _cookingConfigService;
-    private AutoCookingState _state = AutoCookingState.Unknown;
+    private volatile AutoCookingState _state = AutoCookingState.Unknown;
 
     // 模板图像
     private Mat bin, board;  // 不需要进度条的厨具
@@ -82,9 +82,9 @@ public class AutoCooking : BaseGameTask
     private static TesseractOCRHelper? tesseractOCRHelper;
     private string _autoCookingSelectedOCR = "Tesseract";
 
-    // 状态监测任务
-    private Task? _statusMonitorTask;
-    private volatile bool _isMonitoring = false;
+    // 厨具烹饪进度监测任务
+    private Task? _cookingProgressMonitorTask;
+    private volatile bool _isCookingProgressMonitoring = false;
 
     #endregion
 
@@ -114,7 +114,15 @@ public class AutoCooking : BaseGameTask
     public override async void Start()
     {
         _state = AutoCookingState.Unknown;
+        StartStateMonitor(_stateRules, OnStateDetected, AutoCookingState.Unknown, "烹饪-未知状态");
         await RunTaskAsync("自动烹饪");
+    }
+
+    private void OnStateDetected(AutoCookingState newState)
+    {
+        _state = newState;
+        if (newState != AutoCookingState.Unknown)
+            _waited = false;
     }
 
     protected override async Task ExecuteLoopAsync()
@@ -126,12 +134,7 @@ public class AutoCooking : BaseGameTask
             return;
         }
         
-        _state = FindStateByRules(_stateRules, AutoCookingState.Unknown, "烹饪-未知状态");
-        
-        // 进入有效状态时重置等待标志
-        if (_state != AutoCookingState.Unknown)
-            _waited = false;
-        
+        // 状态由后台监测任务更新，直接使用 _state
         switch (_state)
         {
             case AutoCookingState.Unknown:
@@ -199,7 +202,7 @@ public class AutoCooking : BaseGameTask
 
     private void ClearCookingLayers()
     {
-        StopStatusMonitor();
+        StopCookingProgressMonitor();
         initialized = false;
         ClearStateRects();
     }
@@ -208,23 +211,23 @@ public class AutoCooking : BaseGameTask
 
     #region 状态监测
 
-    private void StartStatusMonitor()
+    private void StartCookingProgressMonitor()
     {
-        if (_isMonitoring) return;
-        _isMonitoring = true;
-        _statusMonitorTask = Task.Run(StatusMonitorLoopAsync);
-        _logger.LogDebug("状态监测已启动");
+        if (_isCookingProgressMonitoring) return;
+        _isCookingProgressMonitoring = true;
+        _cookingProgressMonitorTask = Task.Run(CookingProgressMonitorLoopAsync);
+        _logger.LogDebug("厨具状态监测已启动");
     }
 
-    private void StopStatusMonitor()
+    private void StopCookingProgressMonitor()
     {
-        _isMonitoring = false;
-        _logger.LogDebug("状态监测已停止");
+        _isCookingProgressMonitoring = false;
+        _logger.LogDebug("厨具状态监测已停止");
     }
 
-    private async Task StatusMonitorLoopAsync()
+    private async Task CookingProgressMonitorLoopAsync()
     {
-        while (_isMonitoring && !_cts.Token.IsCancellationRequested)
+        while (_isCookingProgressMonitoring && !_cts.Token.IsCancellationRequested)
         {
             try
             {
@@ -495,8 +498,8 @@ public class AutoCooking : BaseGameTask
         completedSteps.Clear();
         initialized = true;
         
-        // 初始化完成后启动状态监测
-        StartStatusMonitor();
+        // 初始化完成后启动厨具烹饪进度监测
+        StartCookingProgressMonitor();
         
         _logger.LogInformation("菜品初始化完成");
         return true;
