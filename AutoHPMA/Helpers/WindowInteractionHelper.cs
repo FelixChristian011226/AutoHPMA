@@ -191,57 +191,6 @@ public class WindowInteractionHelper
 
     private static readonly Random _random = new Random();
 
-    public static void SendMouseDragWithNoise(IntPtr hWnd, uint startX, uint startY, uint endX, uint endY, int duration = 500)
-    {
-        var startLParam = MakeLParam(startX, startY);
-        var endLParam = MakeLParam(endX, endY);
-
-        // 按下鼠标左键
-        PostMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, startLParam);
-        Thread.Sleep(50);
-
-        // 计算移动的步数和每步的延迟
-        int steps = 30;
-        int stepDelay = duration / steps;
-        double stepX = (endX - startX) / (double)steps;
-        double stepY = (endY - startY) / (double)steps;
-
-        // 逐步移动鼠标，添加微小随机偏移
-        for (int i = 1; i <= steps; i++)
-        {
-            // 添加微小随机偏移（±2像素）
-            int offsetX = _random.Next(-2, 3);
-            int offsetY = _random.Next(-2, 3);
-            
-            uint currentX = (uint)(startX + (stepX * i) + offsetX);
-            uint currentY = (uint)(startY + (stepY * i) + offsetY);
-            var currentLParam = MakeLParam(currentX, currentY);
-            
-            PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, currentLParam);
-            Thread.Sleep(stepDelay);
-        }
-
-        //在终点位置进行多次确认
-        for (int i = 0; i < 3; i++)
-        {
-            // 在终点位置添加微小随机偏移
-            int offsetX = _random.Next(-1, 2);
-            int offsetY = _random.Next(-1, 2);
-
-            uint finalX = (uint)(endX + offsetX);
-            uint finalY = (uint)(endY + offsetY);
-            var finalLParam = MakeLParam(finalX, finalY);
-
-            PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, finalLParam);
-            Thread.Sleep(50);
-        }
-
-        // 释放鼠标左键
-        PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, endLParam);
-        Thread.Sleep(50);
-
-    }
-
     /// <summary>
     /// 异步发送带噪声的鼠标拖拽操作，不阻塞线程
     /// </summary>
@@ -293,37 +242,6 @@ public class WindowInteractionHelper
         // 释放鼠标左键
         PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, endLParam);
         await Task.Delay(50);
-    }
-
-    public static void SendMouseDrag(IntPtr hWnd, uint startX, uint startY, uint endX, uint endY, int duration = 500)
-    {
-        var startLParam = MakeLParam(startX, startY);
-        var endLParam = MakeLParam(endX, endY);
-
-        // 按下鼠标左键
-        SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, startLParam);
-        Thread.Sleep(50);
-
-        // 计算移动的步数和每步的延迟
-        int steps = 10;
-        int stepDelay = duration / steps;
-        double stepX = (endX - startX) / (double)steps;
-        double stepY = (endY - startY) / (double)steps;
-
-        // 逐步移动鼠标
-        for (int i = 1; i <= steps; i++)
-        {
-            uint currentX = (uint)(startX + (stepX * i));
-            uint currentY = (uint)(startY + (stepY * i));
-            var currentLParam = MakeLParam(currentX, currentY);
-
-            // 发送鼠标移动消息
-            SendMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, currentLParam);
-            Thread.Sleep(stepDelay);
-        }
-
-        // 释放鼠标左键
-        SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, endLParam);
     }
 
     // 添加鼠标移动消息常量

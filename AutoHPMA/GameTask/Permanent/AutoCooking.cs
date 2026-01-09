@@ -407,7 +407,7 @@ public class AutoCooking : BaseGameTask
 
             if (kitchenwareStatus.TryGetValue(targetKitchenware, out var status) && status.status == CookingStatus.Idle)
             {
-                _logger.LogInformation("预烹饪：将食材 {Ingredient} 放入厨具 {Kitchenware}", step.Ingredient, targetKitchenware);
+                _logger.LogDebug("预烹饪：将食材 {Ingredient} 放入厨具 {Kitchenware}", step.Ingredient, targetKitchenware);
                 await PlaceIngredientInKitchenwareAsync(step.Ingredient, targetKitchenware);
                 preCookedSteps.Add(i);
                 usedKitchenware.Add(targetKitchenware);
@@ -417,7 +417,7 @@ public class AutoCooking : BaseGameTask
 
         if (preCookedCount > 0)
         {
-            _logger.LogInformation("预烹饪完成，已放入 {Count} 个食材", preCookedCount);
+            _logger.LogDebug("预烹饪完成，已放入 {Count} 个食材", preCookedCount);
         }
     }
 

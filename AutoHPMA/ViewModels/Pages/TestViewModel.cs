@@ -258,7 +258,7 @@ namespace AutoHPMA.ViewModels.Pages
         {
             await ExecuteActionTest(DragActions, "拖拽", async (action, hwnd) =>
             {
-                WindowInteractionHelper.SendMouseDrag(
+                await WindowInteractionHelper.SendMouseDragWithNoiseAsync(
                     hwnd,
                     (uint)action.StartX, (uint)action.StartY,
                     (uint)action.EndX, (uint)action.EndY,

@@ -375,23 +375,6 @@ namespace AutoHPMA.GameTask
         #region 拖拽操作
 
         /// <summary>
-        /// 拖拽移动（未缩放坐标）
-        /// </summary>
-        protected bool DragMove(ref Point start, ref Point end, int duration = 500)
-        {
-            _cts.Token.ThrowIfCancellationRequested();
-            WindowInteractionHelper.SendMouseDragWithNoise(
-                _gameHwnd,
-                (uint)(start.X * scale - offsetX),
-                (uint)(start.Y * scale - offsetY),
-                (uint)(end.X * scale - offsetX),
-                (uint)(end.Y * scale - offsetY),
-                duration
-            );
-            return true;
-        }
-
-        /// <summary>
         /// 异步拖拽移动（未缩放坐标），不阻塞线程
         /// </summary>
         protected async Task<bool> DragMoveAsync(Point start, Point end, int duration = 500)
