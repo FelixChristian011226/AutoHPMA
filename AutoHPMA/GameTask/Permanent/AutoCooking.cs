@@ -82,6 +82,10 @@ public class AutoCooking : BaseGameTask
     private static TesseractOCRHelper? tesseractOCRHelper;
     private string _autoCookingSelectedOCR = "Tesseract";
 
+    // 状态监测任务
+    private Task? _statusMonitorTask;
+    private volatile bool _isMonitoring = false;
+
     #endregion
 
     // 状态检测规则
@@ -162,27 +166,19 @@ public class AutoCooking : BaseGameTask
                     return;
                 }
 
-                // 更新所有厨具状态
-                foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
-                {
-                    if (kitchenware == "bin" || kitchenware == "board") continue;
-                    kitchenwareStatus[kitchenware] = GetKitchenwareStatus(kitchenware);
-                }
-                UpdateKitchenwareStatusDisplay();
-
                 // 检查是否有厨具糊了
                 foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
                 {
                     if (kitchenwareStatus.TryGetValue(kitchenware, out var status) && status.status == CookingStatus.Overcooked)
                     {
-                        DiscardAllFood();
+                        await DiscardAllFoodAsync();
                         await Task.Delay(_autoCookingGap, _cts.Token);
                         return;
                     }
                 }
 
                 // 执行烹饪循环
-                ExecuteCookingCycle();
+                await ExecuteCookingCycleAsync();
                 await Task.Delay(_autoCookingGap, _cts.Token);
                 break;
 
@@ -203,7 +199,53 @@ public class AutoCooking : BaseGameTask
 
     private void ClearCookingLayers()
     {
+        StopStatusMonitor();
+        initialized = false;
         ClearStateRects();
+    }
+
+    #endregion
+
+    #region 状态监测
+
+    private void StartStatusMonitor()
+    {
+        if (_isMonitoring) return;
+        _isMonitoring = true;
+        _statusMonitorTask = Task.Run(StatusMonitorLoopAsync);
+        _logger.LogDebug("状态监测已启动");
+    }
+
+    private void StopStatusMonitor()
+    {
+        _isMonitoring = false;
+        _logger.LogDebug("状态监测已停止");
+    }
+
+    private async Task StatusMonitorLoopAsync()
+    {
+        while (_isMonitoring && !_cts.Token.IsCancellationRequested)
+        {
+            try
+            {
+                if (_currentDishConfig != null && initialized)
+                {
+                    // 更新所有厨具状态
+                    foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
+                    {
+                        if (kitchenware == "bin" || kitchenware == "board") continue;
+                        kitchenwareStatus[kitchenware] = GetKitchenwareStatus(kitchenware);
+                    }
+                    UpdateKitchenwareStatusDisplay();
+                }
+                await Task.Delay(100, _cts.Token); // 每100ms更新一次
+            }
+            catch (OperationCanceledException) { break; }
+            catch (Exception ex)
+            {
+                _logger.LogDebug("状态监测异常：{Message}", ex.Message);
+            }
+        }
     }
 
     #endregion
@@ -236,16 +278,16 @@ public class AutoCooking : BaseGameTask
 
     #region 烹饪逻辑
 
-    private bool ExecuteCookingCycle()
+    private async Task<bool> ExecuteCookingCycleAsync()
     {
         if (_currentDishConfig == null) return false;
 
         if (IsAllStepsCompleted())
         {
-            return ExecuteFinalStage();
+            return await ExecuteFinalStageAsync();
         }
 
-        return ExecuteNextCookingStep();
+        return await ExecuteNextCookingStepAsync();
     }
 
     private bool IsAllStepsCompleted()
@@ -268,7 +310,7 @@ public class AutoCooking : BaseGameTask
         return true;
     }
 
-    private bool ExecuteNextCookingStep()
+    private async Task<bool> ExecuteNextCookingStepAsync()
     {
         for (int i = 0; i < _currentDishConfig.CookingSteps.Count; i++)
         {
@@ -283,14 +325,14 @@ public class AutoCooking : BaseGameTask
                 case CookingStatus.Idle:
                     if (!completedSteps.Contains(i) && !preCookedSteps.Contains(i))
                     {
-                        PlaceIngredientInKitchenware(step.Ingredient, targetKitchenware);
+                        await PlaceIngredientInKitchenwareAsync(step.Ingredient, targetKitchenware);
                         completedSteps.Add(i);
                         return false;
                     }
                     break;
 
                 case CookingStatus.Cooked:
-                    MoveFromKitchenwareToBoard(targetKitchenware);
+                    await MoveFromKitchenwareToBoardAsync(targetKitchenware);
                     if (preCookedSteps.Contains(i))
                     {
                         preCookedSteps.Remove(i);
@@ -307,23 +349,23 @@ public class AutoCooking : BaseGameTask
         return false;
     }
 
-    private bool ExecuteFinalStage()
+    private async Task<bool> ExecuteFinalStageAsync()
     {
         completedSteps.Clear();
 
         DefaultOrder();
         if (CheckOver()) return true;
 
-        StartPreCooking();
+        await StartPreCookingAsync();
 
-        Seasoning();
+        await SeasoningAsync();
         if (CheckOver()) return true;
 
-        SubmitOrder();
+        await SubmitOrderAsync();
         return true;
     }
 
-    private void PlaceIngredientInKitchenware(string ingredient, string kitchenware)
+    private async Task PlaceIngredientInKitchenwareAsync(string ingredient, string kitchenware)
     {
         if (CheckOver()) return;
 
@@ -331,10 +373,10 @@ public class AutoCooking : BaseGameTask
         var kitchenwareCenter = kitchenwareCenters[kitchenware];
 
         _logger.LogDebug("将食材 {Ingredient} 放入厨具 {Kitchenware}", ingredient, kitchenware);
-        DragMove(ref ingredientCenter, ref kitchenwareCenter, 100);
+        await DragMoveAsync(ingredientCenter, kitchenwareCenter, 100);
     }
 
-    private void MoveFromKitchenwareToBoard(string kitchenware)
+    private async Task MoveFromKitchenwareToBoardAsync(string kitchenware)
     {
         if (CheckOver()) return;
 
@@ -342,10 +384,10 @@ public class AutoCooking : BaseGameTask
         var boardCenter = kitchenwareCenters["board"];
 
         _logger.LogDebug("将食物从厨具 {Kitchenware} 移到砧板", kitchenware);
-        DragMove(ref kitchenwareCenter, ref boardCenter, 100);
+        await DragMoveAsync(kitchenwareCenter, boardCenter, 100);
     }
 
-    private void StartPreCooking()
+    private async Task StartPreCookingAsync()
     {
         if (_currentDishConfig == null) return;
 
@@ -366,7 +408,7 @@ public class AutoCooking : BaseGameTask
             if (kitchenwareStatus.TryGetValue(targetKitchenware, out var status) && status.status == CookingStatus.Idle)
             {
                 _logger.LogInformation("预烹饪：将食材 {Ingredient} 放入厨具 {Kitchenware}", step.Ingredient, targetKitchenware);
-                PlaceIngredientInKitchenware(step.Ingredient, targetKitchenware);
+                await PlaceIngredientInKitchenwareAsync(step.Ingredient, targetKitchenware);
                 preCookedSteps.Add(i);
                 usedKitchenware.Add(targetKitchenware);
                 preCookedCount++;
@@ -379,7 +421,7 @@ public class AutoCooking : BaseGameTask
         }
     }
 
-    private void Seasoning()
+    private async Task SeasoningAsync()
     {
         foreach (var condiment in _currentDishConfig.RequiredCondiments)
         {
@@ -390,20 +432,20 @@ public class AutoCooking : BaseGameTask
                     var condimentCenter = condimentCenters[condiment];
                     var boardCenter = kitchenwareCenters["board"];
                     if (CheckOver()) return;
-                    DragMove(ref condimentCenter, ref boardCenter, 100);
+                    await DragMoveAsync(condimentCenter, boardCenter, 100);
                 }
             }
         }
     }
 
-    private void SubmitOrder()
+    private async Task SubmitOrderAsync()
     {
         var finalBoardCenter = kitchenwareCenters["board"];
         if (CheckOver()) return;
-        DragMove(ref finalBoardCenter, ref next_order, 100);
+        await DragMoveAsync(finalBoardCenter, next_order, 100);
     }
 
-    private void DiscardAllFood()
+    private async Task DiscardAllFoodAsync()
     {
         var binCenter = kitchenwareCenters["bin"];
 
@@ -413,12 +455,12 @@ public class AutoCooking : BaseGameTask
 
             var kitchenwareCenter = kitchenwareCenters[kitchenware];
             if (CheckOver()) return;
-            DragMove(ref kitchenwareCenter, ref binCenter, 100);
+            await DragMoveAsync(kitchenwareCenter, binCenter, 100);
         }
 
         var boardCenter = kitchenwareCenters["board"];
         if (CheckOver()) return;
-        DragMove(ref boardCenter, ref binCenter, 100);
+        await DragMoveAsync(boardCenter, binCenter, 100);
     }
 
     #endregion
@@ -452,6 +494,10 @@ public class AutoCooking : BaseGameTask
 
         completedSteps.Clear();
         initialized = true;
+        
+        // 初始化完成后启动状态监测
+        StartStatusMonitor();
+        
         _logger.LogInformation("菜品初始化完成");
         return true;
     }
@@ -576,7 +622,7 @@ public class AutoCooking : BaseGameTask
                 {
                     CookingStatus.Idle => "空闲",
                     CookingStatus.Cooking => $"烹饪中：{status.progress:F1}%",
-                    CookingStatus.Cooked => $"已完成：{status.progress:F1}%",
+                    CookingStatus.Cooked => "已完成",
                     CookingStatus.Overcooked => "糊了！",
                     _ => "未知状态"
                 };

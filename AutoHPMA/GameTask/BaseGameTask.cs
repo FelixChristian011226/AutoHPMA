@@ -391,6 +391,23 @@ namespace AutoHPMA.GameTask
             return true;
         }
 
+        /// <summary>
+        /// 异步拖拽移动（未缩放坐标），不阻塞线程
+        /// </summary>
+        protected async Task<bool> DragMoveAsync(Point start, Point end, int duration = 500)
+        {
+            _cts.Token.ThrowIfCancellationRequested();
+            await WindowInteractionHelper.SendMouseDragWithNoiseAsync(
+                _gameHwnd,
+                (uint)(start.X * scale - offsetX),
+                (uint)(start.Y * scale - offsetY),
+                (uint)(end.X * scale - offsetX),
+                (uint)(end.Y * scale - offsetY),
+                duration
+            );
+            return true;
+        }
+
         #endregion
 
         #region 显示检测框
