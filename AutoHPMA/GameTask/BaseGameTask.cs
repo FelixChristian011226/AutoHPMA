@@ -492,7 +492,7 @@ namespace AutoHPMA.GameTask
             }
             catch (TaskCanceledException)
             {
-                _logger.LogInformation("[Aquamarine]---{TaskName}任务已终止---[/Aquamarine]", taskName);
+                // 任务取消异常，正常流程
             }
             catch (Exception ex)
             {
@@ -500,6 +500,7 @@ namespace AutoHPMA.GameTask
             }
             finally
             {
+                _logger.LogInformation("[Aquamarine]---{TaskName}任务已终止---[/Aquamarine]", taskName);
                 _maskWindow?.ClearAll();
                 _logWindow?.SetGameState("空闲");
                 _waited = false;
