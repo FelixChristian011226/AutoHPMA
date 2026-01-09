@@ -47,16 +47,10 @@ public class AutoForbiddenForest : BaseGameTask
     {
         LoadAssets();
         CalOffset();
-        AddLayersForMaskWindow();
         InitStateRules();
     }
 
-    private void AddLayersForMaskWindow()
-    {
-        _maskWindow?.AddLayer("Match");
-        _maskWindow?.AddLayer("Click");
-        _maskWindow?.AddLayer("MultiClick");
-    }
+
 
     private void InitStateRules()
     {
@@ -176,9 +170,8 @@ public class AutoForbiddenForest : BaseGameTask
                 var thumbResult = Find(GetImage("over_thumb"), new MatchOptions { FindMultiple = true });
                 if (thumbResult.Success)
                 {
-                    ShowMatchRects(thumbResult, "MultiClick");
+                    ShowMatchRects(thumbResult);
                     await ClickMultiMatchCentersAsync(thumbResult);
-                    ClearMatchRects("MultiClick");
                 }
                 
                 await Task.Delay(1500, _cts.Token);

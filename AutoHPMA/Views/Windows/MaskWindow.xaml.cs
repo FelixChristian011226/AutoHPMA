@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using OpenCvSharp;
-using Rect = OpenCvSharp.Rect;    // 新增：引用 OpenCvSharp 命名空间
+using Rect = OpenCvSharp.Rect;
 
 namespace AutoHPMA.Views.Windows
 {
@@ -17,20 +19,37 @@ namespace AutoHPMA.Views.Windows
         private const int WS_EX_TRANSPARENT = 0x00000020;
         private const int WS_EX_LAYERED = 0x00080000;
 
-        // 每个图层都包含一个 Canvas 和对应的 Rect 列表
-        private class Layer
+        /// <summary>
+        /// 检测框数据结构
+        /// </summary>
+        private class RectData
         {
-            public Canvas Canvas { get; }
-            public List<Rect> Rects { get; } = new List<Rect>();
-            public Dictionary<Rect, string> TextContents { get; } = new Dictionary<Rect, string>();
-            public Layer(string name)
-            {
-                Canvas = new Canvas { Name = name, Background = Brushes.Transparent };
-            }
+            public Rect Rect { get; set; }
+            public string? Text { get; set; }
         }
 
-        // 管理所有图层，Key 可以是任意字符串标识
-        private readonly Dictionary<string, Layer> _layers = new Dictionary<string, Layer>();
+        /// <summary>
+        /// 临时检测框（带过期时间）
+        /// </summary>
+        private class TemporaryRect : RectData
+        {
+            public DateTime ExpireTime { get; set; }
+        }
+
+        // 临时检测框列表（自动过期，如点击操作）
+        private readonly List<TemporaryRect> _temporaryRects = new();
+
+        // 状态标识框（由 FindStateByRules 自动设置，表示当前所处的状态）
+        private readonly List<RectData> _stateIndicatorRects = new();
+
+        // 任务状态框（由任务代码手动设置，如选项框、厨具状态等）
+        private readonly List<RectData> _taskStateRects = new();
+
+        // 清理定时器
+        private DispatcherTimer? _cleanupTimer;
+
+        // 用于线程安全的锁
+        private readonly object _lock = new();
 
         public MaskWindow()
         {
@@ -43,101 +62,224 @@ namespace AutoHPMA.Views.Windows
             var hwnd = new WindowInteropHelper(this).Handle;
             int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT);
+
+            // 启动清理定时器
+            StartCleanupTimer();
         }
 
-        #region 图层管理方法
+        #region 定时器管理
 
         /// <summary>
-        /// 添加一个新图层（若已存在，则返回已有图层）
+        /// 启动定期清理临时检测框的定时器
         /// </summary>
-        public void AddLayer(string layerName)
+        private void StartCleanupTimer()
         {
-            if (_layers.ContainsKey(layerName)) return;
-            var layer = new Layer(layerName);
-            _layers[layerName] = layer;
-            RootGrid.Children.Add(layer.Canvas);
-        }
-
-        /// <summary>
-        /// 设置指定图层的矩形列表和文字内容（覆盖式更新）
-        /// </summary>
-        public void SetLayerRects(string layerName, List<Rect> rects, Dictionary<Rect, string> textContents = null)
-        {
-            EnsureLayer(layerName);
-            var layer = _layers[layerName];
-            layer.Rects.Clear();
-            layer.Rects.AddRange(rects);
-            if (textContents != null)
+            _cleanupTimer = new DispatcherTimer
             {
-                layer.TextContents.Clear();
-                foreach (var kvp in textContents)
+                Interval = TimeSpan.FromMilliseconds(100)
+            };
+            _cleanupTimer.Tick += (s, e) => CleanupExpiredRects();
+            _cleanupTimer.Start();
+        }
+
+        /// <summary>
+        /// 清理过期的临时检测框
+        /// </summary>
+        private void CleanupExpiredRects()
+        {
+            bool needsRedraw = false;
+            lock (_lock)
+            {
+                var now = DateTime.Now;
+                int removed = _temporaryRects.RemoveAll(r => r.ExpireTime <= now);
+                needsRedraw = removed > 0;
+            }
+
+            if (needsRedraw)
+            {
+                Redraw();
+            }
+        }
+
+        #endregion
+
+        #region 临时检测框方法
+
+        /// <summary>
+        /// 添加单个临时检测框
+        /// </summary>
+        /// <param name="rect">检测框区域</param>
+        /// <param name="text">可选的文字内容</param>
+        /// <param name="durationMs">显示时长（毫秒），默认 1500ms</param>
+        public void AddTemporaryRect(Rect rect, string? text = null, int durationMs = 500)
+        {
+            lock (_lock)
+            {
+                _temporaryRects.Add(new TemporaryRect
                 {
-                    layer.TextContents[kvp.Key] = kvp.Value;
+                    Rect = rect,
+                    Text = text,
+                    ExpireTime = DateTime.Now.AddMilliseconds(durationMs)
+                });
+            }
+            Redraw();
+        }
+
+        /// <summary>
+        /// 添加多个临时检测框
+        /// </summary>
+        /// <param name="rects">检测框区域列表</param>
+        /// <param name="textContents">可选的文字内容字典</param>
+        /// <param name="durationMs">显示时长（毫秒），默认 1500ms</param>
+        public void AddTemporaryRects(List<Rect> rects, Dictionary<Rect, string>? textContents = null, int durationMs = 500)
+        {
+            var expireTime = DateTime.Now.AddMilliseconds(durationMs);
+            lock (_lock)
+            {
+                foreach (var rect in rects)
+                {
+                    string? text = null;
+                    textContents?.TryGetValue(rect, out text);
+                    _temporaryRects.Add(new TemporaryRect
+                    {
+                        Rect = rect,
+                        Text = text,
+                        ExpireTime = expireTime
+                    });
                 }
             }
-            RedrawLayer(layer);
+            Redraw();
         }
 
-        /// <summary>
-        /// 清除指定图层的所有矩形
-        /// </summary>
-        public void ClearLayer(string layerName)
-        {
-            if (!_layers.TryGetValue(layerName, out var layer)) return;
-            layer.Rects.Clear();
-            layer.Canvas.Children.Clear();
-        }
+        #endregion
+
+        #region 状态标识框方法（FindStateByRules 自动设置）
 
         /// <summary>
-        /// 显示指定图层
+        /// 设置状态标识框（由 FindStateByRules 自动调用）
         /// </summary>
-        public void ShowLayer(string layerName)
+        /// <param name="rects">检测框区域列表</param>
+        public void SetStateIndicatorRects(List<Rect> rects)
         {
-            if (_layers.TryGetValue(layerName, out var layer))
-                layer.Canvas.Visibility = Visibility.Visible;
-        }
-
-        /// <summary>
-        /// 隐藏指定图层
-        /// </summary>
-        public void HideLayer(string layerName)
-        {
-            if (_layers.TryGetValue(layerName, out var layer))
-                layer.Canvas.Visibility = Visibility.Collapsed;
-        }
-
-        /// <summary>
-        /// 清除所有图层及其内容
-        /// </summary>
-        public void ClearAllLayers()
-        {
-            foreach (var layer in _layers.Values)
+            lock (_lock)
             {
-                layer.Rects.Clear();
-                layer.Canvas.Children.Clear();
+                _stateIndicatorRects.Clear();
+                foreach (var rect in rects)
+                {
+                    _stateIndicatorRects.Add(new RectData { Rect = rect });
+                }
             }
-            RootGrid.Children.Clear();
-            _layers.Clear();
+            Redraw();
         }
 
-        private void EnsureLayer(string layerName)
+        /// <summary>
+        /// 清除状态标识框
+        /// </summary>
+        public void ClearStateIndicatorRects()
         {
-            if (!_layers.ContainsKey(layerName))
-                AddLayer(layerName);
+            lock (_lock)
+            {
+                _stateIndicatorRects.Clear();
+            }
+            Redraw();
         }
 
+        #endregion
+
+        #region 任务状态框方法（任务代码手动设置）
+
+        /// <summary>
+        /// 设置任务状态框（覆盖式更新）
+        /// </summary>
+        /// <param name="rects">检测框区域列表</param>
+        /// <param name="textContents">可选的文字内容字典</param>
+        public void SetTaskStateRects(List<Rect> rects, Dictionary<Rect, string>? textContents = null)
+        {
+            lock (_lock)
+            {
+                _taskStateRects.Clear();
+                foreach (var rect in rects)
+                {
+                    string? text = null;
+                    textContents?.TryGetValue(rect, out text);
+                    _taskStateRects.Add(new RectData
+                    {
+                        Rect = rect,
+                        Text = text
+                    });
+                }
+            }
+            Redraw();
+        }
+
+        /// <summary>
+        /// 清除任务状态框
+        /// </summary>
+        public void ClearTaskStateRects()
+        {
+            lock (_lock)
+            {
+                _taskStateRects.Clear();
+            }
+            Redraw();
+        }
+
+        #endregion
+
+        #region 兼容旧 API
+
+        /// <summary>
+        /// 设置状态检测框（兼容旧 API，等同于 SetTaskStateRects）
+        /// </summary>
+        public void SetStateRects(List<Rect> rects, Dictionary<Rect, string>? textContents = null)
+        {
+            SetTaskStateRects(rects, textContents);
+        }
+
+        /// <summary>
+        /// 清除状态检测框（兼容旧 API，等同于 ClearTaskStateRects）
+        /// </summary>
+        public void ClearStateRects()
+        {
+            ClearTaskStateRects();
+        }
+
+        #endregion
+
+        #region 清除所有
+
+        /// <summary>
+        /// 清除所有检测框
+        /// </summary>
+        public void ClearAll()
+        {
+            lock (_lock)
+            {
+                _temporaryRects.Clear();
+                _stateIndicatorRects.Clear();
+                _taskStateRects.Clear();
+            }
+            Redraw();
+        }
 
         #endregion
 
         #region 绘制逻辑
 
         /// <summary>
-        /// 针对单个图层重绘其 Canvas
+        /// 重绘所有检测框
         /// </summary>
-        private void RedrawLayer(Layer layer)
+        private void Redraw()
         {
-            var canvas = layer.Canvas;
-            canvas.Children.Clear();
+            // 确保在 UI 线程执行
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(Redraw));
+                return;
+            }
+
+            RootGrid.Children.Clear();
+            var canvas = new Canvas { Background = Brushes.Transparent };
 
             // 处理 DPI 缩放
             PresentationSource source = PresentationSource.FromVisual(this);
@@ -148,37 +290,65 @@ namespace AutoHPMA.Views.Windows
                 dpiY = source.CompositionTarget.TransformFromDevice.M22;
             }
 
-            foreach (var rect in layer.Rects)
+            lock (_lock)
             {
-                var shape = new Rectangle
+                // 绘制状态标识框（绿色，表示当前状态）
+                foreach (var stateRect in _stateIndicatorRects)
                 {
-                    Stroke = Brushes.Red,
-                    StrokeThickness = 2,
-                    Width = rect.Width * dpiX,
-                    Height = rect.Height * dpiY
-                };
-                Canvas.SetLeft(shape, rect.X * dpiX);
-                Canvas.SetTop(shape, rect.Y * dpiY);
-                canvas.Children.Add(shape);
-
-                // 如果有对应的文字内容，添加TextBlock
-                if (layer.TextContents.TryGetValue(rect, out string text))
-                {
-                    var textBlock = new TextBlock
-                    {
-                        Text = text,
-                        Foreground = Brushes.White,
-                        FontSize = 14,
-                        FontWeight = FontWeights.Bold
-                    };
-                    Canvas.SetLeft(textBlock, rect.X * dpiX + 5);
-                    Canvas.SetTop(textBlock, rect.Y * dpiY + 5);
-                    canvas.Children.Add(textBlock);
+                    DrawRect(canvas, stateRect.Rect, stateRect.Text, Brushes.LimeGreen, dpiX, dpiY);
                 }
+
+                // 绘制任务状态框（蓝色）
+                foreach (var taskRect in _taskStateRects)
+                {
+                    DrawRect(canvas, taskRect.Rect, taskRect.Text, Brushes.DeepSkyBlue, dpiX, dpiY);
+                }
+
+                // 绘制临时检测框（红色）
+                foreach (var tempRect in _temporaryRects)
+                {
+                    DrawRect(canvas, tempRect.Rect, tempRect.Text, Brushes.Red, dpiX, dpiY);
+                }
+            }
+
+            RootGrid.Children.Add(canvas);
+        }
+
+        /// <summary>
+        /// 绘制单个检测框
+        /// </summary>
+        private void DrawRect(Canvas canvas, Rect rect, string? text, Brush stroke, double dpiX, double dpiY)
+        {
+            var shape = new Rectangle
+            {
+                Stroke = stroke,
+                StrokeThickness = 2,
+                Width = rect.Width * dpiX,
+                Height = rect.Height * dpiY
+            };
+            Canvas.SetLeft(shape, rect.X * dpiX);
+            Canvas.SetTop(shape, rect.Y * dpiY);
+            canvas.Children.Add(shape);
+
+            // 如果有文字内容，添加 TextBlock
+            if (!string.IsNullOrEmpty(text))
+            {
+                var textBlock = new TextBlock
+                {
+                    Text = text,
+                    Foreground = Brushes.White,
+                    FontSize = 14,
+                    FontWeight = FontWeights.Bold
+                };
+                Canvas.SetLeft(textBlock, rect.X * dpiX + 5);
+                Canvas.SetTop(textBlock, rect.Y * dpiY + 5);
+                canvas.Children.Add(textBlock);
             }
         }
 
         #endregion
+
+        #region 窗口位置同步
 
         /// <summary>
         /// 同步遮罩窗口位置与大小
@@ -201,6 +371,8 @@ namespace AutoHPMA.Views.Windows
                 Height = (winRect.Bottom - winRect.Top) * dpiY;
             }
         }
+
+        #endregion
 
         #region Win32 API
         [DllImport("user32.dll", SetLastError = true)]

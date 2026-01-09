@@ -93,7 +93,6 @@ public class AutoCooking : BaseGameTask
         _cookingConfigService = cookingConfigService;
         LoadAssets();
         CalOffset();
-        AddLayersForMaskWindow();
         InitStateRules();
     }
 
@@ -204,10 +203,7 @@ public class AutoCooking : BaseGameTask
 
     private void ClearCookingLayers()
     {
-        _maskWindow?.ClearLayer("Kitchenware");
-        _maskWindow?.ClearLayer("Condiments");
-        _maskWindow?.ClearLayer("Ingredients");
-        _maskWindow?.ClearLayer("Orders");
+        ClearStateRects();
     }
 
     #endregion
@@ -229,7 +225,6 @@ public class AutoCooking : BaseGameTask
             var result = Find(dishImage, new MatchOptions { UseAlphaMask = true });
             if (result.Success)
             {
-                ShowMatchRects(result, "Click");
                 ClickMatchCenter(result);
                 return true;
             }
@@ -450,10 +445,10 @@ public class AutoCooking : BaseGameTask
             return false;
 
         // 显示食材和调料
-        var ingredientRectsList = _currentDishConfig.RequiredIngredients.Select(i => ScaleRect(ingredientRects[i], scale)).ToList();
-        var condimentRectsList = _currentDishConfig.RequiredCondiments.Select(c => ScaleRect(condimentRects[c], scale)).ToList();
-        _maskWindow?.SetLayerRects("Ingredients", ingredientRectsList);
-        _maskWindow?.SetLayerRects("Condiments", condimentRectsList);
+        var allRects = new List<Rect>();
+        allRects.AddRange(_currentDishConfig.RequiredIngredients.Select(i => ScaleRect(ingredientRects[i], scale)));
+        allRects.AddRange(_currentDishConfig.RequiredCondiments.Select(c => ScaleRect(condimentRects[c], scale)));
+        SetStateRects(allRects);
 
         completedSteps.Clear();
         initialized = true;
@@ -565,11 +560,17 @@ public class AutoCooking : BaseGameTask
 
     private void UpdateKitchenwareStatusDisplay()
     {
-        var textContents = new Dictionary<Rect, string>();
-
+        // 将厨具状态添加到状态检测框
+        var allRects = new List<Rect>();
+        allRects.AddRange(_currentDishConfig.RequiredIngredients.Select(i => ScaleRect(ingredientRects[i], scale)));
+        allRects.AddRange(_currentDishConfig.RequiredCondiments.Select(c => ScaleRect(condimentRects[c], scale)));
+        allRects.AddRange(_currentDishConfig.RequiredKitchenware.Select(k => ScaleRect(kitchenwareRects[k], scale)));
+        
+        // 构建带文字的检测框字典
+        var textContentsScaled = new Dictionary<Rect, string>();
         foreach (var kitchenware in _currentDishConfig.RequiredKitchenware)
         {
-            if (kitchenwareStatus.TryGetValue(kitchenware, out var status))
+            if (kitchenwareStatus.TryGetValue(kitchenware, out var status) && kitchenwareRects.TryGetValue(kitchenware, out var rect))
             {
                 string text = status.status switch
                 {
@@ -579,27 +580,17 @@ public class AutoCooking : BaseGameTask
                     CookingStatus.Overcooked => "糊了！",
                     _ => "未知状态"
                 };
-                textContents[kitchenwareRects[kitchenware]] = text;
+                textContentsScaled[ScaleRect(rect, scale)] = text;
             }
         }
-
-        var rects = _currentDishConfig.RequiredKitchenware.Select(k => ScaleRect(kitchenwareRects[k], scale)).ToList();
-        _maskWindow?.SetLayerRects("Kitchenware", rects, textContents);
+        SetStateRects(allRects, textContentsScaled);
     }
 
     #endregion
 
     #region 资源加载
 
-    private void AddLayersForMaskWindow()
-    {
-        _maskWindow?.AddLayer("Kitchenware");
-        _maskWindow?.AddLayer("Condiments");
-        _maskWindow?.AddLayer("Ingredients");
-        _maskWindow?.AddLayer("Orders");
-        _maskWindow?.AddLayer("Match");
-        _maskWindow?.AddLayer("Click");
-    }
+
 
     public void LoadAssets()
     {

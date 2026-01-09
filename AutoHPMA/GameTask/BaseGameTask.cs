@@ -305,12 +305,13 @@ namespace AutoHPMA.GameTask
         }
 
         /// <summary>
-        /// 根据匹配结果点击模板中心位置
+        /// 根据匹配结果点击模板中心位置，自动显示检测框
         /// </summary>
         /// <param name="result">匹配结果</param>
         protected void ClickMatchCenter(MatchResult result)
         {
             if (!result.Success) return;
+            ShowMatchRects(result);
             var centerX = result.Location.X + result.TemplateSize.Width / 2.0;
             var centerY = result.Location.Y + result.TemplateSize.Height / 2.0;
             Click(new Point((int)centerX, (int)centerY));
@@ -336,7 +337,7 @@ namespace AutoHPMA.GameTask
         }
 
         /// <summary>
-        /// 尝试查找并点击模板
+        /// 尝试查找并点击模板，成功时自动显示检测框
         /// </summary>
         /// <param name="template">模板图像</param>
         /// <param name="threshold">匹配阈值</param>
@@ -353,19 +354,16 @@ namespace AutoHPMA.GameTask
         }
 
         /// <summary>
-        /// 尝试查找并点击带 Alpha 通道的模板
+        /// 尝试查找并点击带 Alpha 通道的模板，成功时自动显示检测框
         /// </summary>
         /// <param name="template">带 Alpha 通道的模板图像</param>
         /// <param name="threshold">匹配阈值</param>
-        /// <param name="showMatch">是否显示匹配结果</param>
         /// <returns>是否成功找到并点击</returns>
-        protected bool TryClickTemplateWithAlpha(Mat template, double threshold = 0.9, bool showMatch = false)
+        protected bool TryClickTemplateWithAlpha(Mat template, double threshold = 0.9)
         {
             var result = Find(template, new MatchOptions { UseAlphaMask = true, Threshold = threshold });
             if (result.Success)
             {
-                if (showMatch)
-                    ShowMatchRects(result, "Click");
                 ClickMatchCenter(result);
                 return true;
             }
@@ -395,28 +393,37 @@ namespace AutoHPMA.GameTask
 
         #endregion
 
-        #region 显示匹配结果
+        #region 显示检测框
 
         /// <summary>
-        /// 在遮罩窗口显示匹配结果
+        /// 显示匹配结果的临时检测框
         /// </summary>
         /// <param name="result">匹配结果</param>
-        /// <param name="layerName">图层名称</param>
-        protected void ShowMatchRects(MatchResult result, string layerName = "Match")
+        /// <param name="durationMs">显示时长（毫秒），默认 1500ms</param>
+        protected void ShowMatchRects(MatchResult result, int durationMs = 500)
         {
             if (result.Success)
             {
-                _maskWindow?.SetLayerRects(layerName, result.Rects);
+                _maskWindow?.AddTemporaryRects(result.Rects, durationMs: durationMs);
             }
         }
 
         /// <summary>
-        /// 清除指定图层的显示
+        /// 设置任务状态检测框（用于任务特定的状态框，如选项框、厨具状态等）
         /// </summary>
-        /// <param name="layerName">图层名称</param>
-        protected void ClearMatchRects(string layerName = "Match")
+        /// <param name="rects">检测框区域列表</param>
+        /// <param name="textContents">可选的文字内容字典</param>
+        protected void SetStateRects(List<Rect> rects, Dictionary<Rect, string>? textContents = null)
         {
-            _maskWindow?.ClearLayer(layerName);
+            _maskWindow?.SetTaskStateRects(rects, textContents);
+        }
+
+        /// <summary>
+        /// 清除任务状态检测框
+        /// </summary>
+        protected void ClearStateRects()
+        {
+            _maskWindow?.ClearTaskStateRects();
         }
 
         #endregion
@@ -438,12 +445,20 @@ namespace AutoHPMA.GameTask
         {
             foreach (var (templates, state, displayName, threshold) in rules)
             {
-                if (templates.Any(t => Find(t, new MatchOptions { Threshold = threshold }).Success))
+                foreach (var template in templates)
                 {
-                    _logWindow?.SetGameState(displayName);
-                    return state;
+                    var result = Find(template, new MatchOptions { Threshold = threshold });
+                    if (result.Success)
+                    {
+                        // 显示状态标识检测框（绿色，持续显示直到状态改变）
+                        _maskWindow?.SetStateIndicatorRects(result.Rects);
+                        _logWindow?.SetGameState(displayName);
+                        return state;
+                    }
                 }
             }
+            // 未匹配到任何状态时清除状态标识框
+            _maskWindow?.ClearStateIndicatorRects();
             _logWindow?.SetGameState(defaultDisplayName);
             return defaultState;
         }
@@ -485,7 +500,7 @@ namespace AutoHPMA.GameTask
             }
             finally
             {
-                _maskWindow?.ClearAllLayers();
+                _maskWindow?.ClearAll();
                 _logWindow?.SetGameState("空闲");
                 _waited = false;
                 _cts.Dispose();

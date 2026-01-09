@@ -71,7 +71,6 @@ public class AutoClubQuiz : BaseGameTask
         paddleOCRHelper = new PaddleOCRHelper();
         LoadAssets();
         CalOffset();
-        AddLayersForMaskWindow();
         InitStateRules();
     }
 
@@ -90,13 +89,7 @@ public class AutoClubQuiz : BaseGameTask
         };
     }
 
-    private void AddLayersForMaskWindow()
-    {
-        _maskWindow?.AddLayer("Match");
-        _maskWindow?.AddLayer("Option");
-        _maskWindow?.AddLayer("Question");
-        _maskWindow?.AddLayer("Time");
-    }
+
 
     public void LoadAssets()
     {
@@ -274,7 +267,6 @@ public class AutoClubQuiz : BaseGameTask
 
     private async Task HandleQuizState()
     {
-        _maskWindow?.ShowLayer("Option");
         
         if (_quiz_over)
         {
@@ -306,13 +298,11 @@ public class AutoClubQuiz : BaseGameTask
         }
 
         await Task.Delay(detect_gap, _cts.Token);
-        _maskWindow?.HideLayer("Option");
     }
 
     private async Task HandleOverState()
     {
-        _maskWindow?.ClearLayer("Time");
-        _maskWindow?.ClearLayer("Question");
+        ClearStateRects();
         await Task.Delay(1000, _cts.Token);
         TryClickTemplate(GetImage("quiz_over"));
         await Task.Delay(2000, _cts.Token);
@@ -375,7 +365,7 @@ public class AutoClubQuiz : BaseGameTask
 
         // 显示定位结果
         var scaledRects = optionRects.Values.Select(r => ScaleRect(r, scale)).ToList();
-        _maskWindow?.SetLayerRects("Option", scaledRects);
+        SetStateRects(scaledRects);
 
         _optionLocated = true;
         return true;
@@ -394,7 +384,10 @@ public class AutoClubQuiz : BaseGameTask
             return false;
 
         _questionLocated = true;
-        _maskWindow?.SetLayerRects("Question", new List<Rect> { ScaleRect(question_rect, scale) });
+        // 将问题框也加入状态检测框
+        var allRects = optionRects.Values.Select(r => ScaleRect(r, scale)).ToList();
+        allRects.Add(ScaleRect(question_rect, scale));
+        SetStateRects(allRects);
         return true;
     }
 
@@ -460,7 +453,11 @@ public class AutoClubQuiz : BaseGameTask
         var result = Find(GetImage("quiz_time20"));
         if (!result.Success) return false;
 
-        _maskWindow?.SetLayerRects("Time", result.Rects);
+        // 将时间框加入状态检测框
+        var allRects = optionRects.Values.Select(r => ScaleRect(r, scale)).ToList();
+        allRects.Add(ScaleRect(question_rect, scale));
+        allRects.AddRange(result.Rects);
+        SetStateRects(allRects);
         var time20 = GetImage("quiz_time20");
         index_rect = new Rect(result.Location.X, result.Location.Y + time20.Height, time20.Width, time20.Height);
         return true;

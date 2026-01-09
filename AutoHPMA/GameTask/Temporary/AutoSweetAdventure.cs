@@ -37,16 +37,10 @@ public class AutoSweetAdventure : BaseGameTask
     {
         LoadAssets();
         CalOffset();
-        AddLayersForMaskWindow();
         InitStateRules();
     }
 
-    private void AddLayersForMaskWindow()
-    {
-        _maskWindow?.AddLayer("Match");
-        _maskWindow?.AddLayer("Click");
-        _maskWindow?.AddLayer("Round");
-    }
+
 
     private void InitStateRules()
     {
@@ -101,7 +95,6 @@ public class AutoSweetAdventure : BaseGameTask
                 break;
 
             case AutoSweetAdventureState.Gaming:
-                _maskWindow?.ShowLayer("Round");
                 round = FindRound();
                 if (round > prev_round)
                 {
@@ -154,12 +147,10 @@ public class AutoSweetAdventure : BaseGameTask
                     }
                 }
                 await Task.Delay(1000, _cts.Token);
-                _maskWindow?.HideLayer("Round");
                 break;
 
             case AutoSweetAdventureState.Endding:
-                _maskWindow?.ClearLayer("Round");
-                _maskWindow?.HideLayer("Round");
+                ClearStateRects();
                 round = 0;
                 prev_round = 0;
                 step = 1;
@@ -187,7 +178,7 @@ public class AutoSweetAdventure : BaseGameTask
             var result = Find(template);
             if (result.Success)
             {
-                ShowMatchRects(result, "Round");
+                SetStateRects(result.Rects);
                 return roundNum;
             }
         }
