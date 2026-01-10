@@ -98,6 +98,10 @@ namespace AutoHPMA.GameTask
         private volatile bool _isStateMonitoring = false;
         protected int _stateMonitorIntervalMs = 200;
 
+        // 操作级别的取消令牌，用于在状态变化时立即取消当前操作
+        private CancellationTokenSource? _operationCts;
+        private readonly object _operationCtsLock = new object();
+
         public event EventHandler? TaskCompleted;
 
         public BaseGameTask(ILogger logger, nint displayHwnd, nint gameHwnd)
@@ -106,8 +110,58 @@ namespace AutoHPMA.GameTask
             _displayHwnd = displayHwnd;
             _gameHwnd = gameHwnd;
             _cts = new CancellationTokenSource();
+            InitializeOperationCts();
             CalOffset();
         }
+
+        #region 操作取消管理
+
+        /// <summary>
+        /// 初始化操作级别的取消令牌
+        /// </summary>
+        private void InitializeOperationCts()
+        {
+            lock (_operationCtsLock)
+            {
+                _operationCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            }
+        }
+
+        /// <summary>
+        /// 取消当前操作并创建新的操作 CTS
+        /// 在状态变化时调用，确保正在进行的操作立即停止
+        /// </summary>
+        protected void CancelCurrentOperation()
+        {
+            lock (_operationCtsLock)
+            {
+                try
+                {
+                    _operationCts?.Cancel();
+                    _operationCts?.Dispose();
+                }
+                catch { /* 忽略异常 */ }
+
+                // 创建链接到主 CTS 的新操作 CTS
+                _operationCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            }
+        }
+
+        /// <summary>
+        /// 获取当前操作的取消令牌
+        /// </summary>
+        protected CancellationToken OperationToken
+        {
+            get
+            {
+                lock (_operationCtsLock)
+                {
+                    return _operationCts?.Token ?? _cts.Token;
+                }
+            }
+        }
+
+        #endregion
 
         #region 工具方法
 
@@ -301,11 +355,13 @@ namespace AutoHPMA.GameTask
         /// <param name="location">未缩放的坐标位置</param>
         protected async Task ClickAsync(Point location)
         {
-            _cts.Token.ThrowIfCancellationRequested();
+            var token = OperationToken;
+            token.ThrowIfCancellationRequested();
             await WindowInteractionHelper.SendMouseClickAsync(
                 _gameHwnd,
                 (uint)(location.X * scale - offsetX),
-                (uint)(location.Y * scale - offsetY)
+                (uint)(location.Y * scale - offsetY),
+                token
             );
         }
 
@@ -333,11 +389,12 @@ namespace AutoHPMA.GameTask
 
             foreach (var rect in result.RectsUnscaled)
             {
-                _cts.Token.ThrowIfCancellationRequested();
+                var token = OperationToken;
+                token.ThrowIfCancellationRequested();
                 var centerX = rect.X + result.TemplateSize.Width / 2.0;
                 var centerY = rect.Y + result.TemplateSize.Height / 2.0;
                 await ClickAsync(new Point((int)centerX, (int)centerY));
-                await Task.Delay(delayMs, _cts.Token);
+                await Task.Delay(delayMs, token);
             }
         }
 
@@ -384,16 +441,52 @@ namespace AutoHPMA.GameTask
         /// </summary>
         protected async Task<bool> DragMoveAsync(Point start, Point end, int duration = 500)
         {
-            _cts.Token.ThrowIfCancellationRequested();
+            var token = OperationToken;
+            token.ThrowIfCancellationRequested();
             await WindowInteractionHelper.SendMouseDragWithNoiseAsync(
                 _gameHwnd,
                 (uint)(start.X * scale - offsetX),
                 (uint)(start.Y * scale - offsetY),
                 (uint)(end.X * scale - offsetX),
                 (uint)(end.Y * scale - offsetY),
-                duration
+                duration,
+                token
             );
             return true;
+        }
+
+        #endregion
+
+        #region 键盘操作
+
+        /// <summary>
+        /// 异步发送空格键
+        /// </summary>
+        protected async Task SendSpaceAsync()
+        {
+            var token = OperationToken;
+            token.ThrowIfCancellationRequested();
+            await WindowInteractionHelper.SendSpaceAsync(_gameHwnd, token);
+        }
+
+        /// <summary>
+        /// 异步发送回车键
+        /// </summary>
+        protected async Task SendEnterAsync()
+        {
+            var token = OperationToken;
+            token.ThrowIfCancellationRequested();
+            await WindowInteractionHelper.SendEnterAsync(_gameHwnd, token);
+        }
+
+        /// <summary>
+        /// 异步发送 ESC 键
+        /// </summary>
+        protected async Task SendESCAsync()
+        {
+            var token = OperationToken;
+            token.ThrowIfCancellationRequested();
+            await WindowInteractionHelper.SendESCAsync(_gameHwnd, token);
         }
 
         #endregion

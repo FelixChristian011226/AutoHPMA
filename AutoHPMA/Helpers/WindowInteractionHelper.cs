@@ -94,12 +94,22 @@ public class WindowInteractionHelper
     /// <summary>
     /// 异步发送鼠标点击
     /// </summary>
-    public static async Task SendMouseClickAsync(IntPtr hWnd, uint x, uint y)
+    /// <param name="cancellationToken">取消令牌（可选）</param>
+    public static async Task SendMouseClickAsync(IntPtr hWnd, uint x, uint y, CancellationToken cancellationToken = default)
     {
         var lParam = MakeLParam(x, y);
 
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
-        await Task.Delay(100);
+        try
+        {
+            await Task.Delay(100, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // 即使取消也要释放鼠标
+            SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
+            throw;
+        }
         SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
     }
 
@@ -110,24 +120,31 @@ public class WindowInteractionHelper
     /// <param name="x">X坐标</param>
     /// <param name="y">Y坐标</param>
     /// <param name="duration">长按持续时间（毫秒）</param>
-    public static async Task SendMouseLongPressAsync(IntPtr hWnd, uint x, uint y, int duration = 1000)
+    /// <param name="cancellationToken">取消令牌（可选）</param>
+    public static async Task SendMouseLongPressAsync(IntPtr hWnd, uint x, uint y, int duration = 1000, CancellationToken cancellationToken = default)
     {
         var lParam = MakeLParam(x, y);
 
         // 按下鼠标左键
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
         
-        // 持续指定时间
-        await Task.Delay(duration);
-        
-        // 释放鼠标左键
-        SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
+        try
+        {
+            // 持续指定时间
+            await Task.Delay(duration, cancellationToken);
+        }
+        finally
+        {
+            // 无论是否取消都要释放鼠标左键
+            SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
+        }
     }
 
     /// <summary>
     /// 异步发送带 ParentNotify 的鼠标点击
     /// </summary>
-    public static async Task SendMouseClickWithParentNotifyAsync(IntPtr hWnd, uint x, uint y)
+    /// <param name="cancellationToken">取消令牌（可选）</param>
+    public static async Task SendMouseClickWithParentNotifyAsync(IntPtr hWnd, uint x, uint y, CancellationToken cancellationToken = default)
     {
         IntPtr lParam = MakeLParam(x, y);
 
@@ -135,10 +152,18 @@ public class WindowInteractionHelper
         uint wParamForParentNotify = (uint)WM_LBUTTONDOWN | ((y & 0xFFFF) << 16) | (x & 0xFFFF);
         IntPtr wParam = new IntPtr(wParamForParentNotify);
         PostMessage(hWnd, WM_PARENTNOTIFY, wParam, lParam);
-        await Task.Delay(50);
+        await Task.Delay(50, cancellationToken);
 
         PostMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
-        await Task.Delay(100);
+        try
+        {
+            await Task.Delay(100, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
+            throw;
+        }
 
         PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
     }
@@ -146,31 +171,35 @@ public class WindowInteractionHelper
     /// <summary>
     /// 异步发送回车键
     /// </summary>
-    public static async Task SendEnterAsync(IntPtr hWnd)
+    /// <param name="cancellationToken">取消令牌（可选）</param>
+    public static async Task SendEnterAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
     {
-        await SendKeyAsync(hWnd, VK_RETURN);
+        await SendKeyAsync(hWnd, VK_RETURN, cancellationToken);
     }
 
     /// <summary>
     /// 异步发送 ESC 键
     /// </summary>
-    public static async Task SendESCAsync(IntPtr hWnd)
+    /// <param name="cancellationToken">取消令牌（可选）</param>
+    public static async Task SendESCAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
     {
-        await SendKeyAsync(hWnd, VK_ESCAPE);
+        await SendKeyAsync(hWnd, VK_ESCAPE, cancellationToken);
     }
 
     /// <summary>
     /// 异步发送空格键
     /// </summary>
-    public static async Task SendSpaceAsync(IntPtr hWnd)
+    /// <param name="cancellationToken">取消令牌（可选）</param>
+    public static async Task SendSpaceAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
     {
-        await SendKeyAsync(hWnd, VK_SPACE);
+        await SendKeyAsync(hWnd, VK_SPACE, cancellationToken);
     }
 
     /// <summary>
     /// 异步发送按键
     /// </summary>
-    public static async Task SendKeyAsync(IntPtr hWnd, int virtualKey)
+    /// <param name="cancellationToken">取消令牌（可选）</param>
+    public static async Task SendKeyAsync(IntPtr hWnd, int virtualKey, CancellationToken cancellationToken = default)
     {
         const uint MAPVK_VK_TO_VSC = 0x00;
         uint scanCode = MapVirtualKey((uint)virtualKey, MAPVK_VK_TO_VSC);
@@ -179,8 +208,15 @@ public class WindowInteractionHelper
         IntPtr lParamUp = (IntPtr)(0xC0000001 | (scanCode << 16));
 
         PostMessage(hWnd, WM_KEYDOWN, (IntPtr)virtualKey, lParamDown);
-        await Task.Delay(50);
-        PostMessage(hWnd, WM_KEYUP, (IntPtr)virtualKey, lParamUp);
+        try
+        {
+            await Task.Delay(50, cancellationToken);
+        }
+        finally
+        {
+            // 无论是否取消都要释放按键
+            PostMessage(hWnd, WM_KEYUP, (IntPtr)virtualKey, lParamUp);
+        }
     }
 
     // 添加MapVirtualKey的声明
@@ -209,54 +245,72 @@ public class WindowInteractionHelper
     /// <summary>
     /// 异步发送带噪声的鼠标拖拽操作，不阻塞线程
     /// </summary>
-    public static async Task SendMouseDragWithNoiseAsync(IntPtr hWnd, uint startX, uint startY, uint endX, uint endY, int duration = 500)
+    /// <param name="cancellationToken">取消令牌（可选），取消时会立即释放鼠标</param>
+    public static async Task SendMouseDragWithNoiseAsync(IntPtr hWnd, uint startX, uint startY, uint endX, uint endY, int duration = 500, CancellationToken cancellationToken = default)
     {
         var startLParam = MakeLParam(startX, startY);
         var endLParam = MakeLParam(endX, endY);
+        IntPtr currentLParam = startLParam; // 跟踪当前位置，用于取消时释放鼠标
 
         // 按下鼠标左键
         PostMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, startLParam);
-        await Task.Delay(50);
-
-        // 计算移动的步数和每步的延迟
-        int steps = 30;
-        int stepDelay = duration / steps;
-        double stepX = (endX - startX) / (double)steps;
-        double stepY = (endY - startY) / (double)steps;
-
-        // 逐步移动鼠标，添加微小随机偏移
-        for (int i = 1; i <= steps; i++)
+        
+        try
         {
-            // 添加微小随机偏移（±2像素）
-            int offsetX = _random.Next(-2, 3);
-            int offsetY = _random.Next(-2, 3);
-            
-            uint currentX = (uint)(startX + (stepX * i) + offsetX);
-            uint currentY = (uint)(startY + (stepY * i) + offsetY);
-            var currentLParam = MakeLParam(currentX, currentY);
-            
-            PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, currentLParam);
-            await Task.Delay(stepDelay);
-        }
+            await Task.Delay(50, cancellationToken);
 
-        // 在终点位置进行多次确认
-        for (int i = 0; i < 3; i++)
+            // 计算移动的步数和每步的延迟
+            int steps = 30;
+            int stepDelay = duration / steps;
+            double stepX = (endX - startX) / (double)steps;
+            double stepY = (endY - startY) / (double)steps;
+
+            // 逐步移动鼠标，添加微小随机偏移
+            for (int i = 1; i <= steps; i++)
+            {
+                // 在每步之前检查取消
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // 添加微小随机偏移（±2像素）
+                int offsetX = _random.Next(-2, 3);
+                int offsetY = _random.Next(-2, 3);
+                
+                uint currentX = (uint)(startX + (stepX * i) + offsetX);
+                uint currentY = (uint)(startY + (stepY * i) + offsetY);
+                currentLParam = MakeLParam(currentX, currentY);
+                
+                PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, currentLParam);
+                await Task.Delay(stepDelay, cancellationToken);
+            }
+
+            // 在终点位置进行多次确认
+            for (int i = 0; i < 3; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // 在终点位置添加微小随机偏移
+                int offsetX = _random.Next(-1, 2);
+                int offsetY = _random.Next(-1, 2);
+
+                uint finalX = (uint)(endX + offsetX);
+                uint finalY = (uint)(endY + offsetY);
+                var finalLParam = MakeLParam(finalX, finalY);
+                currentLParam = finalLParam;
+
+                PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, finalLParam);
+                await Task.Delay(50, cancellationToken);
+            }
+
+            // 正常完成，释放鼠标左键
+            PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, endLParam);
+            await Task.Delay(50, cancellationToken);
+        }
+        catch (OperationCanceledException)
         {
-            // 在终点位置添加微小随机偏移
-            int offsetX = _random.Next(-1, 2);
-            int offsetY = _random.Next(-1, 2);
-
-            uint finalX = (uint)(endX + offsetX);
-            uint finalY = (uint)(endY + offsetY);
-            var finalLParam = MakeLParam(finalX, finalY);
-
-            PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, finalLParam);
-            await Task.Delay(50);
+            // 取消时在当前位置释放鼠标，防止鼠标"卡住"
+            PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, currentLParam);
+            throw;
         }
-
-        // 释放鼠标左键
-        PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, endLParam);
-        await Task.Delay(50);
     }
 
     // 添加鼠标移动消息常量

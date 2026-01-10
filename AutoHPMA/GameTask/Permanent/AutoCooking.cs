@@ -120,6 +120,12 @@ public class AutoCooking : BaseGameTask
 
     private void OnStateDetected(AutoCookingState newState)
     {
+        if (_state != newState)
+        {
+            // 状态变化时，立即取消当前正在进行的操作
+            CancelCurrentOperation();
+            _logger.LogDebug("状态从 {OldState} 变为 {NewState}，已取消当前操作", _state, newState);
+        }
         _state = newState;
         if (newState != AutoCookingState.Unknown)
             _waited = false;
@@ -189,11 +195,11 @@ public class AutoCooking : BaseGameTask
                 round++;
                 _logger.LogInformation("第 {round} 轮烹饪完成。", round);
                 ClearCookingLayers();
-                await Task.Delay(3000, _cts.Token);
-                await SendSpaceAsync(_gameHwnd);
-                await Task.Delay(3000, _cts.Token);
-                await SendSpaceAsync(_gameHwnd);
-                await Task.Delay(3000, _cts.Token);
+                await Task.Delay(3000, OperationToken);
+                await SendSpaceAsync();
+                await Task.Delay(3000, OperationToken);
+                await SendSpaceAsync();
+                await Task.Delay(3000, OperationToken);
                 break;
         }
     }

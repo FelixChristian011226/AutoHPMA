@@ -178,7 +178,7 @@ public class AutoForbiddenForest : BaseGameTask
                 }
                 
                 await Task.Delay(1500, _cts.Token);
-                await SendSpaceAsync(_gameHwnd);
+                await SendSpaceAsync();
                 _logger.LogInformation("第[Yellow]{Round}[/Yellow]/[Yellow]{Total}[/Yellow]次禁林任务完成。", ++round, _autoForbiddenForestTimes);
                 await Task.Delay(2000, _cts.Token);
                 break;

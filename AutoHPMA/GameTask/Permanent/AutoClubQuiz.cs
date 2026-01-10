@@ -167,9 +167,9 @@ public class AutoClubQuiz : BaseGameTask
         }
         // 已等待过，执行操作进入地图
         _waited = false;
-        await SendESCAsync(_gameHwnd);
+        await SendESCAsync();
         await Task.Delay(2000, _cts.Token);
-        await SendKeyAsync(_gameHwnd, 0x4D); // M键打开地图
+        await WindowInteractionHelper.SendKeyAsync(_gameHwnd, 0x4D); // M键打开地图
         await Task.Delay(2000, _cts.Token);
     }
 
@@ -181,7 +181,7 @@ public class AutoClubQuiz : BaseGameTask
         await Task.Delay(1000, _cts.Token);
         await TryClickTemplateAsync(GetImage("map_club_enter"));
         await Task.Delay(1000, _cts.Token);
-        await SendESCAsync(_gameHwnd);
+        await SendESCAsync();
         await Task.Delay(2000, _cts.Token);
     }
 
@@ -199,7 +199,7 @@ public class AutoClubQuiz : BaseGameTask
         switch (_gatherRefreshMode)
         {
             case GatherRefreshMode.ChatBox:
-                await SendEnterAsync(_gameHwnd);
+                await SendEnterAsync();
                 await Task.Delay(2000, _cts.Token);
                 _gatherRefreshMode = GatherRefreshMode.Badge;
                 break;
@@ -226,7 +226,7 @@ public class AutoClubQuiz : BaseGameTask
         }
 
         // 关闭聊天框
-        await SendESCAsync(_gameHwnd);
+        await SendESCAsync();
         await Task.Delay(1500, _cts.Token);
     }
 
@@ -247,7 +247,7 @@ public class AutoClubQuiz : BaseGameTask
                 await Task.Delay(2000, _cts.Token);
                 if (Find(GetImage("chat_club_quiz"), new MatchOptions { Threshold = 0.98 }).Success)
                 {
-                    await SendESCAsync(_gameHwnd);
+                    await SendESCAsync();
                     await Task.Delay(1500, _cts.Token);
                 }
             }
@@ -259,7 +259,7 @@ public class AutoClubQuiz : BaseGameTask
         var enterResult = Find(GetImage("badge_enter"), new MatchOptions { Mask = GetImage("badge_enter_mask") });
         if (!enterResult.Success)
         {
-            await SendESCAsync(_gameHwnd);
+            await SendESCAsync();
         }
         else
         {
@@ -317,7 +317,7 @@ public class AutoClubQuiz : BaseGameTask
         roundIndex++;
         _quiz_over = true;
         FindScore();
-        await SendESCAsync(_gameHwnd);
+        await SendESCAsync();
         await Task.Delay(1000, _cts.Token);
     }
 

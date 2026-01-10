@@ -158,7 +158,7 @@ public class AutoSweetAdventure : BaseGameTask
                 prev_round = 0;
                 step = 1;
                 _logger.LogInformation("游戏结束，正在结算中...");
-                await SendSpaceAsync(_gameHwnd);
+                await SendSpaceAsync();
                 await Task.Delay(2000, _cts.Token);
                 break;
         }
