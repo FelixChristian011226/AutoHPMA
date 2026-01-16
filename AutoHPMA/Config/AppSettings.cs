@@ -13,12 +13,6 @@ namespace AutoHPMA.Config
             "settings.json");
 
         // Dashboard
-        [JsonPropertyName("captureInterval")]
-        public int CaptureInterval { get; set; } = 500;
-
-        [JsonPropertyName("realTimeScreenshotEnabled")]
-        public bool RealTimeScreenshotEnabled { get; set; } = true;
-
         [JsonPropertyName("logWindowEnabled")]
         public bool LogWindowEnabled { get; set; } = true;
 

@@ -86,7 +86,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="启动后才能开始各项任务，点击可展开相关配置"
+                        Text="点击启动按钮以开启自动化任务，可展开配置截图参数"
                         TextWrapping="Wrap" />
                     <ui:Button
                         Grid.Row="0"
@@ -110,20 +110,6 @@
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel>
-                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <controls:SettingRow Title="触发器间隔（毫秒）" Description="截图器的触发间隔，默认500ms">
-                    <controls:SettingRow.SettingContent>
-                        <ui:NumberBox MinWidth="90" Value="{Binding ViewModel.CaptureInterval, Mode=TwoWay}" />
-                    </controls:SettingRow.SettingContent>
-                </controls:SettingRow>
-                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <controls:SettingRow Title="实时截屏" Description="开启后，在截屏页面显示实时截屏结果">
-                    <controls:SettingRow.SettingContent>
-                        <ui:ToggleSwitch 
-                            OnContent="On" OffContent="Off"
-                            IsChecked="{Binding ViewModel.RealTimeScreenshotEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </controls:SettingRow.SettingContent>
-                </controls:SettingRow>
             </StackPanel>
         </ui:CardExpander>
 
@@ -152,7 +138,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="覆盖于游戏窗口左上，显示时间状态以及日志信息"
+                        Text="在游戏窗口左上角显示悬浮日志，包含当前时间、运行状态和任务日志"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"
@@ -164,7 +150,7 @@
             </ui:CardExpander.Header>
             <StackPanel>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <controls:SettingRow Title="启用日志滚动" Description="超长内容自动流动显示">
+                <controls:SettingRow Title="启用日志滚动" Description="当日志内容超出显示区域时自动滚动播放">
                     <controls:SettingRow.SettingContent>
                         <ui:ToggleSwitch 
                             OnContent="On" OffContent="Off"
@@ -172,7 +158,7 @@
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <controls:SettingRow Title="输出调试日志" Description="勾选后，日志窗口会输出Debug日志信息">
+                <controls:SettingRow Title="输出调试日志" Description="启用后将输出详细的调试信息，便于排查问题">
                     <controls:SettingRow.SettingContent>
                         <ui:ToggleSwitch 
                             OnContent="On" OffContent="Off"
@@ -207,7 +193,7 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="覆盖于游戏窗口之上，实时显示任务过程中的识别结果"
+                        Text="在游戏窗口上叠加透明遮罩层，可视化展示图像识别区域和匹配结果"
                         TextWrapping="Wrap" />
                     <ui:ToggleSwitch
                         Grid.Row="0"

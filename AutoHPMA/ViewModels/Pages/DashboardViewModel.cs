@@ -11,11 +11,7 @@ using AutoHPMA.Services;
 using AutoHPMA.Views.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
-using OpenCvSharp.Extensions;
 using System.Diagnostics;
-using System.Drawing;
-using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Wpf.Ui.Controls;
 
@@ -28,15 +24,10 @@ namespace AutoHPMA.ViewModels.Pages
         private readonly AppSettings _settings;
         private readonly ILogger<DashboardViewModel> _logger;
         private DispatcherTimer _syncWindowTimer;
-        private DispatcherTimer _captureTimer;
-        private Bitmap? bmp;
 
         #endregion
 
         #region Observable Properties
-
-        [ObservableProperty]
-        private bool _realTimeScreenshotEnabled = true;
 
         [ObservableProperty]
         private bool _logWindowEnabled = true;
@@ -49,9 +40,6 @@ namespace AutoHPMA.ViewModels.Pages
 
         [ObservableProperty]
         private bool _maskWindowEnabled = false;
-
-        [ObservableProperty]
-        private int _captureInterval = 500;
 
         [ObservableProperty]
         private bool _isRunning = false;
@@ -101,8 +89,6 @@ namespace AutoHPMA.ViewModels.Pages
         private enum StartupOption { OfficialLauncher, MumuSimulator, None }
         private StartupOption _startupOption = StartupOption.None;
 
-        public static event Action<Bitmap>? ScreenshotUpdated;
-
         #endregion
 
         #region 构造函数
@@ -116,8 +102,6 @@ namespace AutoHPMA.ViewModels.Pages
 
         private void LoadSettings()
         {
-            CaptureInterval = _settings.CaptureInterval;
-            RealTimeScreenshotEnabled = _settings.RealTimeScreenshotEnabled;
             LogWindowEnabled = _settings.LogWindowEnabled;
             LogWindowMarqueeEnabled = _settings.LogWindowMarqueeEnabled;
             DebugLogEnabled = _settings.DebugLogEnabled;
@@ -128,35 +112,12 @@ namespace AutoHPMA.ViewModels.Pages
 
         #region Timer 处理
 
-        private void InitializeCaptureTimer()
-        {
-            _captureTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(_captureInterval)
-            };
-        }
-
         public void InitializeSyncWindowTimer()
         {
             _syncWindowTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(50)
             };
-        }
-
-        private void CaptureTimer_Tick(object? sender, EventArgs e)
-        {
-            if (_gameHwnd == IntPtr.Zero || !_realTimeScreenshotEnabled) return;
-
-            bmp?.Dispose();
-            bmp = null;
-
-            using var frame = _capture?.Capture();
-            if (frame != null)
-            {
-                bmp = frame.ToBitmap();
-                ScreenshotUpdated?.Invoke(bmp);
-            }
         }
 
         private void SyncWindowTimer_Tick(object? sender, EventArgs e)
@@ -230,11 +191,7 @@ namespace AutoHPMA.ViewModels.Pages
 
         private void InitializeTimersAndWindows()
         {
-            InitializeCaptureTimer();
             InitializeSyncWindowTimer();
-
-            _captureTimer.Tick += CaptureTimer_Tick;
-            _captureTimer.Start();
 
             if (_logWindowEnabled)
             {
@@ -281,9 +238,6 @@ namespace AutoHPMA.ViewModels.Pages
 
             _maskWindow?.Close();
             _maskWindow = null;
-
-            _captureTimer.Tick -= CaptureTimer_Tick;
-            _captureTimer.Stop();
 
             _syncWindowTimer.Tick -= SyncWindowTimer_Tick;
             _syncWindowTimer.Stop();
@@ -369,13 +323,7 @@ namespace AutoHPMA.ViewModels.Pages
 
         #region 设置保存
 
-        partial void OnCaptureIntervalChanged(int value)
-        {
-            SaveSetting(() => _settings.CaptureInterval = value);
-            _captureTimer?.SetInterval(TimeSpan.FromMilliseconds(value));
-        }
 
-        partial void OnRealTimeScreenshotEnabledChanged(bool value) => SaveSetting(() => _settings.RealTimeScreenshotEnabled = value);
         partial void OnLogWindowEnabledChanged(bool value) => SaveSetting(() => _settings.LogWindowEnabled = value);
         partial void OnDebugLogEnabledChanged(bool value) => SaveSetting(() => _settings.DebugLogEnabled = value);
         partial void OnMaskWindowEnabledChanged(bool value) => SaveSetting(() => _settings.MaskWindowEnabled = value);
@@ -388,17 +336,5 @@ namespace AutoHPMA.ViewModels.Pages
         }
 
         #endregion
-    }
-
-    // DispatcherTimer 扩展方法
-    internal static class DispatcherTimerExtensions
-    {
-        public static void SetInterval(this DispatcherTimer timer, TimeSpan interval)
-        {
-            if (timer != null)
-            {
-                timer.Interval = interval;
-            }
-        }
     }
 }
