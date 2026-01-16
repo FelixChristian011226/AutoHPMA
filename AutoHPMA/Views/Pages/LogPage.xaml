@@ -15,6 +15,8 @@
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+    ScrollViewer.CanContentScroll="False"
     mc:Ignorable="d">
     <Page.Resources>
         <converters:LogLevelToColorConverter x:Key="LogLevelToColorConverter" />
@@ -43,36 +45,50 @@
                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 Padding="8">
-            <ScrollViewer x:Name="LogScrollViewer"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <!-- ItemsControl 无选中效果，纯展示 -->
-                <ItemsControl ItemsSource="{Binding ViewModel.FilteredLogs}"
-                              Background="Transparent">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <!-- 每行日志，可选中复制 -->
-                            <TextBlock Margin="0,2" 
-                                       FontFamily="Consolas" 
-                                       FontSize="13"
-                                       TextWrapping="Wrap">
-                                <Run Text="{Binding Timestamp, StringFormat='[{0:HH:mm:ss}] ', Mode=OneWay}" 
-                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <Run Text="{Binding LevelShort, StringFormat='[{0}] ', Mode=OneWay}" 
-                                     FontWeight="SemiBold"
-                                     Foreground="{Binding Level, Converter={StaticResource LogLevelToColorConverter}}"/>
-                                <Run Text="{Binding Message, Mode=OneWay}" 
-                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </TextBlock>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+            <!-- 使用 ListBox 实现虚拟化和正确的滚动约束 -->
+            <ListBox x:Name="LogListBox"
+                     ItemsSource="{Binding ViewModel.FilteredLogs}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.VirtualizationMode="Recycling">
+                <ListBox.ItemContainerStyle>
+                    <!-- 移除所有选中/悬停效果 -->
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <ContentPresenter/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Margin="0,2" 
+                                   FontFamily="Consolas" 
+                                   FontSize="13"
+                                   TextWrapping="Wrap">
+                            <Run Text="{Binding Timestamp, StringFormat='[{0:HH:mm:ss}] ', Mode=OneWay}" 
+                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <Run Text="{Binding LevelShort, StringFormat='[{0}] ', Mode=OneWay}" 
+                                 FontWeight="SemiBold"
+                                 Foreground="{Binding Level, Converter={StaticResource LogLevelToColorConverter}}"/>
+                            <Run Text="{Binding Message, Mode=OneWay}" 
+                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </Border>
     </Grid>
 </Page>

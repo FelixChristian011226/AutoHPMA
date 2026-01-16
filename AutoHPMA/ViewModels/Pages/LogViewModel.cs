@@ -55,6 +55,7 @@ public partial class LogViewModel : ObservableObject
         LogService.Instance.LogAdded += OnLogAdded;
 
         _logger.LogInformation("日志系统初始化完成");
+
     }
 
     private void OnLogAdded(LogEntry entry)
