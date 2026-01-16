@@ -16,74 +16,166 @@
         <converters:CategoryToColorConverter x:Key="CategoryToColorConverter" />
     </Window.Resources>
 
-    <StackPanel>
-        <!-- 顶部：显示当前游戏状态 -->
-        <StackPanel DockPanel.Dock="Top"
-                    Orientation="Horizontal"
-                    Height="20"
-                    Margin="10,10,0,0"
-                    VerticalAlignment="Center">
-            <ui:SymbolIcon
-                Symbol="Timer12"
-                FontWeight="Bold"
-                Foreground="LightGreen"
-                Margin="6,0,6,0"/>
-            <TextBlock Foreground="LimeGreen" FontWeight="Bold" Text="{Binding TimeNow, StringFormat='HH:mm:ss'}" />
-            <ui:SymbolIcon
-                Symbol="Notepad12"
-                FontWeight="Bold"
-                Foreground="LightGreen"
-                Margin="11,0,6,0"/>
-            <TextBlock
-                Text="{Binding CurrentGameState}"
-                FontWeight="Bold"
-                Foreground="LightGreen" />
-        </StackPanel>
-
-        <ListBox
-                x:Name="LogListBox"
-                Width="380"
-                Height="260"
-                Margin="10,0,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                ScrollViewer.VerticalScrollBarVisibility="Hidden">
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem">
-                    <Setter Property="Height" Value="20" />
-                    <Setter Property="Focusable" Value="False" />
-                    <Setter Property="IsHitTestVisible" Value="False" />
-                    <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="BorderThickness" Value="0" />
-                </Style>
-            </ListBox.ItemContainerStyle>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
+    <!-- 整体半透明背景容器 -->
+    <Border Margin="8"
+            CornerRadius="10"
+            Padding="0">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#50000000" Offset="0"/>
+                <GradientStop Color="#70000000" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.4" Color="Black"/>
+        </Border.Effect>
+        
+        <StackPanel Margin="12,10,12,10">
+            <!-- 顶部：显示当前游戏状态 - 紧凑设计 -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <!-- 时间显示区域 -->
+                <Border Background="#2520E830"
+                        CornerRadius="6"
+                        Padding="8,4,8,4"
+                        VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <!--  将时间和类别括在一起显示，格式化时间为时分秒  -->
-                        <TextBlock>
-                                <Run Foreground="White" Text="[" />
-                                <Run Foreground="LightGray" Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" />
-                                <Run
-                                    FontFamily="Cascadia Mono"
-                                    FontWeight="Bold"
-                                    Foreground="{Binding Category, Converter={StaticResource CategoryToColorConverter}}"
-                                    Text="{Binding Category}" />
-                                <Run Foreground="White" Text="] " />
-                        </TextBlock>
-                        <Grid Width="240" Height="20" ClipToBounds="True">
-                            <Canvas x:Name="MarqueeCanvas" Height="20">
-                                <TextBlock x:Name="MarqueeText"
-                                           Foreground="FloralWhite"
-                                           VerticalAlignment="Center"
-                                           helpers:InlineBindingHelper.FormattedText="{Binding Content}"
-                                           Loaded="MarqueeText_Loaded" />
-                            </Canvas>
-                        </Grid>
+                        <ui:SymbolIcon
+                            Symbol="Timer12"
+                            FontSize="14"
+                            Foreground="#80FF80"
+                            VerticalAlignment="Center"/>
+                        <TextBlock 
+                            Margin="6,0,0,0"
+                            Foreground="#90EE90" 
+                            FontWeight="SemiBold"
+                            FontSize="13"
+                            FontFamily="Consolas"
+                            VerticalAlignment="Center"
+                            Text="{Binding TimeNow}" />
                     </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-    </StackPanel>
+                </Border>
+
+                <!-- 状态显示区域 - 紧贴时间 -->
+                <Border Background="#2520D8E8"
+                        CornerRadius="6"
+                        Padding="8,4,10,4"
+                        Margin="6,0,0,0"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon
+                            Symbol="Notepad12"
+                            FontSize="14"
+                            Foreground="#80E0FF"
+                            VerticalAlignment="Center"/>
+                        <TextBlock
+                            Margin="6,0,0,0"
+                            Text="{Binding CurrentGameState}"
+                            FontWeight="SemiBold"
+                            FontSize="13"
+                            Foreground="#B0E0FF"
+                            VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 分隔线 -->
+            <Border Height="1" Margin="0,0,0,6">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="Transparent" Offset="0"/>
+                        <GradientStop Color="#4090EE90" Offset="0.2"/>
+                        <GradientStop Color="#4080E0FF" Offset="0.8"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <ListBox
+                    x:Name="LogListBox"
+                    Width="360"
+                    Height="230"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Height" Value="26" />
+                        <Setter Property="Margin" Value="0,1,0,1" />
+                        <Setter Property="Focusable" Value="False" />
+                        <Setter Property="IsHitTestVisible" Value="False" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="ItemBorder"
+                                            Background="#10FFFFFF"
+                                            CornerRadius="4"
+                                            Padding="6,3,6,3">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- 时间戳 pill -->
+                            <Border Grid.Column="0"
+                                    Background="#20808080"
+                                    CornerRadius="3"
+                                    Padding="4,1,4,1"
+                                    VerticalAlignment="Center">
+                                <TextBlock FontFamily="Consolas"
+                                           FontSize="11"
+                                           Foreground="#B0B0B0"
+                                           Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" />
+                            </Border>
+                            
+                            <!-- 类别 pill -->
+                            <Border Grid.Column="1"
+                                    Margin="4,0,6,0"
+                                    CornerRadius="3"
+                                    Padding="5,1,5,1"
+                                    VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#2080C0FF"/>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock FontFamily="Cascadia Mono"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{Binding Category, Converter={StaticResource CategoryToColorConverter}}"
+                                           Text="{Binding Category}" />
+                            </Border>
+                            
+                            <!-- 日志内容 -->
+                            <Grid Grid.Column="2" Height="20" ClipToBounds="True">
+                                <Canvas x:Name="MarqueeCanvas" Height="20">
+                                    <TextBlock x:Name="MarqueeText"
+                                               FontSize="12"
+                                               Foreground="#E8E8E8"
+                                               VerticalAlignment="Center"
+                                               helpers:InlineBindingHelper.FormattedText="{Binding Content}"
+                                               Loaded="MarqueeText_Loaded" />
+                                </Canvas>
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+    </Border>
 
 </Window>

@@ -484,7 +484,7 @@ public class AutoCooking : BaseGameTask
             return false;
         }
 
-        _logger.LogInformation("开始初始化菜品：{DishName}", _currentDishConfig.Name);
+        _logger.LogDebug("开始初始化菜品：{DishName}", _currentDishConfig.Name);
 
         if (!LocateItems(_currentDishConfig.RequiredKitchenware, GetKitchenwareMat, kitchenwareRects, kitchenwareCenters, "厨具"))
             return false;
@@ -535,7 +535,7 @@ public class AutoCooking : BaseGameTask
             }
             catch
             {
-                _logger.LogError("{Type} {Item} 的图片未加载", itemType, item);
+                _logger.LogDebug("{Type} {Item} 的图片未加载", itemType, item);
                 return false;
             }
 
@@ -547,7 +547,7 @@ public class AutoCooking : BaseGameTask
 
             if (!result.Success)
             {
-                _logger.LogError("{Type} {Item} 定位失败", itemType, item);
+                _logger.LogDebug("{Type} {Item} 定位失败", itemType, item);
                 return false;
             }
 
