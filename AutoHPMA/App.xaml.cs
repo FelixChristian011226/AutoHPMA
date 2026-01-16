@@ -53,14 +53,12 @@ namespace AutoHPMA
                 services.AddNavigationViewPageProvider();
 
                 // 配置Serilog
-                var logWindowSink = new LogWindowSink();
+                var logServiceSink = new LogServiceSink();
                 var logFileSink = new LogFileSink();
-                var logPageSink = new LogEventSink();
                 Log.Logger = new LoggerConfiguration()
                     .MinimumLevel.Debug()
-                    .WriteTo.Sink(logWindowSink)
-                    .WriteTo.Sink(logFileSink)
-                    .WriteTo.Sink(logPageSink)
+                    .WriteTo.Sink(logServiceSink)  // 统一的UI日志Sink
+                    .WriteTo.Sink(logFileSink)     // 文件日志Sink
                     .CreateLogger();
 
                 services.AddLogging(c => c.AddSerilog());

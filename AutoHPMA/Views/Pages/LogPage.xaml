@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:AutoHPMA.ViewModels.Pages"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:converters="clr-namespace:AutoHPMA.Converters"
     Title="LogPage"
     d:DataContext="{d:DesignInstance Type=pages:LogViewModel}"
     d:DesignHeight="450"
@@ -15,6 +16,9 @@
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
+    <Page.Resources>
+        <converters:LogLevelToColorConverter x:Key="LogLevelToColorConverter" />
+    </Page.Resources>
 
     <Grid Margin="12">
         <Grid.RowDefinitions>
@@ -32,24 +36,43 @@
             <ui:Button Content="清除日志" Command="{Binding ViewModel.ClearLogsCommand}" Margin="12,0,0,0"/>
         </StackPanel>
 
+        <!-- 使用统一背景色的容器 -->
         <Border Grid.Row="1" 
                 CornerRadius="8" 
-                Background="{DynamicResource ControlFillColorDefaultBrush}"
+                Background="{DynamicResource ControlFillColorTertiaryBrush}"
                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                BorderThickness="1">
-            <DockPanel>
-                <ScrollViewer x:Name="LogScrollViewer"
-                            VerticalScrollBarVisibility="Auto" 
-                            VerticalAlignment="Stretch"
-                            MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=DockPanel}}" >
-                    <TextBox x:Name="LogTextBox" 
-                            IsReadOnly="True" 
-                            TextWrapping="Wrap"
-                            Text="{Binding ViewModel.LogText, Mode=OneWay}"
-                            FontFamily="Consolas"
-                            />
-                </ScrollViewer>
-            </DockPanel>
+                BorderThickness="1"
+                Padding="8">
+            <ScrollViewer x:Name="LogScrollViewer"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <!-- ItemsControl 无选中效果，纯展示 -->
+                <ItemsControl ItemsSource="{Binding ViewModel.FilteredLogs}"
+                              Background="Transparent">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- 每行日志，可选中复制 -->
+                            <TextBlock Margin="0,2" 
+                                       FontFamily="Consolas" 
+                                       FontSize="13"
+                                       TextWrapping="Wrap">
+                                <Run Text="{Binding Timestamp, StringFormat='[{0:HH:mm:ss}] ', Mode=OneWay}" 
+                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <Run Text="{Binding LevelShort, StringFormat='[{0}] ', Mode=OneWay}" 
+                                     FontWeight="SemiBold"
+                                     Foreground="{Binding Level, Converter={StaticResource LogLevelToColorConverter}}"/>
+                                <Run Text="{Binding Message, Mode=OneWay}" 
+                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </Border>
     </Grid>
-</Page> 
+</Page>

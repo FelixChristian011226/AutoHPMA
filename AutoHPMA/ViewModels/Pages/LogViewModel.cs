@@ -1,159 +1,95 @@
 using System.Collections.ObjectModel;
-using System.Windows.Input;
+using System.ComponentModel;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using Serilog;
 using Serilog.Events;
-using System.Text;
-using Serilog.Core;
-using System.Windows.Threading;
-using System.Windows;
-using System.Windows.Controls;
-using AutoHPMA.Views.Pages;
+using AutoHPMA.Models;
+using AutoHPMA.Services;
 
-namespace AutoHPMA.ViewModels.Pages
+namespace AutoHPMA.ViewModels.Pages;
+
+public partial class LogViewModel : ObservableObject
 {
-    public partial class LogViewModel : ObservableObject
+    private readonly ILogger<LogViewModel> _logger;
+    private readonly ICollectionView _filteredLogsView;
+
+    [ObservableProperty]
+    private bool _showVerbose = true;
+
+    [ObservableProperty]
+    private bool _showInfo = true;
+
+    [ObservableProperty]
+    private bool _showDebug = true;
+
+    [ObservableProperty]
+    private bool _showWarning = true;
+
+    [ObservableProperty]
+    private bool _showError = true;
+
+    [ObservableProperty]
+    private bool _showFatal = true;
+
+    /// <summary>
+    /// 日志的筛选视图，绑定到 UI
+    /// </summary>
+    public ICollectionView FilteredLogs => _filteredLogsView;
+
+    /// <summary>
+    /// 滚动到底部事件，View 订阅此事件
+    /// </summary>
+    public event Action? ScrollToBottomRequested;
+
+    public LogViewModel(ILogger<LogViewModel> logger)
     {
-        private readonly ILogger<LogViewModel> _logger;
-        private readonly StringBuilder _logBuilder = new();
-        private readonly ObservableCollection<LogEvent> _logEvents = new();
+        _logger = logger;
 
-        public static LogViewModel Instance { get; private set; }
+        // 使用 LogService 的统一数据源
+        _filteredLogsView = CollectionViewSource.GetDefaultView(LogService.Instance.AllLogs);
+        _filteredLogsView.Filter = FilterLog;
 
-        [ObservableProperty]
-        private bool _showVerbose = true;
+        // 订阅日志添加事件，触发滚动
+        LogService.Instance.LogAdded += OnLogAdded;
 
-        [ObservableProperty]
-        private bool _showInfo = true;
-
-        [ObservableProperty]
-        private bool _showDebug = true;
-
-        [ObservableProperty]
-        private bool _showWarning = true;
-
-        [ObservableProperty]
-        private bool _showError = true;
-
-        [ObservableProperty]
-        private bool _showFatal = true;
-
-        [ObservableProperty]
-        private string _logText = string.Empty;
-
-        public LogViewModel(ILogger<LogViewModel> logger)
-        {
-            _logger = logger;
-            Instance = this;
-            _logger.LogInformation("日志系统初始化完成");
-
-            // 处理之前暂存的日志
-            if (LogEventSink.Instance != null)
-            {
-                LogEventSink.Instance.ProcessPendingLogs();
-            }
-        }
-
-        public void AddLogEvent(LogEvent logEvent)
-        {
-            if (!ShouldShowLog(logEvent.Level))
-                return;
-
-            _logEvents.Add(logEvent);
-            UpdateLogText();
-        }
-
-        private bool ShouldShowLog(LogEventLevel level)
-        {
-            return level switch
-            {
-                LogEventLevel.Verbose => ShowVerbose,
-                LogEventLevel.Information => ShowInfo,
-                LogEventLevel.Debug => ShowDebug,
-                LogEventLevel.Warning => ShowWarning,
-                LogEventLevel.Error => ShowError,
-                LogEventLevel.Fatal => ShowFatal,
-                _ => true
-            };
-        }
-
-        private void UpdateLogText()
-        {
-            _logBuilder.Clear();
-            foreach (var logEvent in _logEvents)
-            {
-                if (ShouldShowLog(logEvent.Level))
-                {
-                    _logBuilder.AppendLine($"[{logEvent.Timestamp:HH:mm:ss}] [{logEvent.Level}] {logEvent.RenderMessage()}");
-                }
-            }
-            LogText = _logBuilder.ToString();
-            
-            // 触发滚动到底部的事件
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (LogPage.Instance?.LogScrollViewer != null)
-                {
-                    LogPage.Instance.LogScrollViewer.ScrollToBottom();
-                }
-            }));
-        }
-
-        [RelayCommand]
-        private void ClearLogs()
-        {
-            _logEvents.Clear();
-            UpdateLogText();
-        }
-
-        partial void OnShowVerboseChanged(bool value) => UpdateLogText();
-        partial void OnShowInfoChanged(bool value) => UpdateLogText();
-        partial void OnShowDebugChanged(bool value) => UpdateLogText();
-        partial void OnShowWarningChanged(bool value) => UpdateLogText();
-        partial void OnShowErrorChanged(bool value) => UpdateLogText();
-        partial void OnShowFatalChanged(bool value) => UpdateLogText();
+        _logger.LogInformation("日志系统初始化完成");
     }
 
-    public class LogEventSink : ILogEventSink
+    private void OnLogAdded(LogEntry entry)
     {
-        public static LogEventSink Instance { get; private set; }
-        private readonly Queue<LogEvent> _pendingLogEvents = new Queue<LogEvent>();
-
-        public LogEventSink()
-        {
-            Instance = this;
-        }
-
-        public void Emit(LogEvent logEvent)
-        {
-            if (LogViewModel.Instance != null)
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    LogViewModel.Instance.AddLogEvent(logEvent);
-                });
-            }
-            else
-            {
-                // 如果LogViewModel实例还不存在，将日志事件暂存
-                _pendingLogEvents.Enqueue(logEvent);
-            }
-        }
-
-        public void ProcessPendingLogs()
-        {
-            if (LogViewModel.Instance == null) return;
-
-            while (_pendingLogEvents.Count > 0)
-            {
-                var logEvent = _pendingLogEvents.Dequeue();
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    LogViewModel.Instance.AddLogEvent(logEvent);
-                });
-            }
-        }
+        // 刷新筛选视图并请求滚动
+        _filteredLogsView.Refresh();
+        ScrollToBottomRequested?.Invoke();
     }
-} 
+
+    private bool FilterLog(object obj)
+    {
+        if (obj is not LogEntry entry) return false;
+
+        return entry.Level switch
+        {
+            LogEventLevel.Verbose => ShowVerbose,
+            LogEventLevel.Information => ShowInfo,
+            LogEventLevel.Debug => ShowDebug,
+            LogEventLevel.Warning => ShowWarning,
+            LogEventLevel.Error => ShowError,
+            LogEventLevel.Fatal => ShowFatal,
+            _ => true
+        };
+    }
+
+    [RelayCommand]
+    private void ClearLogs()
+    {
+        LogService.Instance.ClearLogs();
+    }
+
+    partial void OnShowVerboseChanged(bool value) => _filteredLogsView.Refresh();
+    partial void OnShowInfoChanged(bool value) => _filteredLogsView.Refresh();
+    partial void OnShowDebugChanged(bool value) => _filteredLogsView.Refresh();
+    partial void OnShowWarningChanged(bool value) => _filteredLogsView.Refresh();
+    partial void OnShowErrorChanged(bool value) => _filteredLogsView.Refresh();
+    partial void OnShowFatalChanged(bool value) => _filteredLogsView.Refresh();
+}

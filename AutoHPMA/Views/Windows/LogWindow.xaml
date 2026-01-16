@@ -156,8 +156,8 @@
                                 <TextBlock FontFamily="Cascadia Mono"
                                            FontSize="11"
                                            FontWeight="SemiBold"
-                                           Foreground="{Binding Category, Converter={StaticResource CategoryToColorConverter}}"
-                                           Text="{Binding Category}" />
+                                           Foreground="{Binding LevelShort, Converter={StaticResource CategoryToColorConverter}}"
+                                           Text="{Binding LevelShort}" />
                             </Border>
                             
                             <!-- 日志内容 -->
@@ -167,7 +167,7 @@
                                                FontSize="12"
                                                Foreground="#E8E8E8"
                                                Canvas.Top="2"
-                                               helpers:InlineBindingHelper.FormattedText="{Binding Content}"
+                                               helpers:InlineBindingHelper.FormattedText="{Binding Message}"
                                                Loaded="MarqueeText_Loaded" />
                                 </Canvas>
                             </Grid>

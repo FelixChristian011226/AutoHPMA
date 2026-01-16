@@ -2,11 +2,14 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using AutoHPMA.Helpers;
 using AutoHPMA.Models;
+using AutoHPMA.Services;
+using Serilog.Events;
 
 namespace AutoHPMA.Views.Windows;
 
@@ -20,7 +23,8 @@ public partial class LogWindow : Window, INotifyPropertyChanged
 
     #region 字段
 
-    private readonly ObservableCollection<LogMessage> _logMessages = new();
+    private readonly ObservableCollection<LogEntry> _logMessages = new();
+    private readonly ICollectionView _filteredLogsView;
     private readonly DispatcherTimer _timeTimer;
 
     private bool _showMarquee = true;
@@ -54,7 +58,8 @@ public partial class LogWindow : Window, INotifyPropertyChanged
             {
                 _showDebugLogs = value;
                 OnPropertyChanged(nameof(ShowDebugLogs));
-                FilterLogMessages();
+                // 使用 CollectionViewSource 刷新筛选
+                _filteredLogsView.Refresh();
             }
         }
     }
@@ -85,6 +90,11 @@ public partial class LogWindow : Window, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// 筛选后的日志视图，绑定到 UI
+    /// </summary>
+    public ICollectionView FilteredLogs => _filteredLogsView;
+
     #endregion
 
     #region 事件
@@ -103,6 +113,10 @@ public partial class LogWindow : Window, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
 
+        // 初始化 CollectionViewSource 用于筛选
+        _filteredLogsView = CollectionViewSource.GetDefaultView(_logMessages);
+        _filteredLogsView.Filter = FilterLog;
+
         _timeTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1)
@@ -110,7 +124,11 @@ public partial class LogWindow : Window, INotifyPropertyChanged
         _timeTimer.Tick += (_, _) => TimeNow = DateTime.Now.ToString("HH:mm:ss");
         _timeTimer.Start();
 
-        LogListBox.ItemsSource = _logMessages;
+        LogListBox.ItemsSource = _filteredLogsView;
+        
+        // 订阅 LogService 的日志添加事件
+        LogService.Instance.LogAdded += OnLogAdded;
+
         Loaded += LogWindow_Loaded;
         Closing += LogWindow_Closing;
     }
@@ -118,6 +136,34 @@ public partial class LogWindow : Window, INotifyPropertyChanged
     #endregion
 
     #region 事件处理
+
+    private void OnLogAdded(LogEntry entry)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            // 添加到本地集合（LogWindow 有自己的日志上限）
+            _logMessages.Add(entry);
+
+            // 限制日志数量，移除最旧的
+            while (_logMessages.Count > MaxLogCount)
+            {
+                _logMessages.RemoveAt(0);
+            }
+
+            ScrollToBottom();
+        });
+    }
+
+    private bool FilterLog(object obj)
+    {
+        if (obj is not LogEntry entry) return false;
+
+        // 如果不显示 Debug 日志且当前是 Debug 级别，则过滤掉
+        if (!_showDebugLogs && entry.Level == LogEventLevel.Debug)
+            return false;
+
+        return true;
+    }
 
     private void LogWindow_Loaded(object sender, RoutedEventArgs e)
     {
@@ -129,6 +175,7 @@ public partial class LogWindow : Window, INotifyPropertyChanged
     private void LogWindow_Closing(object? sender, CancelEventArgs e)
     {
         _timeTimer.Stop();
+        LogService.Instance.LogAdded -= OnLogAdded;
     }
 
     private void MarqueeText_Loaded(object sender, RoutedEventArgs e)
@@ -154,32 +201,6 @@ public partial class LogWindow : Window, INotifyPropertyChanged
     #region 公共方法
 
     public void SetGameState(string state) => CurrentGameState = state;
-
-    public void AddLogMessage(string category, string content)
-    {
-        if (category == "DBG" && !_showDebugLogs)
-            return;
-
-        // 处理ILogger的格式化字符串
-        content = content.Replace("{", "").Replace("}", "");
-
-        var message = new LogMessage
-        {
-            Timestamp = DateTime.Now,
-            Category = category,
-            Content = content
-        };
-
-        _logMessages.Add(message);
-
-        // 限制日志数量，移除最旧的
-        while (_logMessages.Count > MaxLogCount)
-        {
-            _logMessages.RemoveAt(0);
-        }
-
-        ScrollToBottom();
-    }
 
     public void DeleteLastLogMessage()
     {
@@ -210,26 +231,6 @@ public partial class LogWindow : Window, INotifyPropertyChanged
         if (LogListBox.Items.Count > 0)
         {
             LogListBox.ScrollIntoView(LogListBox.Items[^1]);
-        }
-    }
-
-    private void FilterLogMessages()
-    {
-        // 使用临时列表存储需要保留的消息
-        var toKeep = new System.Collections.Generic.List<LogMessage>();
-        
-        foreach (var log in _logMessages)
-        {
-            if (log.Category != "DBG" || _showDebugLogs)
-            {
-                toKeep.Add(log);
-            }
-        }
-
-        _logMessages.Clear();
-        foreach (var msg in toKeep)
-        {
-            _logMessages.Add(msg);
         }
     }
 
