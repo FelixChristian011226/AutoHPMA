@@ -161,12 +161,12 @@
                             </Border>
                             
                             <!-- 日志内容 -->
-                            <Grid Grid.Column="2" Height="20" ClipToBounds="True">
+                            <Grid Grid.Column="2" Height="20" ClipToBounds="True" VerticalAlignment="Center">
                                 <Canvas x:Name="MarqueeCanvas" Height="20">
                                     <TextBlock x:Name="MarqueeText"
                                                FontSize="12"
                                                Foreground="#E8E8E8"
-                                               VerticalAlignment="Center"
+                                               Canvas.Top="2"
                                                helpers:InlineBindingHelper.FormattedText="{Binding Content}"
                                                Loaded="MarqueeText_Loaded" />
                                 </Canvas>
