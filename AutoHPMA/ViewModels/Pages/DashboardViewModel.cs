@@ -175,6 +175,9 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 _logWindow?.Show();
                 _maskWindow?.Show();
+                
+                // 确保 LogWindow 始终在 MaskWindow 之上
+                _logWindow?.BringToFront();
             }
 
             _logWindow?.RefreshPosition(_gameHwnd);
