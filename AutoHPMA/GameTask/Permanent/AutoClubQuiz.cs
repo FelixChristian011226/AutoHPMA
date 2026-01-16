@@ -332,7 +332,7 @@ public class AutoClubQuiz : BaseGameTask
         PrintText();
         answer = excelHelper.GetBestMatchingAnswer(q);
         bestOption = TextMatchHelper.FindBestOption(answer, a, b, c, d);
-        await Task.Delay(_answerDelay * 1000, _cts.Token);
+        await Task.Delay(_answerDelay, _cts.Token);
         i = Regex.Match(i, @"\d+/\d+").Value;
         _logger.LogInformation("进度：[Yellow]{i}[/Yellow]。答案：[Lime]{bestOption}[/Lime]。", i, bestOption);
         await ClickOptionAsync();

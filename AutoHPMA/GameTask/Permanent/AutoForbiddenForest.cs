@@ -204,8 +204,8 @@ public class AutoForbiddenForest : BaseGameTask
             {
                 _autoForbiddenForestOption = position switch
                 {
-                    "Leader" => AutoForbiddenForestOption.Leader,
-                    "Member" => AutoForbiddenForestOption.Member,
+                    "队长" => AutoForbiddenForestOption.Leader,
+                    "队员" => AutoForbiddenForestOption.Member,
                     _ => throw new ArgumentException("无效的队伍位置")
                 };
             }

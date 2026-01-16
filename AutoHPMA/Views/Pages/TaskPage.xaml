@@ -32,13 +32,19 @@
             </ui:CardExpander.Header>
             <StackPanel>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <controls:SettingRow Title="答题延迟（秒）" Description="匹配答案后的点击延时，默认为0">
+                <controls:SettingRow Title="答题延迟（ms）" Description="匹配答案后的点击延时">
                     <controls:SettingRow.SettingContent>
-                        <ui:NumberBox MinWidth="100" Value="{Binding ViewModel.AnswerDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:NumberBox 
+                            Icon="{ui:SymbolIcon NumberSymbolSquare24}"
+                            ClearButtonEnabled="False"
+                            MinWidth="120" 
+                            SmallChange="50" 
+                            LargeChange="100"
+                            Value="{Binding ViewModel.AnswerDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <controls:SettingRow Title="加入学院互助" Description="当本社团未开启社团答题时，加入学院互助频道的答题活动">
+                <controls:SettingRow Title="加入学院互助" Description="当社团未开启社团答题时，尝试加入学院互助频道的答题活动">
                     <controls:SettingRow.SettingContent>
                         <ui:ToggleSwitch 
                             OnContent="On" OffContent="Off"
@@ -46,7 +52,7 @@
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <controls:SettingRow Title="打开题库" Description="点击打开题库所在文件夹">
+                <controls:SettingRow Title="打开题库目录" Description="点击打开题库文件所在目录">
                     <controls:SettingRow.SettingContent>
                         <ui:Button Command="{Binding ViewModel.OpenQuestionBankCommand}" Content="打开" Icon="{ui:SymbolIcon FolderOpen24}" />
                     </controls:SettingRow.SettingContent>
@@ -66,11 +72,17 @@
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <controls:SettingRow Title="禁林次数" Description="在执行目标次数后终止">
                     <controls:SettingRow.SettingContent>
-                        <ui:NumberBox MinWidth="90" Value="{Binding ViewModel.AutoForbiddenForestTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:NumberBox 
+                            Icon="{ui:SymbolIcon NumberSymbolSquare24}"
+                            ClearButtonEnabled="False"
+                            MinWidth="100" 
+                            SmallChange="1" 
+                            LargeChange="5"
+                            Value="{Binding ViewModel.AutoForbiddenForestTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
-                <controls:SettingRow Title="组队身份" Description="选择自己身份：队长或者队员">
+                <controls:SettingRow Title="组队身份" Description="选择正确的身份，以确保正常开始探索">
                     <controls:SettingRow.SettingContent>
                         <ComboBox MinWidth="80" ItemsSource="{Binding ViewModel.TeamPositions}" SelectedItem="{Binding ViewModel.SelectedTeamPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </controls:SettingRow.SettingContent>
@@ -90,7 +102,13 @@
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <controls:SettingRow Title="烹饪次数" Description="在执行目标次数后终止">
                     <controls:SettingRow.SettingContent>
-                        <ui:NumberBox MinWidth="90" Value="{Binding ViewModel.AutoCookingTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:NumberBox 
+                            Icon="{ui:SymbolIcon NumberSymbolSquare24}"
+                            ClearButtonEnabled="False"
+                            MinWidth="100" 
+                            SmallChange="1" 
+                            LargeChange="5"
+                            Value="{Binding ViewModel.AutoCookingTimes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
                 <controls:SettingRow Title="选择菜品" Description="选择要烹饪的菜品">

@@ -57,10 +57,10 @@ namespace AutoHPMA.ViewModels.Pages
         private int _autoCookingTimes = 2;
 
         [ObservableProperty]
-        private ObservableCollection<string> _teamPositions = ["Leader", "Member"];
+        private ObservableCollection<string> _teamPositions = ["队长", "队员"];
 
         [ObservableProperty]
-        private string _selectedTeamPosition = "Leader";
+        private string _selectedTeamPosition = "队长";
 
         [ObservableProperty]
         private ObservableCollection<string> _dishes = new();

@@ -144,7 +144,7 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="启用日志窗口"
+                        Text="日志窗口"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
@@ -199,7 +199,7 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="启用遮罩窗口"
+                        Text="遮罩窗口"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"
