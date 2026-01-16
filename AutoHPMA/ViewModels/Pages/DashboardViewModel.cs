@@ -42,6 +42,9 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _maskWindowEnabled = false;
 
         [ObservableProperty]
+        private int _stateMonitorInterval = 200;
+
+        [ObservableProperty]
         private bool _isRunning = false;
 
         [ObservableProperty]
@@ -106,6 +109,10 @@ namespace AutoHPMA.ViewModels.Pages
             LogWindowMarqueeEnabled = _settings.LogWindowMarqueeEnabled;
             DebugLogEnabled = _settings.DebugLogEnabled;
             MaskWindowEnabled = _settings.MaskWindowEnabled;
+            StateMonitorInterval = _settings.StateMonitorInterval;
+            
+            // 初始化AppContextService中的共享配置
+            AppContextService.Instance.StateMonitorInterval = _settings.StateMonitorInterval;
         }
 
         #endregion
@@ -328,6 +335,7 @@ namespace AutoHPMA.ViewModels.Pages
         partial void OnDebugLogEnabledChanged(bool value) => SaveSetting(() => _settings.DebugLogEnabled = value);
         partial void OnMaskWindowEnabledChanged(bool value) => SaveSetting(() => _settings.MaskWindowEnabled = value);
         partial void OnLogWindowMarqueeEnabledChanged(bool value) => SaveSetting(() => _settings.LogWindowMarqueeEnabled = value);
+        partial void OnStateMonitorIntervalChanged(int value) => SaveSetting(() => _settings.StateMonitorInterval = value);
 
         private void SaveSetting(Action updateAction)
         {

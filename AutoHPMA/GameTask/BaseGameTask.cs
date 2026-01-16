@@ -573,17 +573,15 @@ namespace AutoHPMA.GameTask
         /// <param name="onStateDetected">状态更新回调</param>
         /// <param name="defaultState">默认状态</param>
         /// <param name="defaultDisplayName">默认显示名称</param>
-        /// <param name="intervalMs">检测间隔（毫秒），默认200ms</param>
         protected void StartStateMonitor<TState>(
             StateRule<TState>[] rules,
             Action<TState> onStateDetected,
             TState defaultState,
-            string defaultDisplayName,
-            int intervalMs = 200) where TState : struct
+            string defaultDisplayName) where TState : struct
         {
             if (_isStateMonitoring) return;
             _isStateMonitoring = true;
-            _stateMonitorIntervalMs = intervalMs;
+            _stateMonitorIntervalMs = AppContextService.Instance.StateMonitorInterval;
             _stateMonitorTask = Task.Run(async () =>
             {
                 while (_isStateMonitoring && !_cts.Token.IsCancellationRequested)

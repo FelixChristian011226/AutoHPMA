@@ -92,7 +92,19 @@ namespace AutoHPMA.Services
         #endregion
 
         #region Task
-
+        private int _stateMonitorInterval = 200;
+        public int StateMonitorInterval
+        {
+            get => _stateMonitorInterval;
+            set
+            {
+                if (_stateMonitorInterval != value)
+                {
+                    _stateMonitorInterval = value;
+                    OnPropertyChanged(nameof(StateMonitorInterval));
+                }
+            }
+        }
         #endregion
         #endregion
 

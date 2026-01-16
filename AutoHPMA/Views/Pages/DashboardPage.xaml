@@ -110,6 +110,18 @@
                 </Grid>
             </ui:CardExpander.Header>
             <StackPanel>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                <controls:SettingRow Title="状态监测间隔（ms）" Description="游戏状态检测频率，数值越小响应越快，但CPU占用越高（需要重启生效）">
+                    <controls:SettingRow.SettingContent>
+                        <ui:NumberBox 
+                            Icon="{ui:SymbolIcon NumberSymbolSquare24}"
+                            ClearButtonEnabled="False"
+                            MinWidth="120" 
+                            SmallChange="50" 
+                            LargeChange="100"
+                            Value="{Binding ViewModel.StateMonitorInterval, Mode=TwoWay}" />
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
             </StackPanel>
         </ui:CardExpander>
 
