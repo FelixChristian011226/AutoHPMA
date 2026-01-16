@@ -40,7 +40,9 @@
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <controls:SettingRow Title="加入学院互助" Description="当本社团未开启社团答题时，加入学院互助频道的答题活动">
                     <controls:SettingRow.SettingContent>
-                        <CheckBox IsChecked="{Binding ViewModel.JoinOthers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <ui:ToggleSwitch 
+                            OnContent="On" OffContent="Off"
+                            IsChecked="{Binding ViewModel.JoinOthers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />

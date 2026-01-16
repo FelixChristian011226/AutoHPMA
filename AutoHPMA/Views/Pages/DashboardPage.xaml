@@ -119,7 +119,9 @@
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <controls:SettingRow Title="实时截屏" Description="开启后，在截屏页面显示实时截屏结果">
                     <controls:SettingRow.SettingContent>
-                        <CheckBox IsChecked="{Binding ViewModel.RealTimeScreenshotEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:ToggleSwitch 
+                            OnContent="On" OffContent="Off"
+                            IsChecked="{Binding ViewModel.RealTimeScreenshotEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
             </StackPanel>
@@ -164,13 +166,17 @@
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <controls:SettingRow Title="启用日志滚动" Description="超长内容自动流动显示">
                     <controls:SettingRow.SettingContent>
-                        <CheckBox IsChecked="{Binding ViewModel.LogWindowMarqueeEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:ToggleSwitch 
+                            OnContent="On" OffContent="Off"
+                            IsChecked="{Binding ViewModel.LogWindowMarqueeEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <controls:SettingRow Title="输出调试日志" Description="勾选后，日志窗口会输出Debug日志信息">
                     <controls:SettingRow.SettingContent>
-                        <CheckBox IsChecked="{Binding ViewModel.DebugLogEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:ToggleSwitch 
+                            OnContent="On" OffContent="Off"
+                            IsChecked="{Binding ViewModel.DebugLogEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
             </StackPanel>
