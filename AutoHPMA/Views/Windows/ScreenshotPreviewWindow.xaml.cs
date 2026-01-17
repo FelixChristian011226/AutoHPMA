@@ -1,13 +1,9 @@
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Imaging;
-using AutoHPMA.Helpers;
 using AutoHPMA.Helpers.CaptureHelper;
-using AutoHPMA.Helpers.CaptureHelper.CaptureHelper;
 using AutoHPMA.Models;
 using Microsoft.Win32;
 using OpenCvSharp;
@@ -16,237 +12,189 @@ using OpenCvSharp.WpfExtensions;
 using Wpf.Ui.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
 
-namespace AutoHPMA.Views.Windows
+namespace AutoHPMA.Views.Windows;
+
+public partial class ScreenshotPreviewWindow : FluentWindow
 {
-    public partial class ScreenshotPreviewWindow : FluentWindow
+    private readonly CaptureMethod _captureMethod;
+    private readonly IntPtr _targetWindow;
+    private bool _isCapturing;
+    private CancellationTokenSource? _cancellationTokenSource;
+    private IScreenCapture? _capture;
+    private Mat? _currentFrame;
+
+    public ScreenshotPreviewWindow(CaptureMethod captureMethod, IntPtr targetWindow)
     {
-        private readonly CaptureMethod _captureMethod;
-        private readonly IntPtr _targetWindow;
-        private bool _isCapturing = false;
-        private CancellationTokenSource? _cancellationTokenSource;
-        private WindowsGraphicsCapture? _wgcCapture;
-        private Mat? _currentFrame;
+        InitializeComponent();
+        _captureMethod = captureMethod;
+        _targetWindow = targetWindow;
 
-        public ScreenshotPreviewWindow(CaptureMethod captureMethod, IntPtr targetWindow)
+        Title = $"截屏实时预览 - {captureMethod}";
+        StatusText.Text = $"截屏方式: {captureMethod}";
+
+        // 启用窗口拖拽
+        MouseLeftButtonDown += (_, _) =>
         {
-            InitializeComponent();
-            _captureMethod = captureMethod;
-            _targetWindow = targetWindow;
-            
-            Title = $"截屏实时预览 - {captureMethod}";
-            StatusText.Text = $"截屏方式: {captureMethod}";
-            
-            // 启用窗口拖拽
-            this.MouseLeftButtonDown += (sender, e) => 
+            try { DragMove(); }
+            catch (InvalidOperationException) { }
+        };
+    }
+
+    private async void StartStopButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_isCapturing)
+            await StartCaptureAsync();
+        else
+            StopCapture();
+    }
+
+    private async Task StartCaptureAsync()
+    {
+        try
+        {
+            _isCapturing = true;
+            StartStopButton.Content = "停止预览";
+            SaveButton.IsEnabled = false;
+            StatusText.Text = "正在启动截屏...";
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
+
+            // 根据截屏方式创建对应的捕获器
+            _capture = _captureMethod switch
             {
-                try
-                {
-                    this.DragMove();
-                }
-                catch (InvalidOperationException)
-                {
-                    // 忽略DragMove异常
-                }
+                CaptureMethod.WGC => new WindowsGraphicsCapture(),
+                CaptureMethod.BitBlt => new BitBltCapture(),
+                _ => throw new NotSupportedException($"Unsupported capture method: {_captureMethod}")
             };
-        }
 
-        private async void StartStopButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!_isCapturing)
+            _capture.Start(_targetWindow);
+
+            // WGC需要等待初始化
+            if (_captureMethod == CaptureMethod.WGC)
+                await Task.Delay(100, token);
+
+            StatusText.Text = "截屏中...";
+            SaveButton.IsEnabled = true;
+
+            // 开始截屏循环
+            await Task.Run(async () =>
             {
-                await StartCapture();
-            }
-            else
-            {
-                StopCapture();
-            }
-        }
-
-        private async Task StartCapture()
-        {
-            try
-            {
-                _isCapturing = true;
-                StartStopButton.Content = "停止预览";
-                SaveButton.IsEnabled = false;
-                StatusText.Text = "正在启动截屏...";
-
-                _cancellationTokenSource = new CancellationTokenSource();
-                var token = _cancellationTokenSource.Token;
-
-                if (_captureMethod == CaptureMethod.WGC)
+                while (!token.IsCancellationRequested)
                 {
-                    _wgcCapture = new WindowsGraphicsCapture();
-                    _wgcCapture.Start(_targetWindow);
-                    await Task.Delay(100, token); // 等待WGC初始化
-                }
-
-                StatusText.Text = "截屏中...";
-                SaveButton.IsEnabled = true;
-
-                // 开始截屏循环
-                await Task.Run(async () =>
-                {
-                    while (!token.IsCancellationRequested)
+                    try
                     {
-                        try
+                        var frame = _capture.Capture();
+
+                        if (frame != null && !frame.Empty())
                         {
-                            Mat? frame = null;
+                            // 更新当前帧
+                            _currentFrame?.Dispose();
+                            _currentFrame = frame.Clone();
 
-                            if (_captureMethod == CaptureMethod.WGC && _wgcCapture != null)
-                            {
-                                frame = _wgcCapture.Capture();
-                            }
-                            else if (_captureMethod == CaptureMethod.BitBlt)
-                            {
-                                var bitmap = BitBltCaptureHelper.Capture(_targetWindow);
-                                if (bitmap != null)
-                                {
-                                    frame = bitmap.ToMat();
-                                    bitmap.Dispose();
-                                }
-                            }
-
-                            if (frame != null && !frame.Empty())
-                            {
-                                // 更新当前帧
-                                _currentFrame?.Dispose();
-                                _currentFrame = frame.Clone();
-
-                                // 在UI线程更新图像
-                                Dispatcher.Invoke(() =>
-                                {
-                                    try
-                                    {
-                                        var bitmapSource = frame.ToBitmapSource();
-                                        bitmapSource.Freeze();
-                                        PreviewImage.Source = bitmapSource;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        StatusText.Text = $"显示错误: {ex.Message}";
-                                    }
-                                });
-
-                                frame.Dispose();
-                            }
-
-                            // 控制帧率，大约30fps
-                            await Task.Delay(33, token);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
+                            // 在UI线程更新图像
                             Dispatcher.Invoke(() =>
                             {
-                                StatusText.Text = $"截屏错误: {ex.Message}";
+                                try
+                                {
+                                    var bitmapSource = frame.ToBitmapSource();
+                                    bitmapSource.Freeze();
+                                    PreviewImage.Source = bitmapSource;
+                                }
+                                catch (Exception ex)
+                                {
+                                    StatusText.Text = $"显示错误: {ex.Message}";
+                                }
                             });
-                            await Task.Delay(1000, token);
+
+                            frame.Dispose();
                         }
+
+                        // 控制帧率，大约30fps
+                        await Task.Delay(33, token);
                     }
-                }, token);
-            }
-            catch (Exception ex)
-            {
-                StatusText.Text = $"启动失败: {ex.Message}";
-                StopCapture();
-            }
-        }
-
-        private void StopCapture()
-        {
-            _isCapturing = false;
-            StartStopButton.Content = "开始预览";
-            SaveButton.IsEnabled = false;
-            StatusText.Text = "已停止";
-
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
-
-            _wgcCapture?.Stop();
-            _wgcCapture?.Dispose();
-            _wgcCapture = null;
-        }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_currentFrame == null || _currentFrame.Empty())
-            {
-                var errorBox = new MessageBox
-                {
-                    Title = "错误",
-                    Content = "没有可保存的截图"
-                };
-                _ = errorBox.ShowDialogAsync();
-                return;
-            }
-
-            try
-            {
-                var saveDialog = new SaveFileDialog
-                {
-                    Filter = "PNG图片|*.png|JPEG图片|*.jpg|所有文件|*.*",
-                    DefaultExt = "png",
-                    FileName = $"Screenshot_{DateTime.Now:yyyyMMdd_HHmmss}"
-                };
-
-                if (saveDialog.ShowDialog() == true)
-                {
-                    var bitmap = _currentFrame.ToBitmap();
-                    var format = Path.GetExtension(saveDialog.FileName).ToLower() switch
+                    catch (OperationCanceledException)
                     {
-                        ".jpg" or ".jpeg" => ImageFormat.Jpeg,
-                        _ => ImageFormat.Png
-                    };
-                    
-                    bitmap.Save(saveDialog.FileName, format);
-                    bitmap.Dispose();
-
-                    var successBox = new MessageBox
+                        break;
+                    }
+                    catch (Exception ex)
                     {
-                        Title = "成功",
-                        Content = $"截图已保存到: {saveDialog.FileName}"
-                    };
-                    _ = successBox.ShowDialogAsync();
+                        Dispatcher.Invoke(() => StatusText.Text = $"截屏错误: {ex.Message}");
+                        await Task.Delay(1000, token);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                var errorBox = new MessageBox
-                {
-                    Title = "保存失败",
-                    Content = ex.Message
-                };
-                _ = errorBox.ShowDialogAsync();
-            }
+            }, token);
         }
-
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        catch (Exception ex)
         {
-            Close();
-        }
-
-        private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            try
-            {
-                this.DragMove();
-            }
-            catch (InvalidOperationException)
-            {
-                // 忽略DragMove异常，这通常发生在鼠标按钮状态不正确时
-            }
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
+            StatusText.Text = $"启动失败: {ex.Message}";
             StopCapture();
-            _currentFrame?.Dispose();
-            base.OnClosed(e);
         }
+    }
+
+    private void StopCapture()
+    {
+        _isCapturing = false;
+        StartStopButton.Content = "开始预览";
+        SaveButton.IsEnabled = false;
+        StatusText.Text = "已停止";
+
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
+
+        _capture?.Dispose();
+        _capture = null;
+    }
+
+    private void SaveButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentFrame == null || _currentFrame.Empty())
+        {
+            _ = new MessageBox { Title = "错误", Content = "没有可保存的截图" }.ShowDialogAsync();
+            return;
+        }
+
+        try
+        {
+            var saveDialog = new SaveFileDialog
+            {
+                Filter = "PNG图片|*.png|JPEG图片|*.jpg|所有文件|*.*",
+                DefaultExt = "png",
+                FileName = $"Screenshot_{DateTime.Now:yyyyMMdd_HHmmss}"
+            };
+
+            if (saveDialog.ShowDialog() == true)
+            {
+                using var bitmap = _currentFrame.ToBitmap();
+                var format = Path.GetExtension(saveDialog.FileName).ToLower() switch
+                {
+                    ".jpg" or ".jpeg" => ImageFormat.Jpeg,
+                    _ => ImageFormat.Png
+                };
+
+                bitmap.Save(saveDialog.FileName, format);
+                _ = new MessageBox { Title = "成功", Content = $"截图已保存到: {saveDialog.FileName}" }.ShowDialogAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _ = new MessageBox { Title = "保存失败", Content = ex.Message }.ShowDialogAsync();
+        }
+    }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        try { DragMove(); }
+        catch (InvalidOperationException) { }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        StopCapture();
+        _currentFrame?.Dispose();
+        base.OnClosed(e);
     }
 }
