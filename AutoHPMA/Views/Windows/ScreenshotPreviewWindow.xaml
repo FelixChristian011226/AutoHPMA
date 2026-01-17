@@ -73,20 +73,16 @@
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
                 <ui:Button
-                    x:Name="StartStopButton"
-                    Margin="0,0,8,0"
-                    Click="StartStopButton_Click"
-                    Content="开始预览" />
-                <ui:Button
                     x:Name="SaveButton"
                     Margin="0,0,8,0"
                     Click="SaveButton_Click"
                     Content="保存当前截图"
-                    IsEnabled="False" />
+                    Icon="{ui:SymbolIcon Save24}" />
                 <ui:Button
                     x:Name="CloseButton"
                     Click="CloseButton_Click"
-                    Content="关闭" />
+                    Content="关闭"
+                    Icon="{ui:SymbolIcon Dismiss24}" />
             </StackPanel>
         </Border>
     </Grid>

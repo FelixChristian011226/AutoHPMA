@@ -18,7 +18,6 @@ public partial class ScreenshotPreviewWindow : FluentWindow
 {
     private readonly CaptureMethod _captureMethod;
     private readonly IntPtr _targetWindow;
-    private bool _isCapturing;
     private CancellationTokenSource? _cancellationTokenSource;
     private IScreenCapture? _capture;
     private Mat? _currentFrame;
@@ -38,23 +37,15 @@ public partial class ScreenshotPreviewWindow : FluentWindow
             try { DragMove(); }
             catch (InvalidOperationException) { }
         };
-    }
 
-    private async void StartStopButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!_isCapturing)
-            await StartCaptureAsync();
-        else
-            StopCapture();
+        // 窗口加载后自动开始捕获
+        Loaded += async (_, _) => await StartCaptureAsync();
     }
 
     private async Task StartCaptureAsync()
     {
         try
         {
-            _isCapturing = true;
-            StartStopButton.Content = "停止预览";
-            SaveButton.IsEnabled = false;
             StatusText.Text = "正在启动截屏...";
 
             _cancellationTokenSource = new CancellationTokenSource();
@@ -75,7 +66,6 @@ public partial class ScreenshotPreviewWindow : FluentWindow
                 await Task.Delay(100, token);
 
             StatusText.Text = "截屏中...";
-            SaveButton.IsEnabled = true;
 
             // 开始截屏循环
             await Task.Run(async () =>
@@ -134,11 +124,6 @@ public partial class ScreenshotPreviewWindow : FluentWindow
 
     private void StopCapture()
     {
-        _isCapturing = false;
-        StartStopButton.Content = "开始预览";
-        SaveButton.IsEnabled = false;
-        StatusText.Text = "已停止";
-
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
