@@ -116,7 +116,7 @@ namespace AutoHPMA.ViewModels.Pages
         {
             RefreshWindowList();
             // 添加示例动作
-            MouseActions.Add(MouseActionModel.CreateClick(200, 200, 1, 500, "示例点击"));
+            MouseActions.Add(MouseActionModel.CreateClick(200, 200));
         }
 
         #endregion
@@ -347,15 +347,15 @@ namespace AutoHPMA.ViewModels.Pages
 
         [RelayCommand]
         public void AddClickAction() =>
-            MouseActions.Add(MouseActionModel.CreateClick(200, 200, 1, 500, $"点击动作{MouseActions.Count + 1}"));
+            MouseActions.Add(MouseActionModel.CreateClick(200, 200));
 
         [RelayCommand]
         public void AddDragAction() =>
-            MouseActions.Add(MouseActionModel.CreateDrag(200, 200, 400, 400, 500, $"拖拽动作{MouseActions.Count + 1}"));
+            MouseActions.Add(MouseActionModel.CreateDrag(200, 200, 400, 400));
 
         [RelayCommand]
         public void AddLongPressAction() =>
-            MouseActions.Add(MouseActionModel.CreateLongPress(200, 200, 1000, 1, 500, $"长按动作{MouseActions.Count + 1}"));
+            MouseActions.Add(MouseActionModel.CreateLongPress(200, 200));
 
         [RelayCommand]
         public void RemoveMouseAction(MouseActionModel? action)

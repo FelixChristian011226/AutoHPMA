@@ -1,49 +1,46 @@
-using AutoHPMA.GameTask;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using Vanara.PInvoke;
-using static Vanara.PInvoke.User32;
 
 namespace AutoHPMA.Helpers;
 
 /// <summary>
-/// 窗口交互类
+/// 窗口交互辅助类，提供鼠标、键盘等输入模拟功能
 /// </summary>
-public class WindowInteractionHelper
+public static class WindowInteractionHelper
 {
-    // 定义模拟鼠标点击所需的消息常量
+    #region 常量定义
+
+    // 鼠标消息
+    private const uint WM_MOUSEMOVE = 0x0200;
+    private const uint WM_LBUTTONDOWN = 0x0201;
+    private const uint WM_LBUTTONUP = 0x0202;
     private const uint WM_PARENTNOTIFY = 0x0210;
-    private const uint WM_LBUTTONDOWN = 0x201;
-    private const uint WM_LBUTTONUP = 0x202;
+
+    // 键盘消息
     private const int WM_KEYDOWN = 0x0100;
     private const int WM_KEYUP = 0x0101;
-    private const int WM_CHAR = 0x0102;
-    private const uint WM_CLOSE = 0x010;
 
-    private const uint INPUT_MOUSE = 0;
-    private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
-    private const uint MOUSEEVENTF_LEFTUP = 0x0004;
-
+    // 虚拟键码
     private const int VK_RETURN = 0x0D;
     private const int VK_ESCAPE = 0x1B;
     private const int VK_SPACE = 0x20;
 
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+    // MapVirtualKey 映射类型
+    private const uint MAPVK_VK_TO_VSC = 0x00;
+
+    #endregion
+
+    #region P/Invoke 声明
 
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+    private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", SetLastError = true)]
-    static extern uint SendInput(uint nInputs, ref INPUT pInputs, int cbSize);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+    public static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
@@ -52,32 +49,11 @@ public class WindowInteractionHelper
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool SetForegroundWindow(IntPtr hWnd);
 
-    [StructLayout(LayoutKind.Sequential)]
-    struct MOUSEINPUT
-    {
-        public int dx;
-        public int dy;
-        public uint mouseData;
-        public uint dwFlags;
-        public uint time;
-        public IntPtr dwExtraInfo;
-    }
+    [DllImport("user32.dll")]
+    private static extern uint MapVirtualKey(uint uCode, uint uMapType);
 
     [StructLayout(LayoutKind.Sequential)]
-    struct INPUT
-    {
-        public uint type;
-        public MouseInputUnion mi;
-    }
-
-    [StructLayout(LayoutKind.Explicit)]
-    struct MouseInputUnion
-    {
-        [FieldOffset(0)] public MOUSEINPUT mi;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct RECT
+    private struct RECT
     {
         public int Left;
         public int Top;
@@ -85,182 +61,98 @@ public class WindowInteractionHelper
         public int Bottom;
     }
 
-    // 计算lParam所需的坐标点
+    #endregion
+
+    #region 私有方法
+
+    /// <summary>
+    /// 将 X、Y 坐标打包为 lParam
+    /// </summary>
     private static IntPtr MakeLParam(uint x, uint y)
     {
         return (IntPtr)((y << 16) | (x & 0xFFFF));
     }
 
+    private static readonly Random _random = new();
+
+    #endregion
+
+    #region 鼠标操作
+
     /// <summary>
     /// 异步发送鼠标点击
     /// </summary>
+    /// <param name="hWnd">目标窗口句柄</param>
+    /// <param name="x">X 坐标</param>
+    /// <param name="y">Y 坐标</param>
     /// <param name="cancellationToken">取消令牌（可选）</param>
     public static async Task SendMouseClickAsync(IntPtr hWnd, uint x, uint y, CancellationToken cancellationToken = default)
     {
         var lParam = MakeLParam(x, y);
-
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
+        
         try
         {
             await Task.Delay(100, cancellationToken);
         }
-        catch (OperationCanceledException)
+        finally
         {
-            // 即使取消也要释放鼠标
             SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
-            throw;
         }
-        SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
     }
 
     /// <summary>
     /// 异步发送鼠标长按操作
     /// </summary>
     /// <param name="hWnd">目标窗口句柄</param>
-    /// <param name="x">X坐标</param>
-    /// <param name="y">Y坐标</param>
+    /// <param name="x">X 坐标</param>
+    /// <param name="y">Y 坐标</param>
     /// <param name="duration">长按持续时间（毫秒）</param>
     /// <param name="cancellationToken">取消令牌（可选）</param>
     public static async Task SendMouseLongPressAsync(IntPtr hWnd, uint x, uint y, int duration = 1000, CancellationToken cancellationToken = default)
     {
         var lParam = MakeLParam(x, y);
-
-        // 按下鼠标左键
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
         
         try
         {
-            // 持续指定时间
             await Task.Delay(duration, cancellationToken);
         }
         finally
         {
-            // 无论是否取消都要释放鼠标左键
             SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
         }
     }
 
     /// <summary>
-    /// 异步发送带 ParentNotify 的鼠标点击
+    /// 异步发送带噪声的鼠标拖拽操作
     /// </summary>
+    /// <param name="hWnd">目标窗口句柄</param>
+    /// <param name="startX">起点 X 坐标</param>
+    /// <param name="startY">起点 Y 坐标</param>
+    /// <param name="endX">终点 X 坐标</param>
+    /// <param name="endY">终点 Y 坐标</param>
+    /// <param name="duration">拖拽持续时间（毫秒）</param>
     /// <param name="cancellationToken">取消令牌（可选）</param>
-    public static async Task SendMouseClickWithParentNotifyAsync(IntPtr hWnd, uint x, uint y, CancellationToken cancellationToken = default)
-    {
-        IntPtr lParam = MakeLParam(x, y);
-
-        // 模拟鼠标点击的完整序列，包括 WM_PARENTNOTIFY
-        uint wParamForParentNotify = (uint)WM_LBUTTONDOWN | ((y & 0xFFFF) << 16) | (x & 0xFFFF);
-        IntPtr wParam = new IntPtr(wParamForParentNotify);
-        PostMessage(hWnd, WM_PARENTNOTIFY, wParam, lParam);
-        await Task.Delay(50, cancellationToken);
-
-        PostMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
-        try
-        {
-            await Task.Delay(100, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
-            throw;
-        }
-
-        PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
-    }
-
-    /// <summary>
-    /// 异步发送回车键
-    /// </summary>
-    /// <param name="cancellationToken">取消令牌（可选）</param>
-    public static async Task SendEnterAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
-    {
-        await SendKeyAsync(hWnd, VK_RETURN, cancellationToken);
-    }
-
-    /// <summary>
-    /// 异步发送 ESC 键
-    /// </summary>
-    /// <param name="cancellationToken">取消令牌（可选）</param>
-    public static async Task SendESCAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
-    {
-        await SendKeyAsync(hWnd, VK_ESCAPE, cancellationToken);
-    }
-
-    /// <summary>
-    /// 异步发送空格键
-    /// </summary>
-    /// <param name="cancellationToken">取消令牌（可选）</param>
-    public static async Task SendSpaceAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
-    {
-        await SendKeyAsync(hWnd, VK_SPACE, cancellationToken);
-    }
-
-    /// <summary>
-    /// 异步发送按键
-    /// </summary>
-    /// <param name="cancellationToken">取消令牌（可选）</param>
-    public static async Task SendKeyAsync(IntPtr hWnd, int virtualKey, CancellationToken cancellationToken = default)
-    {
-        const uint MAPVK_VK_TO_VSC = 0x00;
-        uint scanCode = MapVirtualKey((uint)virtualKey, MAPVK_VK_TO_VSC);
-
-        IntPtr lParamDown = (IntPtr)(1 | (scanCode << 16));
-        IntPtr lParamUp = (IntPtr)(0xC0000001 | (scanCode << 16));
-
-        PostMessage(hWnd, WM_KEYDOWN, (IntPtr)virtualKey, lParamDown);
-        try
-        {
-            await Task.Delay(50, cancellationToken);
-        }
-        finally
-        {
-            // 无论是否取消都要释放按键
-            PostMessage(hWnd, WM_KEYUP, (IntPtr)virtualKey, lParamUp);
-        }
-    }
-
-    // 添加MapVirtualKey的声明
-    [DllImport("user32.dll")]
-    public static extern uint MapVirtualKey(uint uCode, uint uMapType);
-
-    public static void GetWindowPositionAndSize(IntPtr hWnd, out int left, out int top, out int width, out int height)
-    {
-        RECT rect;
-        if (GetWindowRect(hWnd, out rect))
-        {
-            left = rect.Left;
-            top = rect.Top;
-            width = rect.Right - rect.Left;
-            height = rect.Bottom - rect.Top;
-        }
-        else
-        {
-            int error = Marshal.GetLastWin32Error();
-            throw new System.ComponentModel.Win32Exception(error);
-        }
-    }
-
-    private static readonly Random _random = new Random();
-
-    /// <summary>
-    /// 异步发送带噪声的鼠标拖拽操作，不阻塞线程
-    /// </summary>
-    /// <param name="cancellationToken">取消令牌（可选），取消时会立即释放鼠标</param>
-    public static async Task SendMouseDragWithNoiseAsync(IntPtr hWnd, uint startX, uint startY, uint endX, uint endY, int duration = 500, CancellationToken cancellationToken = default)
+    public static async Task SendMouseDragWithNoiseAsync(
+        IntPtr hWnd, 
+        uint startX, uint startY, 
+        uint endX, uint endY, 
+        int duration = 500, 
+        CancellationToken cancellationToken = default)
     {
         var startLParam = MakeLParam(startX, startY);
         var endLParam = MakeLParam(endX, endY);
-        IntPtr currentLParam = startLParam; // 跟踪当前位置，用于取消时释放鼠标
+        IntPtr currentLParam = startLParam;
 
-        // 按下鼠标左键
         PostMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, startLParam);
         
         try
         {
             await Task.Delay(50, cancellationToken);
 
-            // 计算移动的步数和每步的延迟
-            int steps = 30;
+            // 计算移动步数和每步延迟
+            const int steps = 30;
             int stepDelay = duration / steps;
             double stepX = (endX - startX) / (double)steps;
             double stepY = (endY - startY) / (double)steps;
@@ -268,10 +160,8 @@ public class WindowInteractionHelper
             // 逐步移动鼠标，添加微小随机偏移
             for (int i = 1; i <= steps; i++)
             {
-                // 在每步之前检查取消
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // 添加微小随机偏移（±2像素）
                 int offsetX = _random.Next(-2, 3);
                 int offsetY = _random.Next(-2, 3);
                 
@@ -288,32 +178,119 @@ public class WindowInteractionHelper
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // 在终点位置添加微小随机偏移
                 int offsetX = _random.Next(-1, 2);
                 int offsetY = _random.Next(-1, 2);
 
                 uint finalX = (uint)(endX + offsetX);
                 uint finalY = (uint)(endY + offsetY);
-                var finalLParam = MakeLParam(finalX, finalY);
-                currentLParam = finalLParam;
+                currentLParam = MakeLParam(finalX, finalY);
 
-                PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, finalLParam);
+                PostMessage(hWnd, WM_MOUSEMOVE, (IntPtr)1, currentLParam);
                 await Task.Delay(50, cancellationToken);
             }
 
-            // 正常完成，释放鼠标左键
             PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, endLParam);
             await Task.Delay(50, cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            // 取消时在当前位置释放鼠标，防止鼠标"卡住"
             PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, currentLParam);
             throw;
         }
     }
 
-    // 添加鼠标移动消息常量
-    private const uint WM_MOUSEMOVE = 0x0200;
+    /// <summary>
+    /// 异步发送带 ParentNotify 的鼠标点击
+    /// </summary>
+    public static async Task SendMouseClickWithParentNotifyAsync(IntPtr hWnd, uint x, uint y, CancellationToken cancellationToken = default)
+    {
+        IntPtr lParam = MakeLParam(x, y);
 
+        uint wParamForParentNotify = WM_LBUTTONDOWN | ((y & 0xFFFF) << 16) | (x & 0xFFFF);
+        PostMessage(hWnd, WM_PARENTNOTIFY, new IntPtr(wParamForParentNotify), lParam);
+        await Task.Delay(50, cancellationToken);
+
+        PostMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)1, lParam);
+        
+        try
+        {
+            await Task.Delay(100, cancellationToken);
+        }
+        finally
+        {
+            PostMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, lParam);
+        }
+    }
+
+    #endregion
+
+    #region 键盘操作
+
+    /// <summary>
+    /// 异步发送按键
+    /// </summary>
+    /// <param name="hWnd">目标窗口句柄</param>
+    /// <param name="virtualKey">虚拟键码</param>
+    /// <param name="cancellationToken">取消令牌（可选）</param>
+    public static async Task SendKeyAsync(IntPtr hWnd, int virtualKey, CancellationToken cancellationToken = default)
+    {
+        uint scanCode = MapVirtualKey((uint)virtualKey, MAPVK_VK_TO_VSC);
+        IntPtr lParamDown = (IntPtr)(1 | (scanCode << 16));
+        IntPtr lParamUp = (IntPtr)(0xC0000001 | (scanCode << 16));
+
+        PostMessage(hWnd, WM_KEYDOWN, (IntPtr)virtualKey, lParamDown);
+        
+        try
+        {
+            await Task.Delay(50, cancellationToken);
+        }
+        finally
+        {
+            PostMessage(hWnd, WM_KEYUP, (IntPtr)virtualKey, lParamUp);
+        }
+    }
+
+    /// <summary>
+    /// 异步发送回车键
+    /// </summary>
+    public static Task SendEnterAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
+        => SendKeyAsync(hWnd, VK_RETURN, cancellationToken);
+
+    /// <summary>
+    /// 异步发送 ESC 键
+    /// </summary>
+    public static Task SendESCAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
+        => SendKeyAsync(hWnd, VK_ESCAPE, cancellationToken);
+
+    /// <summary>
+    /// 异步发送空格键
+    /// </summary>
+    public static Task SendSpaceAsync(IntPtr hWnd, CancellationToken cancellationToken = default)
+        => SendKeyAsync(hWnd, VK_SPACE, cancellationToken);
+
+    #endregion
+
+    #region 窗口操作
+
+    /// <summary>
+    /// 获取窗口位置和大小
+    /// </summary>
+    public static void GetWindowPositionAndSize(IntPtr hWnd, out int left, out int top, out int width, out int height)
+    {
+        if (GetWindowRect(hWnd, out RECT rect))
+        {
+            left = rect.Left;
+            top = rect.Top;
+            width = rect.Right - rect.Left;
+            height = rect.Bottom - rect.Top;
+        }
+        else
+        {
+            int error = Marshal.GetLastWin32Error();
+            throw new System.ComponentModel.Win32Exception(error);
+        }
+    }
+
+    #endregion
 }
+

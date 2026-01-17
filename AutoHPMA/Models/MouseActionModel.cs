@@ -114,44 +114,62 @@ public partial class MouseActionModel : ObservableObject
     /// <summary>
     /// 创建点击动作
     /// </summary>
-    public static MouseActionModel CreateClick(int x, int y, int times = 1, int interval = 500, string description = "点击动作")
+    /// <param name="x">X 坐标</param>
+    /// <param name="y">Y 坐标</param>
+    /// <param name="interval">动作间隔（毫秒）</param>
+    /// <param name="times">重复次数</param>
+    public static MouseActionModel CreateClick(int x, int y, int interval = 500, int times = 1)
     {
-        return new MouseActionModel(MouseActionType.Click, description)
+        return new MouseActionModel(MouseActionType.Click)
         {
             X = x,
             Y = y,
-            Times = times,
-            Interval = interval
+            Interval = interval,
+            Times = times
         };
     }
 
     /// <summary>
     /// 创建拖拽动作
     /// </summary>
-    public static MouseActionModel CreateDrag(int startX, int startY, int endX, int endY, int duration = 500, string description = "拖拽动作")
+    /// <param name="startX">起点 X 坐标</param>
+    /// <param name="startY">起点 Y 坐标</param>
+    /// <param name="endX">终点 X 坐标</param>
+    /// <param name="endY">终点 Y 坐标</param>
+    /// <param name="duration">拖拽持续时间（毫秒）</param>
+    /// <param name="interval">动作间隔（毫秒）</param>
+    /// <param name="times">重复次数</param>
+    public static MouseActionModel CreateDrag(int startX, int startY, int endX, int endY, int duration = 500, int interval = 500, int times = 1)
     {
-        return new MouseActionModel(MouseActionType.Drag, description)
+        return new MouseActionModel(MouseActionType.Drag)
         {
             X = startX,
             Y = startY,
             EndX = endX,
             EndY = endY,
-            Duration = duration
+            Duration = duration,
+            Interval = interval,
+            Times = times
         };
     }
 
     /// <summary>
     /// 创建长按动作
     /// </summary>
-    public static MouseActionModel CreateLongPress(int x, int y, int duration = 1000, int times = 1, int interval = 500, string description = "长按动作")
+    /// <param name="x">X 坐标</param>
+    /// <param name="y">Y 坐标</param>
+    /// <param name="duration">长按持续时间（毫秒）</param>
+    /// <param name="interval">动作间隔（毫秒）</param>
+    /// <param name="times">重复次数</param>
+    public static MouseActionModel CreateLongPress(int x, int y, int duration = 1000, int interval = 500, int times = 1)
     {
-        return new MouseActionModel(MouseActionType.LongPress, description)
+        return new MouseActionModel(MouseActionType.LongPress)
         {
             X = x,
             Y = y,
             Duration = duration,
-            Times = times,
-            Interval = interval
+            Interval = interval,
+            Times = times
         };
     }
 }
