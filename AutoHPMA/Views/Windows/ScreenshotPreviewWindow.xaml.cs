@@ -56,6 +56,7 @@ public partial class ScreenshotPreviewWindow : FluentWindow
             {
                 CaptureMethod.WGC => new WindowsGraphicsCapture(),
                 CaptureMethod.BitBlt => new BitBltCapture(),
+                CaptureMethod.PrintWindow => new PrintWindowCapture(),
                 _ => throw new NotSupportedException($"Unsupported capture method: {_captureMethod}")
             };
 

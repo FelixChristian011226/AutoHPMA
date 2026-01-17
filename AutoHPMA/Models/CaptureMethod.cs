@@ -6,13 +6,18 @@ namespace AutoHPMA.Models
     public enum CaptureMethod
     {
         /// <summary>
-        /// Windows Graphics Capture API
+        /// Windows Graphics Capture API (推荐，支持硬件加速)
         /// </summary>
         WGC,
         
         /// <summary>
-        /// BitBlt API
+        /// BitBlt GDI API (兼容性好)
         /// </summary>
-        BitBlt
+        BitBlt,
+        
+        /// <summary>
+        /// PrintWindow API (可捕获非前台窗口)
+        /// </summary>
+        PrintWindow
     }
 }
