@@ -16,6 +16,12 @@
             </ResourceDictionary.MergedDictionaries>
             <converters:KeyToStringConverter x:Key="KeyToStringConverter" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:MouseActionTypeToColorConverter x:Key="MouseActionTypeToColorConverter" />
+            <converters:MouseActionTypeToBackgroundConverter x:Key="MouseActionTypeToBackgroundConverter" />
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <converters:ActionTypeToDragVisibilityConverter x:Key="ActionTypeToDragVisibilityConverter" />
+            <converters:ActionTypeToDurationVisibilityConverter x:Key="ActionTypeToDurationVisibilityConverter" />
+            <converters:ActionTypeToTimesVisibilityConverter x:Key="ActionTypeToTimesVisibilityConverter" />
             <helperConverters:TaskTypeToIsRunningConverter x:Key="TaskTypeToIsRunningConverter" />
         </ResourceDictionary>
     </Application.Resources>

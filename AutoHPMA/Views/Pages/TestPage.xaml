@@ -174,240 +174,456 @@
                     </ScrollViewer>
                 </TabItem>
                 <!--  鼠标模拟  -->
-                <TabItem  MaxWidth="100">
+                <TabItem MaxWidth="100">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Margin="0,0,6,0" Symbol="TapSingle24" />
                             <TextBlock Text="鼠标模拟" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <StackPanel>
-                        <!-- 窗口选择 -->
-                        <StackPanel Margin="0,10,0,0" Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <ui:TextBlock
-                                        Grid.Row="0"
-                                        Grid.Column="0"
-                                        FontTypography="BodyStrong"
-                                        Text="目标窗口"
-                                        TextWrapping="Wrap" />
-                                    <ui:TextBlock
-                                        Grid.Row="1"
-                                        Grid.Column="0"
-                                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                        Text="选择要点击的窗口"
-                                        TextWrapping="Wrap" />
-                                </Grid>
-                                <ComboBox
-                                    Width="200"
-                                    Margin="10,0,10,0"
-                                    ItemsSource="{Binding ViewModel.AvailableWindows}"
-                                    SelectedItem="{Binding ViewModel.SelectedClickWindow, Mode=TwoWay}"
-                                    DisplayMemberPath="DisplayName" />
-                                <ui:Button
-                                    Command="{Binding ViewModel.RefreshWindowListCommand}"
-                                    Content="刷新"
-                                    Margin="0,0,10,0" />
-                            </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,10,10,10">
+                        <StackPanel>
+                            <!-- 窗口配置卡片 -->
+                            <Border 
+                                Margin="0,8,0,0" 
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <!-- 标题 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <ui:SymbolIcon Margin="0,0,8,0" Symbol="Window24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="窗口配置" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <!-- 窗口选择 -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <ui:TextBlock FontTypography="Body" Text="目标窗口" />
+                                            <ui:TextBlock 
+                                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="选择要进行鼠标操作的目标窗口"
+                                                FontSize="12" />
+                                        </StackPanel>
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            Width="260"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            ItemsSource="{Binding ViewModel.AvailableWindows}"
+                                            SelectedItem="{Binding ViewModel.SelectedClickWindow, Mode=TwoWay}"
+                                            DisplayMemberPath="DisplayName" />
+                                        <ui:Button
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding ViewModel.RefreshWindowListCommand}"
+                                            ToolTip="刷新窗口列表"
+                                            Icon="{ui:SymbolIcon ArrowSync24}" />
+                                    </Grid>
+                                    
+                                    <!-- 子窗口选择（条件显示） -->
+                                    <Grid Margin="0,0,0,0"
+                                          Visibility="{Binding ViewModel.HasChildWindows, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <ui:TextBlock FontTypography="Body" Text="子窗口（可选）" />
+                                            <ui:TextBlock 
+                                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="若父窗口无法交互，可选择子窗口进行操作"
+                                                FontSize="12" />
+                                        </StackPanel>
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            Width="260"
+                                            Margin="0,0,40,0"
+                                            VerticalAlignment="Center"
+                                            ItemsSource="{Binding ViewModel.AvailableChildWindows}"
+                                            SelectedItem="{Binding ViewModel.SelectedClickChildWindow, Mode=TwoWay}"
+                                            DisplayMemberPath="DisplayName" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 操作列表卡片 -->
+                            <Border 
+                                Margin="0,12,0,0" 
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <!-- 标题与工具栏 -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <ui:SymbolIcon Margin="0,0,8,0" Symbol="List24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                            <ui:TextBlock FontTypography="BodyStrong" Text="操作列表" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                            <ui:Button 
+                                                Command="{Binding ViewModel.ImportActionsCommand}"
+                                                ToolTip="导入操作列表"
+                                                Margin="0,0,4,0"
+                                                Padding="8,6">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="14"/>
+                                                    <TextBlock Text="导入" Margin="4,0,0,0" FontSize="12"/>
+                                                </StackPanel>
+                                            </ui:Button>
+                                            <ui:Button 
+                                                Command="{Binding ViewModel.ExportActionsCommand}"
+                                                ToolTip="导出操作列表"
+                                                Margin="0,0,4,0"
+                                                Padding="8,6">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon Symbol="ArrowUpload24" FontSize="14"/>
+                                                    <TextBlock Text="导出" Margin="4,0,0,0" FontSize="12"/>
+                                                </StackPanel>
+                                            </ui:Button>
+                                            <ui:Button 
+                                                Command="{Binding ViewModel.ClearAllActionsCommand}"
+                                                ToolTip="清空所有操作"
+                                                Appearance="Secondary"
+                                                Padding="8,6">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon Symbol="Delete24" FontSize="14"/>
+                                                    <TextBlock Text="清空" Margin="4,0,0,0" FontSize="12"/>
+                                                </StackPanel>
+                                            </ui:Button>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <!-- 添加操作按钮组 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <ui:Button 
+                                            Command="{Binding ViewModel.AddClickActionCommand}"
+                                            Margin="0,0,8,0"
+                                            Padding="12,8"
+                                            Background="#1F3B82F6">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="CursorClick24" FontSize="14"/>
+                                                <TextBlock Text="+ 点击" Margin="6,0,0,0"/>
+                                            </StackPanel>
+                                        </ui:Button>
+                                        <ui:Button 
+                                            Command="{Binding ViewModel.AddDragActionCommand}"
+                                            Margin="0,0,8,0"
+                                            Padding="12,8"
+                                            Background="#1F22C55E">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="HandDraw24" FontSize="14"/>
+                                                <TextBlock Text="+ 拖拽" Margin="6,0,0,0"/>
+                                            </StackPanel>
+                                        </ui:Button>
+                                        <ui:Button 
+                                            Command="{Binding ViewModel.AddLongPressActionCommand}"
+                                            Padding="12,8"
+                                            Background="#1FF97316">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="Timer24" FontSize="14"/>
+                                                <TextBlock Text="+ 长按" Margin="6,0,0,0"/>
+                                            </StackPanel>
+                                        </ui:Button>
+                                    </StackPanel>
+                                    
+                                    <!-- 操作列表 DataGrid -->
+                                    <DataGrid
+                                        x:Name="MouseActionsGrid"
+                                        ItemsSource="{Binding ViewModel.MouseActions}"
+                                        SelectedItem="{Binding ViewModel.SelectedMouseAction, Mode=TwoWay}"
+                                        AutoGenerateColumns="False"
+                                        CanUserAddRows="False"
+                                        CanUserDeleteRows="False"
+                                        CanUserReorderColumns="False"
+                                        CanUserSortColumns="False"
+                                        Height="200"
+                                        GridLinesVisibility="Horizontal"
+                                        HeadersVisibility="Column"
+                                        BorderThickness="1"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        IsReadOnly="True"
+                                        SelectionMode="Single">
+                                        <DataGrid.Columns>
+                                            <!-- 类型标签 -->
+                                            <DataGridTemplateColumn Header="类型" Width="70" CanUserSort="False">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Border 
+                                                            Background="{Binding ActionType, Converter={StaticResource MouseActionTypeToBackgroundConverter}}"
+                                                            CornerRadius="4"
+                                                            Padding="6,3"
+                                                            HorizontalAlignment="Center">
+                                                            <TextBlock 
+                                                                Text="{Binding ActionTypeName}"
+                                                                FontSize="11"
+                                                                FontWeight="Medium"
+                                                                Foreground="{Binding ActionType, Converter={StaticResource MouseActionTypeToColorConverter}}"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            
+                                            <!-- 描述 -->
+                                            <DataGridTextColumn Header="描述" Binding="{Binding Description}" Width="120" CanUserSort="False"/>
+                                            
+                                            <!-- 参数摘要 -->
+                                            <DataGridTemplateColumn Header="参数" Width="*" CanUserSort="False">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock 
+                                                            Text="{Binding ParameterSummary}"
+                                                            FontFamily="Consolas"
+                                                            FontSize="12"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            
+                                            <!-- 操作按钮 -->
+                                            <DataGridTemplateColumn Header="操作" Width="100" CanUserSort="False">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                            <ui:Button 
+                                                                Command="{Binding DataContext.ViewModel.MoveActionUpCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                CommandParameter="{Binding}"
+                                                                ToolTip="上移"
+                                                                Padding="3"
+                                                                Margin="0,0,2,0"
+                                                                Appearance="Secondary">
+                                                                <ui:SymbolIcon Symbol="ChevronUp24" FontSize="11"/>
+                                                            </ui:Button>
+                                                            <ui:Button 
+                                                                Command="{Binding DataContext.ViewModel.MoveActionDownCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                CommandParameter="{Binding}"
+                                                                ToolTip="下移"
+                                                                Padding="3"
+                                                                Margin="0,0,2,0"
+                                                                Appearance="Secondary">
+                                                                <ui:SymbolIcon Symbol="ChevronDown24" FontSize="11"/>
+                                                            </ui:Button>
+                                                            <ui:Button 
+                                                                Command="{Binding DataContext.ViewModel.RemoveMouseActionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                CommandParameter="{Binding}"
+                                                                ToolTip="删除"
+                                                                Padding="3"
+                                                                Appearance="Danger">
+                                                                <ui:SymbolIcon Symbol="Delete24" FontSize="11"/>
+                                                            </ui:Button>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    
+                                    <!-- 参数编辑面板（选中动作时显示） -->
+                                    <Border 
+                                        Margin="0,12,0,0"
+                                        Padding="16"
+                                        Background="{ui:ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        CornerRadius="8"
+                                        BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        DataContext="{Binding ViewModel.SelectedMouseAction}"
+                                        Visibility="{Binding DataContext.ViewModel.SelectedMouseAction, RelativeSource={RelativeSource AncestorType=Page}, 
+                                                     Converter={StaticResource NullToVisibilityConverter}}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            
+                                            <!-- 编辑面板标题栏 -->
+                                            <Grid Grid.Row="0" Margin="0,0,0,16">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border 
+                                                        Background="{Binding ActionType, Converter={StaticResource MouseActionTypeToBackgroundConverter}}"
+                                                        CornerRadius="6"
+                                                        Padding="10,6"
+                                                        Margin="0,0,12,0">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <ui:SymbolIcon Symbol="Edit24" FontSize="14" Margin="0,0,6,0"
+                                                                           Foreground="{Binding ActionType, Converter={StaticResource MouseActionTypeToColorConverter}}"/>
+                                                            <TextBlock 
+                                                                Text="{Binding ActionTypeName}"
+                                                                FontSize="13"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="{Binding ActionType, Converter={StaticResource MouseActionTypeToColorConverter}}"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <TextBlock 
+                                                        Text="{Binding Description}" 
+                                                        FontSize="13" 
+                                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                                        VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <ui:Button 
+                                                    Grid.Column="1"
+                                                    Command="{Binding DataContext.ViewModel.ClearSelectionCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    ToolTip="关闭"
+                                                    Padding="6"
+                                                    Appearance="Secondary">
+                                                    <ui:SymbolIcon Symbol="Dismiss24" FontSize="14"/>
+                                                </ui:Button>
+                                            </Grid>
+                                            
+                                            <!-- 参数编辑区域 - 使用 WrapPanel 实现自适应布局 -->
+                                            <WrapPanel Grid.Row="1" Orientation="Horizontal">
+                                                
+                                                <!-- 描述 -->
+                                                <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" 
+                                                        CornerRadius="6" Padding="12,10" Margin="0,0,12,12" MinWidth="220">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0" VerticalAlignment="Center">
+                                                            <ui:SymbolIcon Symbol="Rename24" FontSize="14" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                                                            <TextBlock Text="描述" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                                        </StackPanel>
+                                                        <ui:TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
+                                                                    ClearButtonEnabled="False" MinWidth="120"/>
+                                                    </Grid>
+                                                </Border>
+                                                
+                                                <!-- 起点坐标 -->
+                                                <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" 
+                                                        CornerRadius="6" Padding="12,10" Margin="0,0,12,12">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ui:SymbolIcon Symbol="Location24" FontSize="14" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="坐标" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="X" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                        <ui:NumberBox Value="{Binding X, Mode=TwoWay}" Minimum="0" Width="80" SpinButtonPlacementMode="Hidden" ClearButtonEnabled="False"/>
+                                                        <TextBlock Text="Y" FontSize="12" Margin="12,0,6,0" VerticalAlignment="Center"/>
+                                                        <ui:NumberBox Value="{Binding Y, Mode=TwoWay}" Minimum="0" Width="80" SpinButtonPlacementMode="Hidden" ClearButtonEnabled="False"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                
+                                                <!-- 终点坐标 (拖拽) -->
+                                                <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" 
+                                                        CornerRadius="6" Padding="12,10" Margin="0,0,12,12"
+                                                        Visibility="{Binding ActionType, Converter={StaticResource ActionTypeToDragVisibilityConverter}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ui:SymbolIcon Symbol="ArrowRight24" FontSize="14" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="终点" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="X" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                        <ui:NumberBox Value="{Binding EndX, Mode=TwoWay}" Minimum="0" Width="80" SpinButtonPlacementMode="Hidden" ClearButtonEnabled="False"/>
+                                                        <TextBlock Text="Y" FontSize="12" Margin="12,0,6,0" VerticalAlignment="Center"/>
+                                                        <ui:NumberBox Value="{Binding EndY, Mode=TwoWay}" Minimum="0" Width="80" SpinButtonPlacementMode="Hidden" ClearButtonEnabled="False"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                
+                                                <!-- 持续时间 (拖拽/长按) -->
+                                                <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" 
+                                                        CornerRadius="6" Padding="12,10" Margin="0,0,12,12"
+                                                        Visibility="{Binding ActionType, Converter={StaticResource ActionTypeToDurationVisibilityConverter}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ui:SymbolIcon Symbol="Clock24" FontSize="14" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="时长" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                                        <ui:NumberBox Value="{Binding Duration, Mode=TwoWay}" Minimum="0" Width="80" SpinButtonPlacementMode="Hidden" ClearButtonEnabled="False"/>
+                                                        <TextBlock Text="ms" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                
+                                                <!-- 间隔时间 -->
+                                                <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" 
+                                                        CornerRadius="6" Padding="12,10" Margin="0,0,12,12">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ui:SymbolIcon Symbol="Timer24" FontSize="14" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="间隔" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                                        <ui:NumberBox Value="{Binding Interval, Mode=TwoWay}" Minimum="0" Width="80" SpinButtonPlacementMode="Hidden" ClearButtonEnabled="False"/>
+                                                        <TextBlock Text="ms" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                
+                                                <!-- 重复次数 -->
+                                                <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" 
+                                                        CornerRadius="6" Padding="12,10" Margin="0,0,12,12">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ui:SymbolIcon Symbol="ArrowRepeatAll24" FontSize="14" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="次数" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                                        <ui:NumberBox Value="{Binding Times, Mode=TwoWay}" Minimum="1" Width="80" SpinButtonPlacementMode="Hidden" ClearButtonEnabled="False"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                
+                                            </WrapPanel>
+                                        </Grid>
+                                    </Border>
+                                    
+                                    <!-- 执行按钮 -->
+                                    <Grid Margin="0,16,0,0">
+                                        <ui:Button
+                                            HorizontalAlignment="Right"
+                                            Appearance="Primary"
+                                            Command="{Binding ViewModel.ExecuteAllActionsCommand}"
+                                            Padding="20,10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="Play24" FontSize="16"/>
+                                                <TextBlock Text="执行所有操作" Margin="8,0,0,0" FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </ui:Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
                             
-                            <!-- 子窗口选择（当父窗口有子窗口时显示） -->
-                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
-                                        Visibility="{Binding ViewModel.HasChildWindows, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <ui:TextBlock
-                                        Grid.Row="0"
-                                        Grid.Column="0"
-                                        FontTypography="BodyStrong"
-                                        Text="子窗口（可选）"
-                                        TextWrapping="Wrap" />
-                                    <ui:TextBlock
-                                        Grid.Row="1"
-                                        Grid.Column="0"
-                                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                        Text="若父窗口无法交互，可选择子窗口"
-                                        TextWrapping="Wrap" />
-                                </Grid>
-                                <ComboBox
-                                    Width="200"
-                                    Margin="10,0,10,0"
-                                    ItemsSource="{Binding ViewModel.AvailableChildWindows}"
-                                    SelectedItem="{Binding ViewModel.SelectedClickChildWindow, Mode=TwoWay}"
-                                    DisplayMemberPath="DisplayName" />
-                            </StackPanel>
-                            
-                            <!-- 当前选择信息提示 -->
-                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
-                                        Visibility="{Binding ViewModel.HasChildWindows, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <ui:SymbolIcon Symbol="Info16" Margin="0,0,6,0" 
-                                               Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
-                                <ui:TextBlock
-                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                    Text="提示：未选择子窗口时，将直接操作父窗口"
-                                    FontSize="12"
-                                    VerticalAlignment="Center" />
-                            </StackPanel>
+                            <!-- 使用提示 -->
+                            <Border 
+                                Margin="0,12,0,0" 
+                                Padding="12"
+                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                CornerRadius="6"
+                                BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="使用提示" />
+                                    </StackPanel>
+                                    <ui:TextBlock 
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 操作按列表顺序依次执行，执行前会有 3 秒准备时间" />
+                                    <ui:TextBlock 
+                                        Margin="0,4,0,0"
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 每个操作执行后会等待其设定的间隔时间" />
+                                    <ui:TextBlock 
+                                        Margin="0,4,0,0"
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 支持导入/导出 JSON 格式配置文件，方便保存和分享" />
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
-
-                        <!-- 分隔线 -->
-                        <Separator Margin="0,2,0,2" />
-
-                        <!-- 点击动作表格 -->
-                        <StackPanel Margin="0,2,0,0">
-                            <ui:TextBlock
-                                FontTypography="BodyStrong"
-                                Text="点击动作列表"
-                                Margin="0,0,0,10" />
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <ui:Button
-                                    Command="{Binding ViewModel.AddClickActionCommand}"
-                                    Content="添加点击"
-                                    Margin="0,0,10,0" />
-                            </StackPanel>
-                            <DataGrid
-                                ItemsSource="{Binding ViewModel.ClickActions}"
-                                AutoGenerateColumns="False"
-                                CanUserAddRows="False"
-                                Height="150"
-                                Margin="0,0,0,10">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="描述" Binding="{Binding Description}" Width="120" />
-                                    <DataGridTextColumn Header="X坐标" Binding="{Binding X}" Width="80" />
-                                    <DataGridTextColumn Header="Y坐标" Binding="{Binding Y}" Width="80" />
-                                    <DataGridTextColumn Header="间隔(ms)" Binding="{Binding Interval}" Width="80" />
-                                    <DataGridTextColumn Header="次数" Binding="{Binding Times}" Width="60" />
-                                    <DataGridTemplateColumn Header="操作" Width="80">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ui:Button
-                                                    Content="删除"
-                                                    Command="{Binding DataContext.ViewModel.RemoveClickActionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    FontSize="12"
-                                                    Padding="5,2" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                            <ui:Button
-                                Command="{Binding ViewModel.ClickTestCommand}"
-                                Content="执行点击测试"
-                                Margin="0,0,10,0" />
-                        </StackPanel>
-
-                        <!-- 分隔线 -->
-                        <Separator Margin="0,2,0,2" />
-                        
-                        <!-- 拖拽测试 -->
-                        <StackPanel Margin="0,2,0,0">
-                            <ui:TextBlock
-                                FontTypography="BodyStrong"
-                                Text="拖拽动作列表"
-                                Margin="0,0,0,10" />
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <ui:Button
-                                    Command="{Binding ViewModel.AddDragActionCommand}"
-                                    Content="添加拖拽"
-                                    Margin="0,0,10,0" />
-                            </StackPanel>
-                            <DataGrid
-                                ItemsSource="{Binding ViewModel.DragActions}"
-                                AutoGenerateColumns="False"
-                                CanUserAddRows="False"
-                                Height="150"
-                                Margin="0,0,0,10">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="描述" Binding="{Binding Description}" Width="120" />
-                                    <DataGridTextColumn Header="起始X" Binding="{Binding StartX}" Width="80" />
-                                    <DataGridTextColumn Header="起始Y" Binding="{Binding StartY}" Width="80" />
-                                    <DataGridTextColumn Header="结束X" Binding="{Binding EndX}" Width="80" />
-                                    <DataGridTextColumn Header="结束Y" Binding="{Binding EndY}" Width="80" />
-                                    <DataGridTextColumn Header="持续时间(ms)" Binding="{Binding Duration}" Width="100" />
-                                    <DataGridTemplateColumn Header="操作" Width="80">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ui:Button
-                                                    Content="删除"
-                                                    Command="{Binding DataContext.ViewModel.RemoveDragActionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    FontSize="12"
-                                                    Padding="5,2" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                            <ui:Button
-                                Command="{Binding ViewModel.DragTestCommand}"
-                                Content="执行拖拽测试"
-                                Margin="0,0,10,0" />
-                        </StackPanel>
-
-                        <!-- 分隔线 -->
-                        <Separator Margin="0,2,0,2" />
-                        
-                        <!-- 长按测试 -->
-                        <StackPanel Margin="0,2,0,0">
-                            <ui:TextBlock
-                                FontTypography="BodyStrong"
-                                Text="长按动作列表"
-                                Margin="0,0,0,10" />
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <ui:Button
-                                    Command="{Binding ViewModel.AddLongPressActionCommand}"
-                                    Content="添加长按"
-                                    Margin="0,0,10,0" />
-                            </StackPanel>
-                            <DataGrid
-                                ItemsSource="{Binding ViewModel.LongPressActions}"
-                                AutoGenerateColumns="False"
-                                CanUserAddRows="False"
-                                Height="150"
-                                Margin="0,0,0,10">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="描述" Binding="{Binding Description}" Width="120" />
-                                    <DataGridTextColumn Header="X坐标" Binding="{Binding X}" Width="80" />
-                                    <DataGridTextColumn Header="Y坐标" Binding="{Binding Y}" Width="80" />
-                                    <DataGridTextColumn Header="持续时间(ms)" Binding="{Binding Duration}" Width="120" />
-                                    <DataGridTextColumn Header="间隔(ms)" Binding="{Binding Interval}" Width="100" />
-                                    <DataGridTextColumn Header="次数" Binding="{Binding Times}" Width="80" />
-                                    <DataGridTemplateColumn Header="操作" Width="80">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ui:Button
-                                                    Content="删除"
-                                                    Command="{Binding DataContext.ViewModel.RemoveLongPressActionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    FontSize="12"
-                                                    Padding="5,2" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                            <ui:Button
-                                Command="{Binding ViewModel.LongPressTestCommand}"
-                                Content="执行长按测试"
-                                Margin="0,0,10,0" />
-                        </StackPanel>
-                    </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
                 <!-- 文字识别 -->
                 <TabItem  MaxWidth="100">

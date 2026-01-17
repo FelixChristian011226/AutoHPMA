@@ -1,6 +1,7 @@
 ﻿using AutoHPMA.ViewModels.Pages;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,26 @@ namespace AutoHPMA.Views.Pages
             ViewModel = viewModel;
             DataContext = this;
             InitializeComponent();
+        }
+    }
+
+    /// <summary>
+    /// 将 DataGrid 的 AlternationIndex 转换为从1开始的序号
+    /// </summary>
+    public class IndexConverter : IValueConverter
+    {
+        public static readonly IndexConverter Instance = new();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int index)
+                return (index + 1).ToString();
+            return "0";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

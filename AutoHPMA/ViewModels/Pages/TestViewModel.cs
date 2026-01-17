@@ -11,6 +11,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Wpf.Ui.Controls;
 using Point = OpenCvSharp.Point;
@@ -47,9 +48,11 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private bool _hasChildWindows = false;
 
-        public ObservableCollection<ClickActionModel> ClickActions { get; } = new();
-        public ObservableCollection<DragActionModel> DragActions { get; } = new();
-        public ObservableCollection<LongPressActionModel> LongPressActions { get; } = new();
+        // 统一的鼠标动作列表
+        public ObservableCollection<MouseActionModel> MouseActions { get; } = new();
+
+        [ObservableProperty]
+        private MouseActionModel? _selectedMouseAction;
 
         // 文字识别
         [ObservableProperty]
@@ -112,9 +115,8 @@ namespace AutoHPMA.ViewModels.Pages
         public TestViewModel()
         {
             RefreshWindowList();
-            ClickActions.Add(new ClickActionModel(200, 200, 500, 1, "默认点击"));
-            DragActions.Add(new DragActionModel(200, 200, 400, 400, 500, "默认拖拽"));
-            LongPressActions.Add(new LongPressActionModel(200, 200, 1000, 500, 1, "默认长按"));
+            // 添加示例动作
+            MouseActions.Add(MouseActionModel.CreateClick(200, 200, 1, 500, "示例点击"));
         }
 
         #endregion
@@ -257,16 +259,59 @@ namespace AutoHPMA.ViewModels.Pages
         #region 鼠标模拟
 
         /// <summary>
-        /// 通用动作测试方法
+        /// 执行单个鼠标动作
         /// </summary>
-        private async Task ExecuteActionTest<T>(
-            IEnumerable<T> actions,
-            string actionName,
-            Func<T, IntPtr, Task> executeAction)
+        private async Task ExecuteSingleAction(MouseActionModel action, IntPtr hwnd)
         {
-            if (!ValidateWindow(SelectedClickWindow, actionName)) return;
+            switch (action.ActionType)
+            {
+                case MouseActionType.Click:
+                    for (int i = 0; i < action.Times; i++)
+                    {
+                        await WindowInteractionHelper.SendMouseClickAsync(hwnd, (uint)action.X, (uint)action.Y);
+                        if (i < action.Times - 1)
+                            await Task.Delay(action.Interval);
+                    }
+                    break;
 
-            // 使用实际交互窗口（优先子窗口）
+                case MouseActionType.Drag:
+                    for (int i = 0; i < action.Times; i++)
+                    {
+                        await WindowInteractionHelper.SendMouseDragWithNoiseAsync(
+                            hwnd,
+                            (uint)action.X, (uint)action.Y,
+                            (uint)action.EndX, (uint)action.EndY,
+                            action.Duration);
+                        if (i < action.Times - 1)
+                            await Task.Delay(action.Interval);
+                    }
+                    break;
+
+                case MouseActionType.LongPress:
+                    for (int i = 0; i < action.Times; i++)
+                    {
+                        await WindowInteractionHelper.SendMouseLongPressAsync(hwnd, (uint)action.X, (uint)action.Y, action.Duration);
+                        if (i < action.Times - 1)
+                            await Task.Delay(action.Interval);
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 执行所有鼠标动作
+        /// </summary>
+        [RelayCommand]
+        public async Task ExecuteAllActions()
+        {
+            if (!ValidateWindow(SelectedClickWindow, "执行")) return;
+
+            if (MouseActions.Count == 0)
+            {
+                ShowError("操作列表为空，请先添加动作");
+                return;
+            }
+
             var targetHwnd = GetEffectiveClickWindowHandle();
             if (targetHwnd == IntPtr.Zero)
             {
@@ -280,77 +325,159 @@ namespace AutoHPMA.ViewModels.Pages
                 WindowInteractionHelper.SetForegroundWindow(SelectedClickWindow!.Handle);
                 await Task.Delay(3000);
 
-                foreach (var action in actions)
+                for (int i = 0; i < MouseActions.Count; i++)
                 {
-                    await executeAction(action, targetHwnd);
+                    var action = MouseActions[i];
+                    await ExecuteSingleAction(action, targetHwnd);
+
+                    // 如果不是最后一个动作，等待间隔时间
+                    if (i < MouseActions.Count - 1)
+                        await Task.Delay(action.Interval);
                 }
+
+                ShowSuccess($"已完成 {MouseActions.Count} 个动作");
             }
             catch (Exception ex)
             {
-                ShowError($"{actionName}测试失败：{ex.Message}");
+                ShowError($"执行失败：{ex.Message}");
+            }
+        }
+
+        #region 动作管理命令
+
+        [RelayCommand]
+        public void AddClickAction() =>
+            MouseActions.Add(MouseActionModel.CreateClick(200, 200, 1, 500, $"点击动作{MouseActions.Count + 1}"));
+
+        [RelayCommand]
+        public void AddDragAction() =>
+            MouseActions.Add(MouseActionModel.CreateDrag(200, 200, 400, 400, 500, $"拖拽动作{MouseActions.Count + 1}"));
+
+        [RelayCommand]
+        public void AddLongPressAction() =>
+            MouseActions.Add(MouseActionModel.CreateLongPress(200, 200, 1000, 1, 500, $"长按动作{MouseActions.Count + 1}"));
+
+        [RelayCommand]
+        public void RemoveMouseAction(MouseActionModel? action)
+        {
+            if (action != null)
+                MouseActions.Remove(action);
+        }
+
+        [RelayCommand]
+        public void MoveActionUp(MouseActionModel? action)
+        {
+            if (action == null) return;
+            int index = MouseActions.IndexOf(action);
+            if (index > 0)
+                MouseActions.Move(index, index - 1);
+        }
+
+        [RelayCommand]
+        public void MoveActionDown(MouseActionModel? action)
+        {
+            if (action == null) return;
+            int index = MouseActions.IndexOf(action);
+            if (index >= 0 && index < MouseActions.Count - 1)
+                MouseActions.Move(index, index + 1);
+        }
+
+        [RelayCommand]
+        public void ClearAllActions()
+        {
+            MouseActions.Clear();
+            SelectedMouseAction = null;
+        }
+
+        [RelayCommand]
+        public void ClearSelection()
+        {
+            SelectedMouseAction = null;
+        }
+
+        #endregion
+
+        #region 导入导出
+
+        [RelayCommand]
+        public void ExportActions()
+        {
+            if (MouseActions.Count == 0)
+            {
+                ShowError("操作列表为空，无法导出");
+                return;
+            }
+
+            var dlg = new SaveFileDialog
+            {
+                Filter = "JSON 文件 (*.json)|*.json",
+                DefaultExt = ".json",
+                FileName = "mouse_actions"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                try
+                {
+                    var actionList = new MouseActionList
+                    {
+                        Version = "1.0",
+                        Actions = MouseActions.ToList()
+                    };
+
+                    var options = new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                    };
+
+                    string json = JsonSerializer.Serialize(actionList, options);
+                    File.WriteAllText(dlg.FileName, json);
+                    ShowSuccess($"已成功导出 {MouseActions.Count} 个动作");
+                }
+                catch (Exception ex)
+                {
+                    ShowError($"导出失败：{ex.Message}");
+                }
             }
         }
 
         [RelayCommand]
-        public async void OnClickTest(object sender)
+        public void ImportActions()
         {
-            await ExecuteActionTest(ClickActions, "点击", async (action, hwnd) =>
+            var dlg = new OpenFileDialog
             {
-                for (int i = 0; i < action.Times; i++)
+                Filter = "JSON 文件 (*.json)|*.json"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                try
                 {
-                    await WindowInteractionHelper.SendMouseClickAsync(hwnd, (uint)action.X, (uint)action.Y);
-                    await Task.Delay(action.Interval);
+                    string json = File.ReadAllText(dlg.FileName);
+                    var actionList = JsonSerializer.Deserialize<MouseActionList>(json);
+
+                    if (actionList?.Actions == null || actionList.Actions.Count == 0)
+                    {
+                        ShowError("文件中没有有效的动作数据");
+                        return;
+                    }
+
+                    // 替换当前列表
+                    MouseActions.Clear();
+                    foreach (var action in actionList.Actions)
+                        MouseActions.Add(action);
+
+                    ShowSuccess($"已成功导入 {MouseActions.Count} 个动作");
                 }
-            });
-        }
-
-        [RelayCommand]
-        public async void OnDragTest(object sender)
-        {
-            await ExecuteActionTest(DragActions, "拖拽", async (action, hwnd) =>
-            {
-                await WindowInteractionHelper.SendMouseDragWithNoiseAsync(
-                    hwnd,
-                    (uint)action.StartX, (uint)action.StartY,
-                    (uint)action.EndX, (uint)action.EndY,
-                    action.Duration);
-                await Task.Delay(500);
-            });
-        }
-
-        [RelayCommand]
-        public async void OnLongPressTest(object sender)
-        {
-            await ExecuteActionTest(LongPressActions, "长按", async (action, hwnd) =>
-            {
-                for (int i = 0; i < action.Times; i++)
+                catch (Exception ex)
                 {
-                    await WindowInteractionHelper.SendMouseLongPressAsync(hwnd, (uint)action.X, (uint)action.Y, action.Duration);
-                    await Task.Delay(action.Interval);
+                    ShowError($"导入失败：{ex.Message}");
                 }
-            });
+            }
         }
 
-        [RelayCommand]
-        public void AddClickAction() =>
-            ClickActions.Add(new ClickActionModel(200, 200, 500, 1, $"点击动作{ClickActions.Count + 1}"));
-
-        [RelayCommand]
-        public void RemoveClickAction(ClickActionModel action) => ClickActions.Remove(action);
-
-        [RelayCommand]
-        public void AddDragAction() =>
-            DragActions.Add(new DragActionModel(200, 200, 400, 400, 500, $"拖拽动作{DragActions.Count + 1}"));
-
-        [RelayCommand]
-        public void RemoveDragAction(DragActionModel action) => DragActions.Remove(action);
-
-        [RelayCommand]
-        public void AddLongPressAction() =>
-            LongPressActions.Add(new LongPressActionModel(200, 200, 1000, 500, 1, $"长按动作{LongPressActions.Count + 1}"));
-
-        [RelayCommand]
-        public void RemoveLongPressAction(LongPressActionModel action) => LongPressActions.Remove(action);
+        #endregion
 
         #endregion
 
