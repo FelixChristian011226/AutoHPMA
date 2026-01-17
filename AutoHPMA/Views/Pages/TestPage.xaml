@@ -32,90 +32,146 @@
                             <TextBlock Text="截屏测试" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <StackPanel>
-                        <!-- 截屏方式选择 -->
-                        <Grid Margin="0,10,0,10">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="BodyStrong"
-                            Text="截屏方式"
-                            TextWrapping="Wrap" />
-                            <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="选择截屏API"
-                            TextWrapping="Wrap" />
-                            <ComboBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            Width="200"
-                            Margin="5,0,0,0"
-                            ItemsSource="{Binding ViewModel.CaptureMethods}"
-                            SelectedItem="{Binding ViewModel.SelectedCaptureMethod, Mode=TwoWay}" />
-                        </Grid>
-                        
-                        <!-- 窗口选择 -->
-                        <Grid Margin="0,0,0,10">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ui:TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            FontTypography="BodyStrong"
-                            Text="选择窗口"
-                            TextWrapping="Wrap" />
-                            <ui:TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                            Text="选择要截屏的窗口"
-                            TextWrapping="Wrap" />
-                            <ComboBox
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            Width="300"
-                            Margin="5,0,5,0"
-                            ItemsSource="{Binding ViewModel.AvailableWindows}"
-                            SelectedItem="{Binding ViewModel.SelectedWindow, Mode=TwoWay}"
-                            DisplayMemberPath="DisplayName" />
-                            <ui:Button
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="2"
-                            Margin="5,0,0,0"
-                            Command="{Binding ViewModel.RefreshWindowListCommand}"
-                            Content="刷新窗口列表"
-                            FontSize="12" />
-                        </Grid>
-                        
-                        <!-- 操作按钮 -->
-                        <Grid Margin="0,0,0,10">
-                            <ui:Button
-                            HorizontalAlignment="Left"
-                            Command="{Binding ViewModel.ScreenshotTestCommand}"
-                            Content="开始实时预览"
-                            Cursor="" />
-                        </Grid>
-                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,10,10,10">
+                        <StackPanel>
+                            <!-- 截屏配置卡片 -->
+                            <Border 
+                                Margin="0,8,0,0" 
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                                <StackPanel>
+                                    <!-- 标题 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <ui:SymbolIcon Margin="0,0,8,0" Symbol="Settings24" FontSize="16"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="截屏配置" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <!-- 截屏方式选择 -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <ui:TextBlock FontTypography="Body" Text="截屏方式" />
+                                            <ui:TextBlock 
+                                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="选择截屏 API，不同 API 对窗口捕获的兼容性不同"
+                                                FontSize="12" />
+                                        </StackPanel>
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            Width="200"
+                                            VerticalAlignment="Center"
+                                            ItemsSource="{Binding ViewModel.CaptureMethods}"
+                                            SelectedItem="{Binding ViewModel.SelectedCaptureMethod, Mode=TwoWay}" />
+                                    </Grid>
+                                    
+                                    <Separator Margin="-16,0" Opacity="0.3"/>
+                                    
+                                    <!-- 窗口选择 -->
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <ui:TextBlock FontTypography="Body" Text="目标窗口" />
+                                            <ui:TextBlock 
+                                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="选择要进行截屏测试的目标窗口"
+                                                FontSize="12" />
+                                        </StackPanel>
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            Width="280"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            ItemsSource="{Binding ViewModel.AvailableWindows}"
+                                            SelectedItem="{Binding ViewModel.SelectedWindow, Mode=TwoWay}"
+                                            DisplayMemberPath="DisplayName" />
+                                        <ui:Button
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding ViewModel.RefreshWindowListCommand}"
+                                            ToolTip="刷新窗口列表"
+                                            Icon="{ui:SymbolIcon ArrowSync24}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- 操作按钮卡片 -->
+                            <Border 
+                                Margin="0,12,0,0" 
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <ui:TextBlock FontTypography="Body" Text="实时预览" />
+                                        <ui:TextBlock 
+                                            Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                            Text="开启实时截屏预览窗口，测试截屏效果和性能"
+                                            FontSize="12" />
+                                    </StackPanel>
+                                    <ui:Button
+                                        Grid.Column="1"
+                                        Appearance="Primary"
+                                        Command="{Binding ViewModel.ScreenshotTestCommand}"
+                                        Icon="{ui:SymbolIcon Play24}">
+                                        <ui:Button.Content>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="开始预览" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </ui:Button.Content>
+                                    </ui:Button>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- 使用说明提示 -->
+                            <Border 
+                                Margin="0,16,0,0" 
+                                Padding="12"
+                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                CornerRadius="6"
+                                BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="使用提示" />
+                                    </StackPanel>
+                                    <ui:TextBlock 
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="1. 选择合适的截屏方式，推荐使用 BitBlt 或 Windows Graphics Capture 方式" />
+                                    <ui:TextBlock 
+                                        Margin="0,4,0,0"
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="2. 从窗口列表中选择目标游戏窗口，若未显示请点击刷新按钮" />
+                                    <ui:TextBlock 
+                                        Margin="0,4,0,0"
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="3. 点击开始预览按钮查看实时截屏效果，验证截图质量和帧率" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
                 <!--  鼠标模拟  -->
                 <TabItem  MaxWidth="100">
