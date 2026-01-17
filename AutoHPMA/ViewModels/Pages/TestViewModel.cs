@@ -40,7 +40,12 @@ namespace AutoHPMA.ViewModels.Pages
         private WindowInfo? _selectedClickWindow;
 
         [ObservableProperty]
-        private bool _includeChildWindows = false;
+        private WindowInfo? _selectedClickChildWindow;
+
+        public ObservableCollection<WindowInfo> AvailableChildWindows { get; } = new();
+
+        [ObservableProperty]
+        private bool _hasChildWindows = false;
 
         public ObservableCollection<ClickActionModel> ClickActions { get; } = new();
         public ObservableCollection<DragActionModel> DragActions { get; } = new();
@@ -179,14 +184,53 @@ namespace AutoHPMA.ViewModels.Pages
         private void RefreshWindowList()
         {
             AvailableWindows.Clear();
-            var windows = IncludeChildWindows
-                ? WindowHelper.GetAllVisibleWindowsWithChildren()
-                : WindowHelper.GetAllVisibleWindows();
+            AvailableChildWindows.Clear();
+            SelectedClickWindow = null;
+            SelectedClickChildWindow = null;
+            HasChildWindows = false;
+
+            // 只获取父窗口列表
+            var windows = WindowHelper.GetAllVisibleWindows();
             foreach (var window in windows)
                 AvailableWindows.Add(window);
         }
 
-        partial void OnIncludeChildWindowsChanged(bool value) => RefreshWindowList();
+        /// <summary>
+        /// 刷新子窗口列表（基于选中的父窗口）
+        /// </summary>
+        private void RefreshChildWindowList()
+        {
+            AvailableChildWindows.Clear();
+            SelectedClickChildWindow = null;
+            HasChildWindows = false;
+
+            if (SelectedClickWindow == null)
+                return;
+
+            var childWindows = WindowHelper.GetChildWindows(
+                SelectedClickWindow.Handle,
+                SelectedClickWindow.ProcessName,
+                SelectedClickWindow.ProcessId);
+
+            if (childWindows.Count > 0)
+            {
+                HasChildWindows = true;
+                foreach (var child in childWindows)
+                    AvailableChildWindows.Add(child);
+            }
+        }
+
+        partial void OnSelectedClickWindowChanged(WindowInfo? value) => RefreshChildWindowList();
+
+        /// <summary>
+        /// 获取实际用于交互的窗口句柄（优先使用子窗口）
+        /// </summary>
+        private IntPtr GetEffectiveClickWindowHandle()
+        {
+            if (SelectedClickChildWindow != null)
+                return SelectedClickChildWindow.Handle;
+            return SelectedClickWindow?.Handle ?? IntPtr.Zero;
+        }
 
         #endregion
 
@@ -222,11 +266,18 @@ namespace AutoHPMA.ViewModels.Pages
         {
             if (!ValidateWindow(SelectedClickWindow, actionName)) return;
 
-            var targetHwnd = SelectedClickWindow!.Handle;
+            // 使用实际交互窗口（优先子窗口）
+            var targetHwnd = GetEffectiveClickWindowHandle();
+            if (targetHwnd == IntPtr.Zero)
+            {
+                ShowError("目标窗口句柄无效");
+                return;
+            }
 
             try
             {
-                WindowInteractionHelper.SetForegroundWindow(targetHwnd);
+                // 先将父窗口置于前台
+                WindowInteractionHelper.SetForegroundWindow(SelectedClickWindow!.Handle);
                 await Task.Delay(3000);
 
                 foreach (var action in actions)

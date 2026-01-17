@@ -219,16 +219,48 @@
                                     Margin="0,0,10,0" />
                             </StackPanel>
                             
-                            <!-- 子窗口选择选项 -->
-                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                <CheckBox 
-                                    IsChecked="{Binding ViewModel.IncludeChildWindows, Mode=TwoWay}"
-                                    Content="包含子窗口"
-                                    Margin="0,0,10,0" />
+                            <!-- 子窗口选择（当父窗口有子窗口时显示） -->
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
+                                        Visibility="{Binding ViewModel.HasChildWindows, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ui:TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        FontTypography="BodyStrong"
+                                        Text="子窗口（可选）"
+                                        TextWrapping="Wrap" />
+                                    <ui:TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                        Text="若父窗口无法交互，可选择子窗口"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                                <ComboBox
+                                    Width="200"
+                                    Margin="10,0,10,0"
+                                    ItemsSource="{Binding ViewModel.AvailableChildWindows}"
+                                    SelectedItem="{Binding ViewModel.SelectedClickChildWindow, Mode=TwoWay}"
+                                    DisplayMemberPath="DisplayName" />
+                            </StackPanel>
+                            
+                            <!-- 当前选择信息提示 -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                                        Visibility="{Binding ViewModel.HasChildWindows, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ui:SymbolIcon Symbol="Info16" Margin="0,0,6,0" 
+                                               Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
                                 <ui:TextBlock
                                     Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                    Text="勾选此项可显示游戏模拟器的子窗口（如MuMu模拟器的实际游戏窗口）"
-                                    TextWrapping="Wrap"
+                                    Text="提示：未选择子窗口时，将直接操作父窗口"
+                                    FontSize="12"
                                     VerticalAlignment="Center" />
                             </StackPanel>
                         </StackPanel>

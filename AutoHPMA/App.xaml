@@ -15,6 +15,7 @@
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
             <converters:KeyToStringConverter x:Key="KeyToStringConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <helperConverters:TaskTypeToIsRunningConverter x:Key="TaskTypeToIsRunningConverter" />
         </ResourceDictionary>
     </Application.Resources>
