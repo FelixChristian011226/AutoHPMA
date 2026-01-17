@@ -61,6 +61,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private string _selectedOCR = "PaddleOCR";
 
+        [ObservableProperty]
+        private System.Windows.Media.ImageSource? _ocrPreviewImage;
+
         public ObservableCollection<string> OCRs { get; } = new() { "PaddleOCR", "Tesseract" };
 
         // 模板匹配
@@ -484,7 +487,7 @@ namespace AutoHPMA.ViewModels.Pages
         #region 文字识别
 
         [RelayCommand]
-        public async void OnOCRTest(object sender)
+        public async Task OnOCRTest()
         {
             var filePath = SelectImageFile();
             if (filePath == null) return;
@@ -492,12 +495,88 @@ namespace AutoHPMA.ViewModels.Pages
             try
             {
                 Mat mat = Cv2.ImRead(filePath);
+                OcrPreviewImage = ToImageSource(mat);
                 OcrResult = await Task.Run(() => OcrText(mat));
             }
             catch (Exception ex)
             {
                 OcrResult = "识别出错：" + ex.Message;
             }
+        }
+
+        [RelayCommand]
+        public async Task OCRFromScreenshot()
+        {
+            try
+            {
+                // 清空剪切板以便检测新的截图
+                System.Windows.Clipboard.Clear();
+
+                // 启动 Windows 截图工具
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = "ms-screenclip:",
+                    UseShellExecute = false
+                };
+                System.Diagnostics.Process.Start(psi);
+
+                // 等待用户完成截图（监控剪切板变化）
+                OcrResult = "请完成截图...";
+                
+                bool screenshotCaptured = false;
+                for (int i = 0; i < 60; i++) // 最多等待60秒
+                {
+                    await Task.Delay(1000);
+                    
+                    if (System.Windows.Clipboard.ContainsImage())
+                    {
+                        screenshotCaptured = true;
+                        break;
+                    }
+                }
+
+                if (!screenshotCaptured)
+                {
+                    OcrResult = "截图超时或已取消";
+                    return;
+                }
+
+                // 从剪切板获取截图并识别
+                var bitmapSource = System.Windows.Clipboard.GetImage();
+                if (bitmapSource == null)
+                {
+                    OcrResult = "无法获取截图";
+                    return;
+                }
+
+                OcrPreviewImage = bitmapSource;
+                Mat mat = BitmapSourceToMat(bitmapSource);
+                OcrResult = await Task.Run(() => OcrText(mat));
+            }
+            catch (Exception ex)
+            {
+                OcrResult = "识别出错：" + ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// 将 BitmapSource 转换为 OpenCvSharp Mat
+        /// </summary>
+        private static Mat BitmapSourceToMat(System.Windows.Media.Imaging.BitmapSource bitmapSource)
+        {
+            int width = bitmapSource.PixelWidth;
+            int height = bitmapSource.PixelHeight;
+            int stride = width * 4; // BGRA format
+            byte[] pixels = new byte[height * stride];
+            bitmapSource.CopyPixels(pixels, stride, 0);
+
+            Mat mat = new Mat(height, width, MatType.CV_8UC4);
+            System.Runtime.InteropServices.Marshal.Copy(pixels, 0, mat.Data, pixels.Length);
+            
+            // 转换为 BGR (OpenCV 标准格式)
+            Cv2.CvtColor(mat, mat, ColorConversionCodes.BGRA2BGR);
+            return mat;
         }
 
         private string OcrText(Mat mat)
