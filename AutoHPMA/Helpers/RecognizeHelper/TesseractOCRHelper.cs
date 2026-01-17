@@ -14,18 +14,18 @@ public class TesseractOCRHelper
     public static Bitmap PreprocessImage(Bitmap inputBitmap)
     {
         // 将 Bitmap 转换为 Mat 对象
-        Mat src = OpenCvSharp.Extensions.BitmapConverter.ToMat(inputBitmap);
+        using Mat src = OpenCvSharp.Extensions.BitmapConverter.ToMat(inputBitmap);
 
         // 转换为灰度图
-        Mat gray = new Mat();
+        using Mat gray = new Mat();
         Cv2.CvtColor(src, gray, ColorConversionCodes.BGR2GRAY);
 
         // 二值化处理（阈值可以根据实际情况调整）
-        Mat binary = new Mat();
+        using Mat binary = new Mat();
         Cv2.Threshold(gray, binary, 128, 255, ThresholdTypes.Binary);
 
         // 可选：进行降噪处理
-        Mat denoised = new Mat();
+        using Mat denoised = new Mat();
         Cv2.MedianBlur(binary, denoised, 3);
 
         // 转换回 Bitmap 返回

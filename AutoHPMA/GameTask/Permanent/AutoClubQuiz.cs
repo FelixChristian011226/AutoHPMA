@@ -38,7 +38,6 @@ public class AutoClubQuiz : BaseGameTask
     #region 字段
 
     private static ExcelHelper excelHelper;
-    private static PaddleOCRHelper paddleOCRHelper;
 
     private volatile AutoClubQuizState _state = AutoClubQuizState.Unknown;
 
@@ -68,7 +67,6 @@ public class AutoClubQuiz : BaseGameTask
     {
         excelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/ClubQuiz", "club_question_bank.xlsx");
         excelHelper = new ExcelHelper(excelPath);
-        paddleOCRHelper = new PaddleOCRHelper();
         LoadAssets();
         CalOffset();
         InitStateRules();
@@ -398,12 +396,12 @@ public class AutoClubQuiz : BaseGameTask
     {
         var captureMat = CaptureAndPreprocess();
 
-        q = paddleOCRHelper.Ocr(new Mat(captureMat, question_rect));
-        a = paddleOCRHelper.Ocr(new Mat(captureMat, optionRects['A']));
-        b = paddleOCRHelper.Ocr(new Mat(captureMat, optionRects['B']));
-        c = paddleOCRHelper.Ocr(new Mat(captureMat, optionRects['C']));
-        d = paddleOCRHelper.Ocr(new Mat(captureMat, optionRects['D']));
-        i = paddleOCRHelper.Ocr(new Mat(captureMat, index_rect));
+        q = PaddleOCRHelper.Instance.Ocr(new Mat(captureMat, question_rect));
+        a = PaddleOCRHelper.Instance.Ocr(new Mat(captureMat, optionRects['A']));
+        b = PaddleOCRHelper.Instance.Ocr(new Mat(captureMat, optionRects['B']));
+        c = PaddleOCRHelper.Instance.Ocr(new Mat(captureMat, optionRects['C']));
+        d = PaddleOCRHelper.Instance.Ocr(new Mat(captureMat, optionRects['D']));
+        i = PaddleOCRHelper.Instance.Ocr(new Mat(captureMat, index_rect));
     }
 
     private void PrintText()
@@ -434,7 +432,7 @@ public class AutoClubQuiz : BaseGameTask
     private void FindScore()
     {
         var captureMat = CaptureAndPreprocess();
-        string ocrText = paddleOCRHelper.Ocr(captureMat);
+        string ocrText = PaddleOCRHelper.Instance.Ocr(captureMat);
         var match = Regex.Match(ocrText, @"\+(\d+)\s*社团贡献\s*\((\d+\/\d+)\)", RegexOptions.Singleline);
 
         if (!match.Success)

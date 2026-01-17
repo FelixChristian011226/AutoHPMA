@@ -494,7 +494,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             try
             {
-                Mat mat = Cv2.ImRead(filePath);
+                using Mat mat = Cv2.ImRead(filePath);
                 OcrPreviewImage = ToImageSource(mat);
                 OcrResult = await Task.Run(() => OcrText(mat));
             }
@@ -551,7 +551,7 @@ namespace AutoHPMA.ViewModels.Pages
                 }
 
                 OcrPreviewImage = bitmapSource;
-                Mat mat = BitmapSourceToMat(bitmapSource);
+                using Mat mat = BitmapSourceToMat(bitmapSource);
                 OcrResult = await Task.Run(() => OcrText(mat));
             }
             catch (Exception ex)
@@ -565,11 +565,22 @@ namespace AutoHPMA.ViewModels.Pages
         /// </summary>
         private static Mat BitmapSourceToMat(System.Windows.Media.Imaging.BitmapSource bitmapSource)
         {
-            int width = bitmapSource.PixelWidth;
-            int height = bitmapSource.PixelHeight;
+            // 确保像素格式为 Bgra32
+            var convertedBitmap = bitmapSource;
+            if (bitmapSource.Format != System.Windows.Media.PixelFormats.Bgra32)
+            {
+                convertedBitmap = new System.Windows.Media.Imaging.FormatConvertedBitmap(
+                    bitmapSource, 
+                    System.Windows.Media.PixelFormats.Bgra32, 
+                    null, 
+                    0);
+            }
+
+            int width = convertedBitmap.PixelWidth;
+            int height = convertedBitmap.PixelHeight;
             int stride = width * 4; // BGRA format
             byte[] pixels = new byte[height * stride];
-            bitmapSource.CopyPixels(pixels, stride, 0);
+            convertedBitmap.CopyPixels(pixels, stride, 0);
 
             Mat mat = new Mat(height, width, MatType.CV_8UC4);
             System.Runtime.InteropServices.Marshal.Copy(pixels, 0, mat.Data, pixels.Length);
@@ -583,7 +594,7 @@ namespace AutoHPMA.ViewModels.Pages
         {
             return SelectedOCR switch
             {
-                "PaddleOCR" => new PaddleOCRHelper().Ocr(mat),
+                "PaddleOCR" => PaddleOCRHelper.Instance.Ocr(mat),
                 "Tesseract" => TesseractOCRHelper.TesseractTextRecognition(
                     TesseractOCRHelper.PreprocessImage(OpenCvSharp.Extensions.BitmapConverter.ToBitmap(mat))),
                 _ => string.Empty

@@ -78,8 +78,6 @@ public class AutoCooking : BaseGameTask
     private Dictionary<string, int> condimentCounts = new();
 
     // OCR
-    private static PaddleOCRHelper? paddleOCRHelper;
-    private static TesseractOCRHelper? tesseractOCRHelper;
     private string _autoCookingSelectedOCR = "Tesseract";
 
     // 厨具烹饪进度监测任务
@@ -751,7 +749,6 @@ public class AutoCooking : BaseGameTask
                 }
                 
                 _autoCookingSelectedOCR = ocr;
-                InitializeOCR();
                 _logger.LogDebug("OCR引擎设置为：{OCR}", _autoCookingSelectedOCR);
             }
 
@@ -764,33 +761,17 @@ public class AutoCooking : BaseGameTask
         }
     }
 
-    private void InitializeOCR()
-    {
-        paddleOCRHelper = null;
-        tesseractOCRHelper = null;
-
-        if (_autoCookingSelectedOCR == "PaddleOCR")
-        {
-            paddleOCRHelper = new PaddleOCRHelper();
-        }
-        else
-        {
-            tesseractOCRHelper = new TesseractOCRHelper();
-        }
-    }
-
     private string OcrText(Mat mat)
     {
-        if (_autoCookingSelectedOCR == "PaddleOCR" && paddleOCRHelper != null)
+        if (_autoCookingSelectedOCR == "PaddleOCR")
         {
-            return paddleOCRHelper.Ocr(mat);
+            return PaddleOCRHelper.Instance.Ocr(mat);
         }
-        else if (tesseractOCRHelper != null)
+        else
         {
             using var bitmap = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(mat);
             return TesseractOCRHelper.TesseractTextRecognition(TesseractOCRHelper.PreprocessImage(bitmap));
         }
-        return string.Empty;
     }
 
     #endregion

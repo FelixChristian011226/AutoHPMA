@@ -14,16 +14,26 @@ using Sdcb.PaddleOCR.Models.Local;
 
 namespace AutoHPMA.Helpers.RecognizeHelper;
 
-public class PaddleOCRHelper
+/// <summary>
+/// PaddleOCR 辅助类（单例模式，避免重复加载模型）
+/// </summary>
+public class PaddleOCRHelper : IDisposable
 {
-    private readonly PaddleOcrAll paddleOcrAll;
-    private readonly FullOcrModel model;
+    private static readonly Lazy<PaddleOCRHelper> _instance = new(() => new PaddleOCRHelper());
+    
+    /// <summary>
+    /// 获取 PaddleOCRHelper 单例实例
+    /// </summary>
+    public static PaddleOCRHelper Instance => _instance.Value;
 
-    public PaddleOCRHelper()
+    private readonly PaddleOcrAll _paddleOcrAll;
+    private readonly FullOcrModel _model;
+    private bool _isDisposed;
+
+    private PaddleOCRHelper()
     {
-        model = LocalFullModels.ChineseV4;
-
-        paddleOcrAll = new PaddleOcrAll(model, PaddleDevice.Onnx())
+        _model = LocalFullModels.ChineseV4;
+        _paddleOcrAll = new PaddleOcrAll(_model, PaddleDevice.Onnx())
         {
             AllowRotateDetection = false,
             Enable180Classification = false
@@ -32,14 +42,21 @@ public class PaddleOCRHelper
 
     public string Ocr(Mat mat)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
         return OcrResult(mat).Text;
     }
 
     public PaddleOcrResult OcrResult(Mat mat)
     {
-        var result = paddleOcrAll.Run(mat);
-        return result;
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        return _paddleOcrAll.Run(mat);
     }
 
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _paddleOcrAll?.Dispose();
+        _isDisposed = true;
+        GC.SuppressFinalize(this);
+    }
 }
-
