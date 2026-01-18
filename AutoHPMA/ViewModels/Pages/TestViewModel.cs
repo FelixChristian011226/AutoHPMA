@@ -145,11 +145,17 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty] private string? _colorFilterSourcePath;
         [ObservableProperty] private string? _colorFilterMaskPath;
         [ObservableProperty] private string _targetColorHex = "ffffff";
-        [ObservableProperty] private int _colorThreshold = 30;
+        [ObservableProperty] private int _colorThreshold = 30;  // 色相阈值 (H)
+        [ObservableProperty] private int _saturationTolerance = 100; // 饱和度容差 (S)
+        [ObservableProperty] private int _valueTolerance = 100;  // 明度容差 (V/L)
+        [ObservableProperty] private string _selectedColorSpace = "LAB"; // 颜色空间
         [ObservableProperty] private System.Windows.Media.ImageSource? _colorFilterResultImage;
         [ObservableProperty] private string _colorFilterStats = string.Empty;
         [ObservableProperty] private System.Windows.Media.ImageSource? _colorFilterSourcePreview;
         [ObservableProperty] private System.Windows.Media.ImageSource? _colorFilterMaskPreview;
+
+        // 颜色空间选项
+        public string[] ColorSpaceOptions { get; } = new[] { "HSV", "LAB" };
 
         // 路径变更时更新预览
         partial void OnColorFilterSourcePathChanged(string? value) => UpdateImagePreview(value, v => ColorFilterSourcePreview = v);
@@ -879,14 +885,16 @@ namespace AutoHPMA.ViewModels.Pages
 
                 try
                 {
-                    using var resultMat = ColorFilterHelper.FilterColor(sourceMat, maskMat, TargetColorHex, ColorThreshold);
+                    using var resultMat = ColorFilterHelper.FilterColor(
+                        sourceMat, maskMat, TargetColorHex, 
+                        ColorThreshold, SaturationTolerance, ValueTolerance, SelectedColorSpace);
                     ColorFilterResultImage = ToImageSource(resultMat);
 
                     int totalFilterPixels = resultMat.Get<int>(ColorFilterHelper.KEY_TOTAL_FILTER_PIXELS);
                     int matchedPixels = resultMat.Get<int>(ColorFilterHelper.KEY_MATCHED_PIXELS);
                     double percentage = totalFilterPixels > 0 ? (double)matchedPixels / totalFilterPixels * 100 : 0;
 
-                    ColorFilterStats = $"参与过滤: {totalFilterPixels} | 匹配: {matchedPixels} | 占比: {percentage:F2}%";
+                    ColorFilterStats = $"[{SelectedColorSpace}] 参与: {totalFilterPixels} | 匹配: {matchedPixels} | 占比: {percentage:F2}%";
                 }
                 finally
                 {

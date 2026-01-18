@@ -1488,7 +1488,7 @@
                                 </StackPanel>
                             </Border>
                             
-                            <!-- 过滤参数卡片 -->
+                            <!-- 参数与结果卡片（合并） -->
                             <Border 
                                 Margin="0,12,0,0"
                                 Padding="16"
@@ -1496,180 +1496,224 @@
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
                                 CornerRadius="8">
-                                <StackPanel>
-                                    <!-- 标题 -->
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                        <ui:SymbolIcon Margin="0,0,8,0" Symbol="Settings24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                                        <ui:TextBlock FontTypography="BodyStrong" Text="过滤参数" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" MinWidth="280"/>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
                                     
-                                    <!-- 参数设置 -->
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="12"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="16"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
+                                    <!-- 左侧：参数设置 -->
+                                    <StackPanel Grid.Column="0">
+                                        <!-- 标题 -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                            <ui:SymbolIcon Margin="0,0,8,0" Symbol="Settings24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                            <ui:TextBlock FontTypography="BodyStrong" Text="过滤参数" VerticalAlignment="Center"/>
+                                        </StackPanel>
                                         
                                         <!-- 目标颜色 -->
-                                        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                                        <Grid Margin="0,0,0,8">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="70"/>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                                <ui:TextBlock FontTypography="Body" Text="目标颜色"/>
-                                                <ui:TextBlock 
-                                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" 
-                                                    FontSize="11"
-                                                    Text="输入 6 位十六进制颜色值"/>
-                                            </StackPanel>
-                                            <Grid Grid.Column="1" VerticalAlignment="Center">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="8"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <!-- 颜色预览 -->
-                                                <Border Grid.Column="0" 
-                                                        Width="32" Height="32" 
-                                                        CornerRadius="4"
-                                                        BorderThickness="1"
+                                            <ui:TextBlock Grid.Column="0" Text="目标颜色" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <Border Width="28" Height="28" CornerRadius="4" BorderThickness="1"
                                                         BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}"
-                                                        Cursor="Hand"
-                                                        MouseDown="ColorPreview_MouseDown"
-                                                        ToolTip="点击打开调色盘">
+                                                        Cursor="Hand" MouseDown="ColorPreview_MouseDown" ToolTip="点击打开调色盘">
                                                     <Border.Background>
                                                         <SolidColorBrush Color="{Binding ViewModel.TargetColorHex, Converter={StaticResource HexToColorConverter}}"/>
                                                     </Border.Background>
                                                 </Border>
-                                                <!-- 颜色输入 -->
-                                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                                    <TextBlock Text="#" FontFamily="Consolas" FontSize="14" VerticalAlignment="Center" 
-                                                               Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,4,0"/>
-                                                    <ui:TextBox Width="100" MaxLength="6"
-                                                                Text="{Binding ViewModel.TargetColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                FontFamily="Consolas" FontSize="14"/>
-                                                </StackPanel>
-                                            </Grid>
+                                                <TextBlock Text="#" FontFamily="Consolas" FontSize="13" VerticalAlignment="Center" 
+                                                           Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="8,0,2,0"/>
+                                                <ui:TextBox Width="80" MaxLength="6" FontFamily="Consolas" FontSize="13"
+                                                            Text="{Binding ViewModel.TargetColorHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            </StackPanel>
                                         </Grid>
                                         
-                                        <!-- 颜色阈值 -->
-                                        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+                                        <!-- 颜色空间 -->
+                                        <Grid Margin="0,0,0,8">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="70"/>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                                <ui:TextBlock FontTypography="Body" Text="颜色阈值"/>
-                                                <ui:TextBlock 
-                                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" 
-                                                    FontSize="11"
-                                                    Text="HSV 色相容差范围"/>
+                                            <ui:TextBlock Grid.Column="0" Text="颜色空间" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                      ItemsSource="{Binding ViewModel.ColorSpaceOptions}"
+                                                      SelectedItem="{Binding ViewModel.SelectedColorSpace, Mode=TwoWay}"
+                                                      Width="100" HorizontalAlignment="Left"/>
+                                        </Grid>
+                                        
+                                        <!-- 分隔线 -->
+                                        <Border Height="1" Background="{ui:ThemeResource ControlStrokeColorDefaultBrush}" Margin="0,4,0,12"/>
+                                        
+                                        <!-- 颜色空间参数描述 -->
+                                        <ui:TextBlock FontTypography="Caption" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="0,0,0,6">
+                                            <ui:TextBlock.Style>
+                                                <Style TargetType="ui:TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ViewModel.SelectedColorSpace}" Value="LAB">
+                                                            <Setter Property="Text" Value="LAB 通道容差 (更接近人眼感知)"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ViewModel.SelectedColorSpace}" Value="HSV">
+                                                            <Setter Property="Text" Value="HSV 通道容差 (按色相分离)"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:TextBlock.Style>
+                                        </ui:TextBlock>
+                                        
+                                        <!-- 三个容差参数：竖直滑块布局 -->
+                                        <Grid Margin="0,0,0,12" MinHeight="130">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <!-- 色相/b* -->
+                                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                                <ui:TextBlock FontSize="11" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                                    <ui:TextBlock.Style>
+                                                        <Style TargetType="ui:TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ViewModel.SelectedColorSpace}" Value="LAB">
+                                                                    <Setter Property="Text" Value="b* (黄蓝)"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ViewModel.SelectedColorSpace}" Value="HSV">
+                                                                    <Setter Property="Text" Value="H (色相)"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ui:TextBlock.Style>
+                                                </ui:TextBlock>
+                                                <Slider Orientation="Vertical" Height="70"
+                                                        Minimum="0" Maximum="90" 
+                                                        TickFrequency="5" IsSnapToTickEnabled="True"
+                                                        Value="{Binding ViewModel.ColorThreshold, Mode=TwoWay}"
+                                                        HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding ViewModel.ColorThreshold}" 
+                                                           FontFamily="Consolas" FontSize="12" 
+                                                           HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                             </StackPanel>
-                                            <Slider Grid.Column="1"
-                                                    Minimum="0" Maximum="90" 
-                                                    TickFrequency="1" IsSnapToTickEnabled="True"
-                                                    Value="{Binding ViewModel.ColorThreshold, Mode=TwoWay}"
-                                                    VerticalAlignment="Center"/>
-                                            <Border Grid.Column="2" 
-                                                    Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
-                                                    CornerRadius="4" Padding="8,4" Margin="12,0,0,0"
-                                                    VerticalAlignment="Center">
-                                                <TextBlock FontFamily="Consolas" FontSize="13" MinWidth="30" TextAlignment="Center"
-                                                           VerticalAlignment="Center">
-                                                    <Run Text="±"/>
-                                                    <Run Text="{Binding ViewModel.ColorThreshold, Mode=OneWay}"/>
-                                                </TextBlock>
-                                            </Border>
+                                            
+                                            <!-- 饱和度/a* -->
+                                            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                                <ui:TextBlock FontSize="11" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                                    <ui:TextBlock.Style>
+                                                        <Style TargetType="ui:TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ViewModel.SelectedColorSpace}" Value="LAB">
+                                                                    <Setter Property="Text" Value="a* (红绿)"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ViewModel.SelectedColorSpace}" Value="HSV">
+                                                                    <Setter Property="Text" Value="S (饱和度)"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ui:TextBlock.Style>
+                                                </ui:TextBlock>
+                                                <Slider Orientation="Vertical" Height="70"
+                                                        Minimum="0" Maximum="255" 
+                                                        TickFrequency="10" IsSnapToTickEnabled="True"
+                                                        Value="{Binding ViewModel.SaturationTolerance, Mode=TwoWay}"
+                                                        HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding ViewModel.SaturationTolerance}" 
+                                                           FontFamily="Consolas" FontSize="12" 
+                                                           HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                            
+                                            <!-- 明度/L -->
+                                            <StackPanel Grid.Column="4" HorizontalAlignment="Center">
+                                                <ui:TextBlock FontSize="11" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                                    <ui:TextBlock.Style>
+                                                        <Style TargetType="ui:TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ViewModel.SelectedColorSpace}" Value="LAB">
+                                                                    <Setter Property="Text" Value="L (明度)"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ViewModel.SelectedColorSpace}" Value="HSV">
+                                                                    <Setter Property="Text" Value="V (明度)"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ui:TextBlock.Style>
+                                                </ui:TextBlock>
+                                                <Slider Orientation="Vertical" Height="70"
+                                                        Minimum="0" Maximum="255" 
+                                                        TickFrequency="10" IsSnapToTickEnabled="True"
+                                                        Value="{Binding ViewModel.ValueTolerance, Mode=TwoWay}"
+                                                        HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding ViewModel.ValueTolerance}" 
+                                                           FontFamily="Consolas" FontSize="12" 
+                                                           HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                            </StackPanel>
                                         </Grid>
                                         
                                         <!-- 开始过滤按钮 -->
-                                        <ui:Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-                                                   HorizontalAlignment="Right"
+                                        <ui:Button HorizontalAlignment="Stretch"
                                                    Appearance="Primary"
                                                    Command="{Binding ViewModel.StartColorFilterCommand}"
-                                                   Padding="20,10">
-                                            <StackPanel Orientation="Horizontal">
-                                                <ui:SymbolIcon Symbol="Play24" FontSize="16"/>
-                                                <TextBlock Text="开始过滤" Margin="8,0,0,0" FontWeight="Medium"/>
+                                                   Padding="12,8">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <ui:SymbolIcon Symbol="Play24" FontSize="14"/>
+                                                <TextBlock Text="开始过滤" Margin="6,0,0,0"/>
                                             </StackPanel>
                                         </ui:Button>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-                            
-                            <!-- 过滤结果卡片 -->
-                            <Border 
-                                Margin="0,12,0,0"
-                                Padding="16"
-                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8">
-                                <StackPanel>
-                                    <!-- 标题和统计信息 -->
-                                    <Grid Margin="0,0,0,12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                    </StackPanel>
+                                    
+                                    <!-- 分隔线 -->
+                                    <Border Grid.Column="1" Width="1" Background="{ui:ThemeResource ControlStrokeColorDefaultBrush}"/>
+                                    
+                                    <!-- 右侧：结果预览 -->
+                                    <StackPanel Grid.Column="2">
+                                        <!-- 标题 -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                             <ui:SymbolIcon Margin="0,0,8,0" Symbol="Color24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
                                             <ui:TextBlock FontTypography="BodyStrong" Text="过滤结果" VerticalAlignment="Center"/>
                                         </StackPanel>
-                                        <!-- 统计信息徽章 -->
-                                        <Border Grid.Column="1" Padding="10,6" CornerRadius="6"
-                                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
-                                                Visibility="{Binding ViewModel.ColorFilterStats, Converter={StaticResource NullToVisibilityConverter}}">
-                                            <TextBlock Text="{Binding ViewModel.ColorFilterStats}" 
-                                                       FontSize="11" 
-                                                       TextWrapping="NoWrap"
-                                                       Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                        
+                                        <!-- 结果图像预览 -->
+                                        <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                BorderThickness="1" 
+                                                BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
+                                                CornerRadius="6" 
+                                                Padding="8"
+                                                MinHeight="160">
+                                            <Grid>
+                                                <!-- 占位提示 -->
+                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                            Visibility="{Binding ViewModel.ColorFilterResultImage, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
+                                                    <ui:SymbolIcon Symbol="ColorBackground24" FontSize="32" 
+                                                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                                   HorizontalAlignment="Center"/>
+                                                    <TextBlock Text="过滤结果" 
+                                                               Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                               FontSize="11" Margin="0,8,0,0" HorizontalAlignment="Center"/>
+                                                </StackPanel>
+                                                <!-- 实际结果图像 -->
+                                                <Image Source="{Binding ViewModel.ColorFilterResultImage}" Cursor="Hand" MouseDown="ShowZoomedImage" 
+                                                       Stretch="Uniform" MaxHeight="300"
+                                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            </Grid>
                                         </Border>
-                                    </Grid>
-                                    
-                                    <!-- 结果图像预览区域 -->
-                                    <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
-                                            BorderThickness="1" 
-                                            BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
-                                            CornerRadius="6" 
-                                            Padding="8"
-                                            MinHeight="200">
-                                        <Grid>
-                                            <!-- 占位提示 -->
-                                            <StackPanel 
-                                                HorizontalAlignment="Center" 
-                                                VerticalAlignment="Center"
-                                                Visibility="{Binding ViewModel.ColorFilterResultImage, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
-                                                <ui:SymbolIcon 
-                                                    Symbol="ColorBackground24" 
-                                                    FontSize="40" 
-                                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                                    HorizontalAlignment="Center"/>
-                                                <TextBlock 
-                                                    Text="过滤结果将显示在这里" 
-                                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                                    FontSize="12"
-                                                    Margin="0,12,0,0"
-                                                    HorizontalAlignment="Center"/>
-                                            </StackPanel>
-                                            <!-- 实际结果图像 -->
-                                            <Image Source="{Binding ViewModel.ColorFilterResultImage}" Cursor="Hand" MouseDown="ShowZoomedImage" 
-                                                   Stretch="Uniform" 
-                                                   MaxHeight="450"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                                        </Grid>
-                                    </Border>
-                                </StackPanel>
+                                        
+                                        <!-- 统计信息（图像下方） -->
+                                        <Border Margin="0,8,0,0" Padding="10,6" CornerRadius="4"
+                                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                Visibility="{Binding ViewModel.ColorFilterStats, Converter={StaticResource NullToVisibilityConverter}}"
+                                                HorizontalAlignment="Stretch">
+                                            <TextBlock Text="{Binding ViewModel.ColorFilterStats}" 
+                                                       FontSize="11" FontFamily="Consolas"
+                                                       Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                                       HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
                             
                             <!-- 使用提示 -->
