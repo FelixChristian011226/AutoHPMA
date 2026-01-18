@@ -823,7 +823,7 @@ namespace AutoHPMA.ViewModels.Pages
 
             try
             {
-                Mat sourceMat = Cv2.ImRead(ColorFilterSourcePath);
+                using Mat sourceMat = Cv2.ImRead(ColorFilterSourcePath);
                 if (sourceMat.Empty())
                     throw new Exception("无法读取源图像");
 
@@ -832,25 +832,35 @@ namespace AutoHPMA.ViewModels.Pages
                 {
                     maskMat = Cv2.ImRead(ColorFilterMaskPath);
                     if (maskMat.Empty())
+                    {
+                        maskMat?.Dispose();
                         throw new Exception("无法读取遮罩图像");
+                    }
                 }
 
-                var resultMat = ColorFilterHelper.FilterColor(sourceMat, maskMat, TargetColorHex, ColorThreshold);
-                ColorFilterResultImage = ToImageSource(resultMat);
-
-                int maskWhitePixels = resultMat.Get<int>(ColorFilterHelper.KEY_MASK_WHITE_PIXELS);
-                int filteredPixels = resultMat.Get<int>(ColorFilterHelper.KEY_FILTERED_PIXELS);
-                double percentage = maskWhitePixels > 0 ? (double)filteredPixels / maskWhitePixels * 100 : 0;
-
-                ColorFilterStats = $"遮罩白色像素数: {maskWhitePixels}\n过滤后像素数: {filteredPixels}\n占比: {percentage:F2}%";
-
-                var targetColor = ColorFilterHelper.GetColorFromHex(TargetColorHex);
-                var box = new Wpf.Ui.Controls.MessageBox
+                try
                 {
-                    Title = "调试信息",
-                    Content = $"目标颜色: {TargetColorHex}\nRGB值: R={targetColor.R}, G={targetColor.G}, B={targetColor.B}\n阈值: ±{ColorThreshold}\n\n{ColorFilterStats}",
-                };
-                _ = box.ShowDialogAsync();
+                    using var resultMat = ColorFilterHelper.FilterColor(sourceMat, maskMat, TargetColorHex, ColorThreshold);
+                    ColorFilterResultImage = ToImageSource(resultMat);
+
+                    int maskWhitePixels = resultMat.Get<int>(ColorFilterHelper.KEY_MASK_WHITE_PIXELS);
+                    int filteredPixels = resultMat.Get<int>(ColorFilterHelper.KEY_FILTERED_PIXELS);
+                    double percentage = maskWhitePixels > 0 ? (double)filteredPixels / maskWhitePixels * 100 : 0;
+
+                    ColorFilterStats = $"遮罩白色像素数: {maskWhitePixels}\n过滤后像素数: {filteredPixels}\n占比: {percentage:F2}%";
+
+                    var targetColor = ColorFilterHelper.GetColorFromHex(TargetColorHex);
+                    var box = new Wpf.Ui.Controls.MessageBox
+                    {
+                        Title = "调试信息",
+                        Content = $"目标颜色: {TargetColorHex}\nRGB值: R={targetColor.R}, G={targetColor.G}, B={targetColor.B}\n阈值: ±{ColorThreshold}\n\n{ColorFilterStats}",
+                    };
+                    _ = box.ShowDialogAsync();
+                }
+                finally
+                {
+                    maskMat?.Dispose();
+                }
             }
             catch (Exception ex)
             {

@@ -51,7 +51,7 @@ namespace AutoHPMA.Helpers.ImageHelper
             // 如果有遮罩，应用遮罩
             if (maskMat != null && !maskMat.Empty())
             {
-                Mat grayMask = new Mat();
+                using Mat grayMask = new Mat();
                 Cv2.CvtColor(maskMat, grayMask, ColorConversionCodes.BGR2GRAY);
                 // 将遮罩二值化
                 Cv2.Threshold(grayMask, grayMask, 127, 255, ThresholdTypes.Binary);
@@ -59,11 +59,11 @@ namespace AutoHPMA.Helpers.ImageHelper
                 maskWhitePixels = Cv2.CountNonZero(grayMask);
                 
                 // 创建反遮罩
-                Mat maskInverse = new Mat();
+                using Mat maskInverse = new Mat();
                 Cv2.BitwiseNot(grayMask, maskInverse);
                 
                 // 创建黑色背景
-                Mat blackBg = new Mat(sourceMat.Size(), sourceMat.Type(), Scalar.Black);
+                using Mat blackBg = new Mat(sourceMat.Size(), sourceMat.Type(), Scalar.Black);
                 
                 // 将遮罩区域设为黑色
                 Cv2.BitwiseAnd(blackBg, blackBg, resultMat, maskInverse);
@@ -75,14 +75,14 @@ namespace AutoHPMA.Helpers.ImageHelper
             // 获取选中的颜色（目标颜色）
             var targetColor = GetColorFromHex(targetColorHex);
 
-            // 创建1x1目标颜色图像
-            Mat targetBGR = new Mat(1, 1, MatType.CV_8UC3, new Scalar(targetColor.B, targetColor.G, targetColor.R));
-            Mat targetHSV = new Mat();
+            // 创建1x1目标颜色图像并转换为HSV
+            using Mat targetBGR = new Mat(1, 1, MatType.CV_8UC3, new Scalar(targetColor.B, targetColor.G, targetColor.R));
+            using Mat targetHSV = new Mat();
             Cv2.CvtColor(targetBGR, targetHSV, ColorConversionCodes.BGR2HSV);
             var targetHSVValue = targetHSV.Get<Vec3b>(0, 0); // H, S, V
 
             // 转换源图像为HSV
-            Mat hsvMat = new Mat();
+            using Mat hsvMat = new Mat();
             Cv2.CvtColor(resultMat, hsvMat, ColorConversionCodes.BGR2HSV);
 
             // 构造HSV范围（Hue ±阈值, S/V较宽容）
@@ -97,25 +97,25 @@ namespace AutoHPMA.Helpers.ImageHelper
                 255);
 
             // 创建掩码
-            Mat mask = new Mat();
+            using Mat mask = new Mat();
             Cv2.InRange(hsvMat, lowerBound, upperBound, mask);
 
             // 统计过滤后的像素数量
             filteredPixels = Cv2.CountNonZero(mask);
 
             // 创建黑色背景图像
-            Mat blackBackground = new Mat(resultMat.Size(), resultMat.Type(), Scalar.Black);
+            using Mat blackBackground = new Mat(resultMat.Size(), resultMat.Type(), Scalar.Black);
 
             // 创建结果图像
-            Mat filteredImage = new Mat();
+            using Mat filteredImage = new Mat();
             Cv2.BitwiseAnd(resultMat, resultMat, filteredImage, mask);
 
             // 创建反掩码
-            Mat inverseMask = new Mat();
+            using Mat inverseMask = new Mat();
             Cv2.BitwiseNot(mask, inverseMask);
 
             // 将非目标颜色区域设为黑色
-            Mat blackAreas = new Mat();
+            using Mat blackAreas = new Mat();
             Cv2.BitwiseAnd(blackBackground, blackBackground, blackAreas, inverseMask);
 
             // 合并结果
@@ -142,7 +142,7 @@ namespace AutoHPMA.Helpers.ImageHelper
                 throw new ArgumentException("源图像路径不能为空");
 
             // 读取源图像
-            Mat sourceMat = Cv2.ImRead(sourcePath);
+            using Mat sourceMat = Cv2.ImRead(sourcePath);
             if (sourceMat.Empty())
                 throw new ArgumentException("无法读取源图像");
 
@@ -152,10 +152,20 @@ namespace AutoHPMA.Helpers.ImageHelper
             {
                 maskMat = Cv2.ImRead(maskPath);
                 if (maskMat.Empty())
+                {
+                    maskMat?.Dispose();
                     throw new ArgumentException("无法读取遮罩图像");
+                }
             }
 
-            return FilterColor(sourceMat, maskMat, targetColorHex, colorThreshold);
+            try
+            {
+                return FilterColor(sourceMat, maskMat, targetColorHex, colorThreshold);
+            }
+            finally
+            {
+                maskMat?.Dispose();
+            }
         }
 
         /// <summary>
@@ -174,7 +184,7 @@ namespace AutoHPMA.Helpers.ImageHelper
                 throw new ArgumentException("遮罩图像不能为空");
 
             // 将遮罩转换为灰度图并二值化
-            Mat grayMask = new Mat();
+            using Mat grayMask = new Mat();
             Cv2.CvtColor(maskMat, grayMask, ColorConversionCodes.BGR2GRAY);
             Cv2.Threshold(grayMask, grayMask, 127, 255, ThresholdTypes.Binary);
             
@@ -186,14 +196,14 @@ namespace AutoHPMA.Helpers.ImageHelper
             // 获取目标颜色
             var targetColor = GetColorFromHex(targetColorHex);
 
-            // 创建1x1目标颜色图像
-            Mat targetBGR = new Mat(1, 1, MatType.CV_8UC3, new Scalar(targetColor.B, targetColor.G, targetColor.R));
-            Mat targetHSV = new Mat();
+            // 创建1x1目标颜色图像并转换为HSV
+            using Mat targetBGR = new Mat(1, 1, MatType.CV_8UC3, new Scalar(targetColor.B, targetColor.G, targetColor.R));
+            using Mat targetHSV = new Mat();
             Cv2.CvtColor(targetBGR, targetHSV, ColorConversionCodes.BGR2HSV);
             var targetHSVValue = targetHSV.Get<Vec3b>(0, 0);
 
             // 转换源图像为HSV
-            Mat hsvMat = new Mat();
+            using Mat hsvMat = new Mat();
             Cv2.CvtColor(sourceMat, hsvMat, ColorConversionCodes.BGR2HSV);
 
             // 构造HSV范围
@@ -208,11 +218,11 @@ namespace AutoHPMA.Helpers.ImageHelper
                 255);
 
             // 创建掩码
-            Mat colorMask = new Mat();
+            using Mat colorMask = new Mat();
             Cv2.InRange(hsvMat, lowerBound, upperBound, colorMask);
 
             // 将颜色掩码与遮罩进行与运算，只保留遮罩区域内的匹配结果
-            Mat finalMask = new Mat();
+            using Mat finalMask = new Mat();
             Cv2.BitwiseAnd(colorMask, grayMask, finalMask);
 
             // 统计匹配的像素数量
