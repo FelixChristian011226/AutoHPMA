@@ -31,6 +31,28 @@ namespace AutoHPMA.Views.Pages
             DataContext = this;
             InitializeComponent();
         }
+
+        /// <summary>
+        /// 显示放大的图像
+        /// </summary>
+        private void ShowZoomedImage(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Image image && image.Source != null)
+            {
+                ZoomedImage.Source = image.Source;
+                ImageViewerPopup.IsOpen = true;
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// 关闭图像查看弹窗
+        /// </summary>
+        private void ImageViewerOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ImageViewerPopup.IsOpen = false;
+            ZoomedImage.Source = null;
+        }
     }
 
     /// <summary>

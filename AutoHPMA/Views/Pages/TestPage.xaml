@@ -16,7 +16,9 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <StackPanel Margin="40,30,40,10" Cursor="">
+    <Grid>
+        <!-- 主内容区域 -->
+        <StackPanel Margin="40,30,40,10" Cursor="">
         <Border
             Padding="16"
             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -756,7 +758,9 @@
                                                 Source="{Binding ViewModel.OcrPreviewImage}" 
                                                 Stretch="Uniform" 
                                                 MaxHeight="250"
-                                                RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                RenderOptions.BitmapScalingMode="HighQuality"
+                                                Cursor="Hand"
+                                                MouseDown="ShowZoomedImage"/>
                                         </Grid>
                                     </Border>
                                 </StackPanel>
@@ -873,7 +877,7 @@
                                                             <ui:SymbolIcon Symbol="ImageOff24" FontSize="24" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
                                                             <TextBlock Text="未选择" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                                         </StackPanel>
-                                                        <Image Source="{Binding ViewModel.SourceImagePreview}" Stretch="Uniform" MaxHeight="100"/>
+                                                        <Image Source="{Binding ViewModel.SourceImagePreview}" Stretch="Uniform" MaxHeight="100" Cursor="Hand" MouseDown="ShowZoomedImage"/>
                                                     </Grid>
                                                 </Border>
                                                 <ui:Button Content="选择源图" Margin="0,8,0,0" HorizontalAlignment="Stretch"
@@ -896,7 +900,7 @@
                                                             <ui:SymbolIcon Symbol="ImageOff24" FontSize="24" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
                                                             <TextBlock Text="未选择" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                                         </StackPanel>
-                                                        <Image Source="{Binding ViewModel.TemplateImagePreview}" Stretch="Uniform" MaxHeight="100"/>
+                                                        <Image Source="{Binding ViewModel.TemplateImagePreview}" Stretch="Uniform" MaxHeight="100" Cursor="Hand" MouseDown="ShowZoomedImage"/>
                                                     </Grid>
                                                 </Border>
                                                 <ui:Button Content="选择模板" Margin="0,8,0,0" HorizontalAlignment="Stretch"
@@ -922,7 +926,7 @@
                                                             <ui:SymbolIcon Symbol="ImageOff24" FontSize="24" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
                                                             <TextBlock Text="自动生成" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                                         </StackPanel>
-                                                        <Image Source="{Binding ViewModel.MaskImagePreview}" Stretch="Uniform" MaxHeight="100"/>
+                                                        <Image Source="{Binding ViewModel.MaskImagePreview}" Stretch="Uniform" MaxHeight="100" Cursor="Hand" MouseDown="ShowZoomedImage"/>
                                                     </Grid>
                                                 </Border>
                                                 <Grid Margin="0,8,0,0">
@@ -1096,7 +1100,7 @@
                                                     HorizontalAlignment="Center"/>
                                             </StackPanel>
                                             <!-- 实际结果图像 -->
-                                            <Image Source="{Binding ViewModel.ResultImage}" 
+                                            <Image Source="{Binding ViewModel.ResultImage}" Cursor="Hand" MouseDown="ShowZoomedImage" 
                                                    Stretch="Uniform" 
                                                    MaxHeight="450"
                                                    RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -1321,7 +1325,7 @@
                                                 BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
                                                 CornerRadius="6"
                                                 MinHeight="150">
-                                                <Image Source="{Binding ViewModel.ContourImagePreview}" Stretch="Uniform" MaxHeight="200"/>
+                                                <Image Source="{Binding ViewModel.ContourImagePreview}" Stretch="Uniform" MaxHeight="200" Cursor="Hand" MouseDown="ShowZoomedImage"/>
                                             </Border>
                                         </StackPanel>
                                         
@@ -1334,7 +1338,7 @@
                                                 BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
                                                 CornerRadius="6"
                                                 MinHeight="150">
-                                                <Image Source="{Binding ViewModel.BinarizedImagePreview}" Stretch="Uniform" MaxHeight="200"/>
+                                                <Image Source="{Binding ViewModel.BinarizedImagePreview}" Stretch="Uniform" MaxHeight="200" Cursor="Hand" MouseDown="ShowZoomedImage"/>
                                             </Border>
                                         </StackPanel>
                                         
@@ -1347,7 +1351,7 @@
                                                 BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
                                                 CornerRadius="6"
                                                 MinHeight="150">
-                                                <Image Source="{Binding ViewModel.ContourResultImage}" Stretch="Uniform" MaxHeight="200"/>
+                                                <Image Source="{Binding ViewModel.ContourResultImage}" Stretch="Uniform" MaxHeight="200" Cursor="Hand" MouseDown="ShowZoomedImage"/>
                                             </Border>
                                         </StackPanel>
                                     </Grid>
@@ -1454,11 +1458,75 @@
                         <Image Source="{Binding ViewModel.ColorFilterResultImage}" 
                                Margin="0,10,0,0" 
                                Stretch="Uniform" 
-                               MaxHeight="500"/>
+                               MaxHeight="500"
+                               Cursor="Hand"
+                               MouseDown="ShowZoomedImage"/>
                     </StackPanel>
                 </TabItem>
                 
             </TabControl>
         </Border>
     </StackPanel>
+        
+        <!-- 图像放大查看弹窗 -->
+        <Popup x:Name="ImageViewerPopup" 
+               Placement="Center"
+               PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+               StaysOpen="True"
+               AllowsTransparency="True"
+               PopupAnimation="None">
+            <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}}"
+                  Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}}"
+                  MouseDown="ImageViewerOverlay_MouseDown"
+                  Cursor="Hand">
+                <!-- 半透明遮罩背景 -->
+                <Rectangle Fill="#E0000000"/>
+                
+                <!-- 居中的图像容器 -->
+                <Border 
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="16"
+                    MaxWidth="900"
+                    MaxHeight="700">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- 标题栏 -->
+                        <Grid Grid.Row="0" Margin="0,0,0,12">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="ZoomIn24" Margin="0,0,8,0" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                <ui:TextBlock Text="图像预览" FontTypography="BodyStrong"/>
+                            </StackPanel>
+                            <ui:TextBlock 
+                                HorizontalAlignment="Right" 
+                                Text="点击任意位置关闭" 
+                                FontSize="12" 
+                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
+                        </Grid>
+                        
+                        <!-- 放大的图像 -->
+                        <Border 
+                            Grid.Row="1"
+                            Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                            BorderThickness="1"
+                            BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}"
+                            CornerRadius="8">
+                            <Image x:Name="ZoomedImage" 
+                                   Stretch="Uniform" 
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Popup>
+    </Grid>
 </Page>
+
