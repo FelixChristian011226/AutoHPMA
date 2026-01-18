@@ -7,10 +7,11 @@
     xmlns:local="clr-namespace:AutoHPMA.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:controls="clr-namespace:AutoHPMA.Views.Controls"
     Title="SettingsPage"
     d:DataContext="{d:DesignInstance local:SettingsPage,
                                      IsDesignTimeCreatable=False}"
-    d:DesignHeight="450"
+    d:DesignHeight="700"
     d:DesignWidth="800"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -21,239 +22,270 @@
         <converters:BoolToInverseBoolConverter x:Key="BoolToInverseBoolConverter" />
     </Page.Resources>
 
-    <StackPanel Margin="40,30,40,30">
-        <!-- 应用设置 -->
-        <ui:TextBlock
-            Margin="0,0,0,8"
-            FontWeight="Bold"
-            Text="应用设置" />
-        <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon DarkTheme24}" >
-            <ui:CardControl.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <ui:TextBlock Grid.Row="0"
-                                  Grid.Column="0"
-                                  FontTypography="Body"
-                                  Text="切换主题"
-                                  TextWrapping="Wrap" />
-                    <ui:TextBlock Grid.Row="1"
-                                  Grid.Column="0"
-                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="在浅色与暗色主题间进行切换，默认为系统主题"
-                                  TextWrapping="Wrap" />
-                </Grid>
-            </ui:CardControl.Header>
-            <ComboBox 
-                      Margin="0,0,36,0"
-                      ItemsSource="{Binding ViewModel.ThemeOptions}"
-                      SelectedItem="{Binding ViewModel.SelectedThemeOption, Mode=TwoWay}"
-                      DisplayMemberPath="Name"/>
-        </ui:CardControl>
-
-        <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon KeyReset24}" >
-            <ui:CardControl.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <ui:TextBlock Grid.Row="0"
-                                  Grid.Column="0"
-                                  FontTypography="Body"
-                                  Text="恢复设置"
-                                  TextWrapping="Wrap" />
-                    <ui:TextBlock Grid.Row="1"
-                                  Grid.Column="0"
-                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="恢复应用程序的用户偏好设置，重置后须重启生效"
-                                  TextWrapping="Wrap" />
-                </Grid>
-            </ui:CardControl.Header>
-            <ui:Button 
-                Margin="0, 0, 36, 0"
-                Content="重置" 
-                Command="{Binding ViewModel.ResetSettingsCommand}" />
-        </ui:CardControl>
-
-        <!-- 其他设置 -->
-        <ui:TextBlock
-            Margin="0,0,0,8"
-            FontWeight="Bold"
-            Text="其他设置" />
-        <ui:CardExpander
-            Margin="0,0,0,12"
-            ContentPadding="0"
-            Icon="{ui:SymbolIcon TextBoxSettings24}">
-            <ui:CardExpander.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="179*" />
-                        <ColumnDefinition Width="457*"/>
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        FontTypography="Body"
-                        Text="日志设置"
-                        TextWrapping="Wrap" Grid.ColumnSpan="2" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="程序运行日志文件相关设置"
-                        TextWrapping="Wrap" Grid.ColumnSpan="2" />
-                </Grid>
-            </ui:CardExpander.Header>
-            <StackPanel>
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        FontTypography="Body"
-                        Text="打开日志文件夹"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="AutoHPMA/logs"
-                        TextWrapping="Wrap" />
-                    <ui:Button
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            Margin="0,0,36,0"
-                            Command="{Binding ViewModel.OpenLogFolderCommand}"
-                            Content="打开"
-                            Icon="{ui:SymbolIcon FolderOpen24}" />
-                </Grid>
-                <Grid Margin="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        FontTypography="Body"
-                        Text="日志保存上限"
-                        TextWrapping="Wrap" />
-                    <ui:TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                        Text="当日志文件超过上限时自动清理(设置为0不清理）"
-                        TextWrapping="Wrap" />
-                    <ui:NumberBox
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        MinWidth="90"
-                        Margin="0,0,36,0"
-                        Value="{Binding ViewModel.LogFileLimit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="40,30,40,30">
+            
+            <!-- ==================== 应用设置 ==================== -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                <ui:SymbolIcon Symbol="Settings24" Margin="0,0,8,0" FontSize="18"/>
+                <ui:TextBlock FontTypography="BodyStrong" FontSize="16" Text="应用设置" VerticalAlignment="Center"/>
             </StackPanel>
-        </ui:CardExpander>
-        <!-- 关于 -->
-        <ui:TextBlock
-            Margin="0,0,0,8"
-            FontWeight="Bold"
-            Text="关于" />
-        <Border
-            Margin="0,0,0,12"
-            Background="{DynamicResource ControlFillColorDefaultBrush}"
-            CornerRadius="8"
-            Padding="16"
-            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-            BorderThickness="1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                
-                <!-- 当前版本 -->
-                <Grid Grid.Row="0" Margin="0,4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <ui:TextBlock Grid.Column="0" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,8">
-                        <Run Text="当前版本: " />
-                        <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA/releases/latest"
-                           RequestNavigate="Hyperlink_RequestNavigate">
-                            <Run Text="{Binding ViewModel.AppVersion}" />
-                        </Hyperlink>
-                    </ui:TextBlock>
-                    <ui:Button Grid.Column="1"
-                               Content="检查更新"
-                               Command="{Binding ViewModel.CheckForUpdatesCommand}"
-                               IsEnabled="{Binding ViewModel.IsCheckingUpdate, Converter={StaticResource BoolToInverseBoolConverter}}"
-                               Icon="{ui:SymbolIcon ArrowSync24}"
-                               Appearance="Secondary"
-                               Margin="8,0,0,0"
-                               Height="32" />
+
+            <!-- 切换主题 -->
+            <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon DarkTheme24}">
+                <ui:CardControl.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <ui:TextBlock Grid.Row="0" FontTypography="Body" Text="切换主题" TextWrapping="Wrap" />
+                        <ui:TextBlock Grid.Row="1" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                      Text="在浅色与暗色主题间进行切换，默认为系统主题" TextWrapping="Wrap" />
+                    </Grid>
+                </ui:CardControl.Header>
+                <ComboBox MinWidth="100"
+                          ItemsSource="{Binding ViewModel.ThemeOptions}"
+                          SelectedItem="{Binding ViewModel.SelectedThemeOption, Mode=TwoWay}"
+                          DisplayMemberPath="Name"/>
+            </ui:CardControl>
+
+            <!-- 恢复设置 -->
+            <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon ArrowReset24}">
+                <ui:CardControl.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <ui:TextBlock Grid.Row="0" FontTypography="Body" Text="恢复设置" TextWrapping="Wrap" />
+                        <ui:TextBlock Grid.Row="1" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                      Text="恢复应用程序的用户偏好设置，重置后须重启生效" TextWrapping="Wrap" />
+                    </Grid>
+                </ui:CardControl.Header>
+                <ui:Button Content="重置" 
+                           Appearance="Secondary"
+                           Icon="{ui:SymbolIcon ArrowReset24}"
+                           Command="{Binding ViewModel.ResetSettingsCommand}" />
+            </ui:CardControl>
+
+            <!-- ==================== 日志设置 ==================== -->
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,12">
+                <ui:SymbolIcon Symbol="DocumentText24" Margin="0,0,8,0" FontSize="18"/>
+                <ui:TextBlock FontTypography="BodyStrong" FontSize="16" Text="日志设置" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <ui:CardExpander Margin="0,0,0,8" ContentPadding="0" Icon="{ui:SymbolIcon TextBoxSettings24}">
+                <ui:CardExpander.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <ui:TextBlock Grid.Row="0" FontTypography="Body" Text="日志文件管理" TextWrapping="Wrap" />
+                        <ui:TextBlock Grid.Row="1" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                      Text="程序运行日志文件相关设置" TextWrapping="Wrap" />
+                    </Grid>
+                </ui:CardExpander.Header>
+                <StackPanel>
+                    <controls:SettingRow Title="打开日志文件夹" Description="AutoHPMA/logs">
+                        <controls:SettingRow.SettingContent>
+                            <ui:Button Command="{Binding ViewModel.OpenLogFolderCommand}"
+                                       Content="打开"
+                                       Icon="{ui:SymbolIcon FolderOpen24}" />
+                        </controls:SettingRow.SettingContent>
+                    </controls:SettingRow>
+                    <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                    <controls:SettingRow Title="日志保存上限" Description="当日志文件超过上限时自动清理（设置为 0 则不清理）">
+                        <controls:SettingRow.SettingContent>
+                            <ui:NumberBox MinWidth="100"
+                                          Icon="{ui:SymbolIcon NumberSymbolSquare24}"
+                                          ClearButtonEnabled="False"
+                                          SmallChange="1"
+                                          LargeChange="5"
+                                          Value="{Binding ViewModel.LogFileLimit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </controls:SettingRow.SettingContent>
+                    </controls:SettingRow>
+                </StackPanel>
+            </ui:CardExpander>
+
+            <!-- ==================== 关于 ==================== -->
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,12">
+                <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" FontSize="18"/>
+                <ui:TextBlock FontTypography="BodyStrong" FontSize="16" Text="关于" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 软件信息卡片 -->
+            <Border Margin="0,0,0,8"
+                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                    CornerRadius="8"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- 顶部区域：Logo + 版本信息 -->
+                    <Border Grid.Row="0" Padding="20,16" CornerRadius="8,8,0,0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#1A6366F1" Offset="0"/>
+                                <GradientStop Color="#1A8B5CF6" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- App Icon -->
+                            <Border Grid.Column="0" 
+                                    Width="56" Height="56" 
+                                    CornerRadius="12" 
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    Margin="0,0,16,0">
+                                <Image Source="pack://application:,,,/Assets/logo.png" 
+                                       Width="40" Height="40"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
+                            
+                            <!-- 标题和版本 -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <ui:TextBlock Text="AutoHPMA" FontTypography="Subtitle" FontWeight="SemiBold"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <Border Background="{DynamicResource AccentFillColorDefaultBrush}" 
+                                            CornerRadius="4" 
+                                            Padding="8,2">
+                                        <ui:TextBlock Text="{Binding ViewModel.AppVersion}" 
+                                                      FontSize="12"
+                                                      Foreground="White"/>
+                                    </Border>
+                                    <ui:TextBlock Text="稳定版" 
+                                                  FontSize="12"
+                                                  Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                                  Margin="8,0,0,0"
+                                                  VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <!-- 检查更新按钮 -->
+                            <ui:Button Grid.Column="2"
+                                       Content="检查更新"
+                                       Command="{Binding ViewModel.CheckForUpdatesCommand}"
+                                       IsEnabled="{Binding ViewModel.IsCheckingUpdate, Converter={StaticResource BoolToInverseBoolConverter}}"
+                                       Icon="{ui:SymbolIcon ArrowSync24}"
+                                       Appearance="Primary"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- 底部区域：链接信息 -->
+                    <StackPanel Grid.Row="1" Margin="0,4,0,4">
+                        <!-- 软件作者 -->
+                        <Grid Margin="20,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Person24" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <ui:TextBlock Text="软件作者" 
+                                              Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                              VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ui:TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Hyperlink NavigateUri="https://github.com/FelixChristian011226"
+                                           RequestNavigate="Hyperlink_RequestNavigate"
+                                           TextDecorations="None">
+                                    <Run Text="Felix Christian" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </Hyperlink>
+                            </ui:TextBlock>
+                        </Grid>
+                        
+                        <Separator Margin="20,0"/>
+                        
+                        <!-- 开源地址 -->
+                        <Grid Margin="20,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Code24" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <ui:TextBlock Text="开源地址" 
+                                              Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                              VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ui:TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA"
+                                           RequestNavigate="Hyperlink_RequestNavigate"
+                                           TextDecorations="None">
+                                    <Run Text="GitHub" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </Hyperlink>
+                            </ui:TextBlock>
+                        </Grid>
+                        
+                        <Separator Margin="20,0"/>
+                        
+                        <!-- 使用教程 -->
+                        <Grid Margin="20,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Book24" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <ui:TextBlock Text="使用教程" 
+                                              Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                              VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ui:TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Hyperlink NavigateUri="https://autohpma.top/document/"
+                                           RequestNavigate="Hyperlink_RequestNavigate"
+                                           TextDecorations="None">
+                                    <Run Text="查看文档" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </Hyperlink>
+                            </ui:TextBlock>
+                        </Grid>
+                        
+                        <Separator Margin="20,0"/>
+                        
+                        <!-- 问题反馈 -->
+                        <Grid Margin="20,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="ChatHelp24" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <ui:TextBlock Text="问题反馈" 
+                                              Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                              VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ui:TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA/issues"
+                                           RequestNavigate="Hyperlink_RequestNavigate"
+                                           TextDecorations="None">
+                                    <Run Text="提交 Issue" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </Hyperlink>
+                            </ui:TextBlock>
+                        </Grid>
+                    </StackPanel>
                 </Grid>
-                <Separator Grid.Row="1" Margin="0,4"/>
+            </Border>
 
-                <!-- 作者 -->
-                <ui:TextBlock Grid.Row="2" TextWrapping="Wrap" Margin="0,8">
-                    <Run Text="软件作者: " />
-                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226"
-                       RequestNavigate="Hyperlink_RequestNavigate">
-                        Felix Christian
-                    </Hyperlink>
-                </ui:TextBlock>
-                <Separator Grid.Row="3" Margin="0,4"/>
-                
-                <!-- 开源地址 -->
-                <ui:TextBlock Grid.Row="4" TextWrapping="Wrap" Margin="0,8">
-                    <Run Text="开源地址: " />
-                    <Hyperlink NavigateUri="https://github.com/FelixChristian011226/AutoHPMA"
-                       RequestNavigate="Hyperlink_RequestNavigate">
-                        https://github.com/FelixChristian011226/AutoHPMA
-                    </Hyperlink>
-                </ui:TextBlock>
-                <Separator Grid.Row="5" Margin="0,4"/>
+            <!-- 版权信息 -->
+            <ui:TextBlock 
+                Text="© 2024-2026 Felix Christian. 开源许可：MIT License"
+                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                FontSize="12"
+                HorizontalAlignment="Center"
+                Margin="0,12,0,0"/>
 
-                <!-- 使用教程 -->
-                <ui:TextBlock Grid.Row="6" TextWrapping="Wrap" Margin="0,8">
-                    <Run Text="使用教程: " />
-                    <Hyperlink NavigateUri="https://autohpma.top/document/"
-                       RequestNavigate="Hyperlink_RequestNavigate">
-                        https://autohpma.top/document/
-                    </Hyperlink>
-                </ui:TextBlock>
-                <Separator Grid.Row="7" Margin="0,4"/>
-
-            </Grid>
-        </Border>
-
-    </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </Page>
