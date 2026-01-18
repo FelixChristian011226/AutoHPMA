@@ -141,6 +141,13 @@ public partial class LogWindow : Window, INotifyPropertyChanged
     {
         Dispatcher.Invoke(() =>
         {
+            // 如果不显示 Debug 日志且当前是 Debug 级别，则不添加到集合中
+            // 这样避免被过滤的日志占据有限的配额，导致可见日志被挤出产生空白区域
+            if (!_showDebugLogs && entry.Level == LogEventLevel.Debug)
+            {
+                return;
+            }
+
             // 添加到本地集合（LogWindow 有自己的日志上限）
             _logMessages.Add(entry);
 
