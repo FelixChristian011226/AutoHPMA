@@ -1542,7 +1542,10 @@
                                                         Width="32" Height="32" 
                                                         CornerRadius="4"
                                                         BorderThickness="1"
-                                                        BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}">
+                                                        BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}"
+                                                        Cursor="Hand"
+                                                        MouseDown="ColorPreview_MouseDown"
+                                                        ToolTip="点击打开调色盘">
                                                     <Border.Background>
                                                         <SolidColorBrush Color="{Binding ViewModel.TargetColorHex, Converter={StaticResource HexToColorConverter}}"/>
                                                     </Border.Background>

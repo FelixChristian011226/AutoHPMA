@@ -830,6 +830,32 @@ namespace AutoHPMA.ViewModels.Pages
         }
 
         [RelayCommand]
+        private void OpenColorPicker()
+        {
+            using var colorDialog = new System.Windows.Forms.ColorDialog
+            {
+                AllowFullOpen = true,
+                AnyColor = true,
+                FullOpen = true, // 默认展开完整调色板
+                SolidColorOnly = true
+            };
+
+            // 尝试设置当前颜色为初始值
+            try
+            {
+                var currentColor = ColorFilterHelper.GetColorFromHex(TargetColorHex);
+                colorDialog.Color = System.Drawing.Color.FromArgb(currentColor.R, currentColor.G, currentColor.B);
+            }
+            catch { }
+
+            if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                var selectedColor = colorDialog.Color;
+                TargetColorHex = $"{selectedColor.R:X2}{selectedColor.G:X2}{selectedColor.B:X2}".ToLower();
+            }
+        }
+
+        [RelayCommand]
         private void StartColorFilter()
         {
             if (string.IsNullOrEmpty(ColorFilterSourcePath)) return;

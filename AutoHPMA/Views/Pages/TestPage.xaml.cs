@@ -53,6 +53,15 @@ namespace AutoHPMA.Views.Pages
             ImageViewerPopup.IsOpen = false;
             ZoomedImage.Source = null;
         }
+
+        /// <summary>
+        /// 点击颜色预览打开调色盘
+        /// </summary>
+        private void ColorPreview_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ViewModel.OpenColorPickerCommand.Execute(null);
+            e.Handled = true;
+        }
     }
 
     /// <summary>
