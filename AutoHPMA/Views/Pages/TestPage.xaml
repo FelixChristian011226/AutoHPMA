@@ -1161,188 +1161,233 @@
                     </ScrollViewer>
                 </TabItem>
                 <!-- 轮廓检测 -->
-                <TabItem  MaxWidth="100">
+                <TabItem MaxWidth="100">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Margin="0,0,6,0" Symbol="SearchSquare24" />
                             <TextBlock Text="轮廓检测" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <StackPanel Margin="0,10,0,0" Orientation="Vertical" DataContext="{Binding}">
-                        <StackPanel Margin="10,10,0,0" Orientation="Horizontal">
-                            <Grid Cursor="">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <ui:TextBlock
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                FontTypography="BodyStrong"
-                                Text="MinLen"
-                                TextWrapping="Wrap" />
-                                <ui:TextBlock
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                Text="线段最小长度"
-                                TextWrapping="Wrap" />
-                                <ui:TextBox
-                                Grid.Row="0"
-                                Grid.RowSpan="2"
-                                Grid.Column="1"
-                                Width="100"
-                                Margin="5,0,10,0"
-                                Text="{Binding ViewModel.MinLen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                TextWrapping="Wrap" />
-                            </Grid>
-                            <Grid Cursor="">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <ui:TextBlock
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                FontTypography="BodyStrong"
-                                Text="MaxGap"
-                                TextWrapping="Wrap" />
-                                <ui:TextBlock
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                Text="线段最大间隔"
-                                TextWrapping="Wrap" />
-                                <ui:TextBox
-                                Grid.Row="0"
-                                Grid.RowSpan="2"
-                                Grid.Column="1"
-                                Width="100"
-                                Margin="5,0,10,0"
-                                Text="{Binding ViewModel.MaxGap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                TextWrapping="Wrap" />
-                            </Grid>
-                            <Grid Cursor="">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <ui:TextBlock
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                FontTypography="BodyStrong"
-                                Text="angleThresh"
-                                TextWrapping="Wrap" />
-                                <ui:TextBlock
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                Text="线段角度阈值"
-                                TextWrapping="Wrap" />
-                                <ui:TextBox
-                                Grid.Row="0"
-                                Grid.RowSpan="2"
-                                Grid.Column="1"
-                                Width="100"
-                                Margin="5,0,10,0"
-                                Text="{Binding ViewModel.AngleThresh, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                TextWrapping="Wrap" />
-                            </Grid>
-
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,10,10,10">
+                        <StackPanel>
+                            <!-- 配置卡片 -->
+                            <Border 
+                                Margin="0,8,0,0" 
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <!-- 标题 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                        <ui:SymbolIcon Margin="0,0,8,0" Symbol="Settings24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="检测配置" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <!-- 图像选择 -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <ui:TextBlock FontTypography="Body" Text="检测图像"/>
+                                            <ui:TextBlock 
+                                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="{Binding ViewModel.ContourImagePath, TargetNullValue='请选择要检测的图像'}"
+                                                FontSize="12"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <ui:Button
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding ViewModel.SelectContourImageCommand}"
+                                            Icon="{ui:SymbolIcon FolderOpen24}">
+                                            <ui:Button.Content>
+                                                <TextBlock Text="选择" VerticalAlignment="Center"/>
+                                            </ui:Button.Content>
+                                        </ui:Button>
+                                    </Grid>
+                                    
+                                    <Separator Margin="-16,0" Opacity="0.3"/>
+                                    
+                                    <!-- 二值化阈值 -->
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <ui:TextBlock FontTypography="Body" Text="二值化阈值"/>
+                                            <ui:TextBlock 
+                                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="像素值大于阈值的置为白色，否则置为黑色（0-255）"
+                                                FontSize="12" />
+                                        </StackPanel>
+                                        <ui:NumberBox
+                                            Grid.Column="1"
+                                            Width="120"
+                                            VerticalAlignment="Center"
+                                            Value="{Binding ViewModel.BinarizeThreshold, Mode=TwoWay}"
+                                            Minimum="0"
+                                            Maximum="255"
+                                            SmallChange="1"
+                                            LargeChange="10" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- 操作按钮卡片 -->
+                            <Border 
+                                Margin="0,12,0,0" 
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <!-- 标题 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                        <ui:SymbolIcon Margin="0,0,8,0" Symbol="Play24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="开始检测" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:Button
+                                            Command="{Binding ViewModel.TestBinarizeCommand}"
+                                            Margin="0,0,12,0"
+                                            Padding="16,10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="ImageEdit24" FontSize="16" Margin="0,0,8,0"/>
+                                                <TextBlock Text="二值化" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </ui:Button>
+                                        <ui:Button
+                                            Command="{Binding ViewModel.TestDetectRectangleCommand}"
+                                            Appearance="Primary"
+                                            Padding="16,10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="SelectAllOn24" FontSize="16" Margin="0,0,8,0"/>
+                                                <TextBlock Text="矩形检测" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </ui:Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- 图像预览卡片 -->
+                            <Border 
+                                Margin="0,12,0,0" 
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <!-- 标题 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <ui:SymbolIcon Margin="0,0,8,0" Symbol="Image24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="检测结果" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <!-- 检测结果信息 -->
+                                    <Border 
+                                        Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                        CornerRadius="6"
+                                        Padding="12"
+                                        Margin="0,0,0,12"
+                                        Visibility="{Binding ViewModel.DetectedRectInfo, Converter={StaticResource NullToVisibilityConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                            <ui:TextBlock Text="{Binding ViewModel.DetectedRectInfo}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- 图像预览网格 -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- 原图 -->
+                                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                            <ui:TextBlock Text="原图" FontSize="12" Margin="0,0,0,6" HorizontalAlignment="Center"/>
+                                            <Border 
+                                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                BorderThickness="1" 
+                                                BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
+                                                CornerRadius="6"
+                                                MinHeight="150">
+                                                <Image Source="{Binding ViewModel.ContourImagePreview}" Stretch="Uniform" MaxHeight="200"/>
+                                            </Border>
+                                        </StackPanel>
+                                        
+                                        <!-- 二值化结果 -->
+                                        <StackPanel Grid.Column="1" Margin="3,0">
+                                            <ui:TextBlock Text="二值化" FontSize="12" Margin="0,0,0,6" HorizontalAlignment="Center"/>
+                                            <Border 
+                                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                BorderThickness="1" 
+                                                BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
+                                                CornerRadius="6"
+                                                MinHeight="150">
+                                                <Image Source="{Binding ViewModel.BinarizedImagePreview}" Stretch="Uniform" MaxHeight="200"/>
+                                            </Border>
+                                        </StackPanel>
+                                        
+                                        <!-- 检测结果 -->
+                                        <StackPanel Grid.Column="2" Margin="6,0,0,0">
+                                            <ui:TextBlock Text="检测结果" FontSize="12" Margin="0,0,0,6" HorizontalAlignment="Center"/>
+                                            <Border 
+                                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                BorderThickness="1" 
+                                                BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
+                                                CornerRadius="6"
+                                                MinHeight="150">
+                                                <Image Source="{Binding ViewModel.ContourResultImage}" Stretch="Uniform" MaxHeight="200"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- 使用提示 -->
+                            <Border 
+                                Margin="0,12,0,0" 
+                                Padding="12"
+                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                CornerRadius="6"
+                                BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="使用提示" />
+                                    </StackPanel>
+                                    <ui:TextBlock 
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 此功能用于测试 Binarize（二值化）和 DetectApproxRectangle（矩形检测）方法" />
+                                    <ui:TextBlock 
+                                        Margin="0,4,0,0"
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 调整二值化阈值可以影响检测效果，较高的阈值会使更多像素变为黑色" />
+                                    <ui:TextBlock 
+                                        Margin="0,4,0,0"
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 矩形检测会自动对图像进行二值化处理，然后检测最大的近似矩形区域" />
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
-
-                        <StackPanel Margin="10,10,0,0" Orientation="Horizontal">
-                            <Grid  Cursor="">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <ui:TextBlock
-                                    Grid.Row="0"
-                                    Grid.Column="0"
-                                    FontTypography="BodyStrong"
-                                    Text="MinRadius"
-                                    TextWrapping="Wrap" />
-                                <ui:TextBlock
-                                    Grid.Row="1"
-                                    Grid.Column="0"
-                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                    Text="最小圆半径"
-                                    TextWrapping="Wrap" />
-                                <ui:NumberBox
-                                    Grid.Row="0"
-                                    Grid.Column="1"
-                                    Grid.RowSpan="2"
-                                    Width="150"
-                                    Margin="5,0,10,0"
-                                    Value="{Binding ViewModel.MinRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0"
-                                    Maximum="1000"
-                                    />
-                            </Grid>
-
-                            <Grid  Cursor="">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <ui:TextBlock
-                                    Grid.Row="0"
-                                    Grid.Column="0"
-                                    FontTypography="BodyStrong"
-                                    Text="MaxRadius"
-                                    TextWrapping="Wrap" />
-                                <ui:TextBlock
-                                    Grid.Row="1"
-                                    Grid.Column="0"
-                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                    Text="最大圆半径"
-                                    TextWrapping="Wrap" />
-                                <ui:NumberBox
-                                    Grid.Row="0"
-                                    Grid.Column="1"
-                                    Grid.RowSpan="2"
-                                    Width="150"
-                                    Margin="5,0,10,0"
-                                    Value="{Binding ViewModel.MaxRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0"
-                                    Maximum="1000"
-                                    />
-                            </Grid>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="10,10,0,10">
-                            <ui:Button Content="选择图像" Command="{Binding ViewModel.SelectDetectImageCommand}" Margin="0,0,10,0" />
-                            <ui:Button Content="检测线段" Command="{Binding ViewModel.DetectLinesCommand}" Margin="0,0,10,0" />
-                            <ui:Button Content="检测矩形" Command="{Binding ViewModel.DetectRectangleCommand}" Margin="0,0,10,0" />
-                            <ui:Button Content="检测圆形" Command="{Binding ViewModel.DetectCirclesCommand}" Margin="0,0,10,0"/>
-                        </StackPanel>
-
-                        <TextBlock Margin="10,10,0,0" Text="检测结果：" />
-                        <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="4">
-                            <Image Source="{Binding ViewModel.DetectResultImage}" Stretch="Uniform" Height="Auto" MinHeight="300" />
-                        </Border>
-                    </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
                 <!-- 色彩过滤 -->
                 <TabItem MaxWidth="100">

@@ -130,6 +130,17 @@ namespace AutoHPMA.ViewModels.Pages
             }
         }
 
+        // 轮廓检测
+        [ObservableProperty] private string? _contourImagePath;
+        [ObservableProperty] private System.Windows.Media.ImageSource? _contourImagePreview;
+        [ObservableProperty] private System.Windows.Media.ImageSource? _binarizedImagePreview;
+        [ObservableProperty] private System.Windows.Media.ImageSource? _contourResultImage;
+        [ObservableProperty] private double _binarizeThreshold = 200;
+        [ObservableProperty] private string _detectedRectInfo = string.Empty;
+
+        // 路径变更时更新预览
+        partial void OnContourImagePathChanged(string? value) => UpdateImagePreview(value, v => ContourImagePreview = v);
+
         // 色彩过滤
         [ObservableProperty] private string? _colorFilterSourcePath;
         [ObservableProperty] private string? _colorFilterMaskPath;
@@ -737,6 +748,61 @@ namespace AutoHPMA.ViewModels.Pages
             catch (Exception ex)
             {
                 ShowError("裁切失败：" + ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region 轮廓检测
+
+        [RelayCommand]
+        private void SelectContourImage() => ContourImagePath = SelectImageFile() ?? ContourImagePath;
+
+        [RelayCommand]
+        private void TestBinarize()
+        {
+            if (string.IsNullOrEmpty(ContourImagePath)) return;
+
+            try
+            {
+                using Mat src = Cv2.ImRead(ContourImagePath, ImreadModes.Color);
+                using Mat binary = ContourDetectHelper.Binarize(src, BinarizeThreshold);
+                BinarizedImagePreview = ToImageSource(binary);
+            }
+            catch (Exception ex)
+            {
+                ShowError("二值化失败：" + ex.Message);
+            }
+        }
+
+        [RelayCommand]
+        private void TestDetectRectangle()
+        {
+            if (string.IsNullOrEmpty(ContourImagePath)) return;
+
+            try
+            {
+                using Mat src = Cv2.ImRead(ContourImagePath, ImreadModes.Color);
+                using Mat binary = ContourDetectHelper.Binarize(src, BinarizeThreshold);
+                var rect = ContourDetectHelper.DetectApproxRectangle(binary);
+                
+                // 在原图上绘制检测到的矩形
+                using Mat result = src.Clone();
+                if (rect.Width > 0 && rect.Height > 0)
+                {
+                    Cv2.Rectangle(result, rect, Scalar.Red, 2);
+                    DetectedRectInfo = $"X: {rect.X}, Y: {rect.Y}, 宽: {rect.Width}, 高: {rect.Height}";
+                }
+                else
+                {
+                    DetectedRectInfo = "未检测到有效矩形";
+                }
+                
+                ContourResultImage = ToImageSource(result);
+            }
+            catch (Exception ex)
+            {
+                ShowError("矩形检测失败：" + ex.Message);
             }
         }
 
