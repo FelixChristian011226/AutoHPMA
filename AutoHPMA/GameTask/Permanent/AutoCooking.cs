@@ -105,7 +105,7 @@ public class AutoCooking : BaseGameTask
             new(new[] { GetImage("ui_clock") }, AutoCookingState.Cooking, "烹饪-烹饪中"),
             new(new[] { GetImage("ui_shop") }, AutoCookingState.Workbench, "烹饪-工作台"),
             new(new[] { GetImage("ui_challenge") }, AutoCookingState.Challenge, "烹饪-订单挑战"),
-            new(new[] { GetImage("ui_continue1"), GetImage("ui_continue2") }, AutoCookingState.Summary, "烹饪-结算中"),
+            new(new[] { GetImage("ui_continue") }, AutoCookingState.Summary, "烹饪-结算中"),
         };
     }
 
@@ -191,13 +191,14 @@ public class AutoCooking : BaseGameTask
 
             case AutoCookingState.Summary:
                 round++;
-                _logger.LogInformation("第 {round} 轮烹饪完成。", round);
                 ClearCookingLayers();
-                await Task.Delay(3000, OperationToken);
+                _logger.LogInformation("第 {round} 轮烹饪完成。", round);
+                // 使用 _cts.Token 而非 OperationToken，确保结算等待不会被状态变化打断
+                await Task.Delay(3000, _cts.Token);
                 await SendSpaceAsync();
-                await Task.Delay(3000, OperationToken);
+                await Task.Delay(3000, _cts.Token);
                 await SendSpaceAsync();
-                await Task.Delay(3000, OperationToken);
+                await Task.Delay(3000, _cts.Token);
                 break;
         }
     }
@@ -209,6 +210,12 @@ public class AutoCooking : BaseGameTask
         StopCookingProgressMonitor();
         initialized = false;
         ClearStateRects();
+        
+        // 清除所有烹饪状态，确保新一轮从全新状态开始
+        completedSteps.Clear();
+        preCookedSteps.Clear();
+        kitchenwareStatus.Clear();
+        condimentCounts.Clear();
     }
 
     #endregion
@@ -500,6 +507,7 @@ public class AutoCooking : BaseGameTask
         SetStateRects(allRects);
 
         completedSteps.Clear();
+        preCookedSteps.Clear();
         initialized = true;
         
         // 初始化完成后启动厨具烹饪进度监测

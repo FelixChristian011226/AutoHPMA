@@ -136,8 +136,6 @@
     <None Remove="Assets\Cooking\Image\Order\red_order.png" />
     <None Remove="Assets\Cooking\Image\ui_challenge.png" />
     <None Remove="Assets\Cooking\Image\ui_clock.png" />
-    <None Remove="Assets\Cooking\Image\ui_continue1.png" />
-    <None Remove="Assets\Cooking\Image\ui_continue2.png" />
     <None Remove="Assets\Cooking\Image\ui_shop.png" />
     <None Remove="Assets\Cooking\Image\海鱼黄金焗饭.png" />
     <None Remove="Assets\ForbiddenForest\auto.png" />
@@ -436,10 +434,7 @@
     <Content Include="Assets\Cooking\Image\ui_clock.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Cooking\Image\ui_continue1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Cooking\Image\ui_continue2.png">
+    <Content Include="Assets\Cooking\Image\ui_continue.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Cooking\Image\ui_shop.png">
