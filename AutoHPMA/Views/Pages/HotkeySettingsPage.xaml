@@ -26,31 +26,47 @@
     </Page.Resources>
 
     <StackPanel Margin="40,30,40,30">
-        <ui:TextBlock
-            Margin="0,0,0,8"
-            FontWeight="Bold"
-            Text="热键设置" />
+        <!-- 标题区域 -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <ui:SymbolIcon Symbol="Keyboard24" FontSize="20" Margin="0,0,8,0"/>
+            <ui:TextBlock
+                FontTypography="BodyStrong"
+                Text="热键设置" 
+                VerticalAlignment="Center"/>
+        </StackPanel>
         
-        <Label
+        <ui:TextBlock
             Margin="0,0,0,16"
-            Content="点击右侧输入框，按下需设定的按键来设置热键，按ESC键可以取消热键设置。支持组合键。"
-            Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" />
+            Text="点击输入框后按下按键来设置热键，按ESC取消设置。支持组合键。"
+            Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" 
+            FontSize="12"/>
         
         <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
                 CornerRadius="8"
-                Padding="16">
+                Padding="12">
             <ui:ListView ItemsSource="{Binding Source={StaticResource GroupedHotkeys}}"
-             Background="Transparent"
-             BorderThickness="0">
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Padding="0">
+                <ui:ListView.ItemContainerStyle>
+                    <Style TargetType="ui:ListViewItem" BasedOn="{StaticResource {x:Type ui:ListViewItem}}">
+                        <Setter Property="Padding" Value="8,6"/>
+                        <Setter Property="Margin" Value="0,1"/>
+                    </Style>
+                </ui:ListView.ItemContainerStyle>
                 <ui:ListView.GroupStyle>
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
-                                <ui:TextBlock Text="{Binding Name}" 
-                                 FontWeight="Bold" 
-                                 Margin="0,5,0,5"
-                                 Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
-                                 FontSize="14"/>
+                                <Border Margin="0,8,0,4" 
+                                        Padding="6,3" 
+                                        Background="{ui:ThemeResource ControlFillColorSecondaryBrush}" 
+                                        CornerRadius="4">
+                                    <ui:TextBlock Text="{Binding Name}" 
+                                                  FontWeight="Medium" 
+                                                  Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                                  FontSize="12"/>
+                                </Border>
                             </DataTemplate>
                         </GroupStyle.HeaderTemplate>
                     </GroupStyle>
@@ -65,31 +81,35 @@
 
                             <!-- 左侧：描述 -->
                             <ui:TextBlock 
-                                Margin="5, 0, 0, 0"
                                 Grid.Column="0"
                                 Text="{Binding Description}" 
-                                TextWrapping="Wrap"
+                                TextWrapping="NoWrap"
+                                TextTrimming="CharacterEllipsis"
                                 VerticalAlignment="Center"
-                                FontSize="12"/>
+                                FontSize="13"/>
 
                             <!-- 右侧：热键输入框 -->
                             <ui:TextBox Grid.Column="1"
-                                        Width="140"
+                                        Width="120"
                                         MinWidth="100"
-                                        MaxWidth="160"
-                                        Margin="10,0,0,0"
+                                        Height="32"
+                                        Margin="12,0,0,0"
+                                        Icon="{ui:SymbolIcon Keyboard20}"
+                                        PlaceholderText="未设置"
                                         Text="{Binding ModKeyTuple, Converter={StaticResource KeyToStringConverter}, Mode=OneWay}"
                                         IsReadOnly="True"
                                         PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"
                                         HorizontalAlignment="Right"
-                                        TextAlignment="Center">
+                                        TextAlignment="Center"
+                                        FontSize="12"
+                                        ClearButtonEnabled="False">
                                 <ui:TextBox.Style>
                                     <Style TargetType="ui:TextBox" BasedOn="{StaticResource {x:Type ui:TextBox}}">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding DataContext.ViewModel.IsWaitingForKey, 
                                                               RelativeSource={RelativeSource AncestorType=Page}}" 
-                                             Value="True">
-                                                <Setter Property="Text" Value="请按组合键..." />
+                                                         Value="True">
+                                                <Setter Property="Text" Value="按下按键..." />
                                                 <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
                                             </DataTrigger>
                                         </Style.Triggers>
