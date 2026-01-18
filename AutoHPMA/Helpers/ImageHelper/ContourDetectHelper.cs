@@ -1,12 +1,7 @@
 ﻿using OpenCvSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Point = OpenCvSharp.Point;
 using Rect = OpenCvSharp.Rect;
-using Size = OpenCvSharp.Size;
 
 namespace AutoHPMA.Helpers.ImageHelper
 {
@@ -32,56 +27,6 @@ namespace AutoHPMA.Helpers.ImageHelper
             Cv2.Threshold(gray, binary, threshold, 255, ThresholdTypes.Binary);
 
             return binary;
-        }
-
-        /// <summary>
-        /// 用形态学梯度找出黑白交界处的边缘，再检测水平/垂直直线并标注。
-        /// </summary>
-        /// <param name="binary">输入二值化后的单通道图像 (CV_8UC1)。</param>
-        /// <param name="morphSize">形态学操作的核大小。</param>
-        /// <param name="gradThresh">二值化梯度图的阈值。</param>
-        /// <param name="rho">霍夫变换中距离精度（像素）。</param>
-        /// <param name="theta">霍夫变换中角度精度（弧度）。</param>
-        /// <param name="houghThresh">霍夫变换累加器阈值。</param>
-        /// <param name="minLen">直线最小长度。</param>
-        /// <param name="maxGap">直线最大间隙。</param>
-        /// <param name="angleThresh">角度阈值 (度) 用于分类水平/垂直。</param>
-        /// <returns>在原图上标注后的彩色图像。</returns>
-        public static Mat DetectBlackWhiteBordersWithMorph(
-            Mat binary,
-            int morphSize = 3,
-            byte gradThresh = 50,
-            double rho = 1, double theta = Math.PI / 180, int houghThresh = 50,
-            double minLen = 60, double maxGap = 10, double angleThresh = 1)
-        {
-            // 1. 形态学梯度：得到二值图中白黑边界的轮廓
-            Mat grad = new Mat();
-            Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(morphSize, morphSize));
-            Cv2.MorphologyEx(binary, grad, MorphTypes.Gradient, kernel);
-
-            // 2. 二值化梯度图（去掉轻微噪声）
-            Mat edges = new Mat();
-            Cv2.Threshold(grad, edges, gradThresh, 255, ThresholdTypes.Binary);
-
-            // 3. 霍夫直线检测
-            var lines = Cv2.HoughLinesP(edges, rho, theta, houghThresh, minLen, maxGap);
-
-            // 4. 将原二值图转换为 BGR 以便画彩色线
-            Mat output = new Mat();
-            Cv2.CvtColor(binary, output, ColorConversionCodes.GRAY2BGR);
-
-            // 5. 标注水平（红）和垂直（蓝）直线
-            foreach (var l in lines)
-            {
-                Point p1 = l.P1, p2 = l.P2;
-                double ang = Math.Abs(Math.Atan2(p2.Y - p1.Y, p2.X - p1.X) * 180.0 / Math.PI);
-                if (ang < angleThresh || ang > 180 - angleThresh)
-                    Cv2.Line(output, p1, p2, Scalar.Red, 2);
-                else if (Math.Abs(ang - 90) < angleThresh)
-                    Cv2.Line(output, p1, p2, Scalar.Blue, 2);
-            }
-
-            return output;
         }
 
         /// <summary>
@@ -122,38 +67,5 @@ namespace AutoHPMA.Helpers.ImageHelper
 
             return bestRect;
         }
-
-        /// <summary>
-        /// 检测图像中的圆形
-        /// </summary>
-        /// <param name="inputImage">输入的彩色图像</param>
-        /// <param name="minRadius">最小圆半径</param>
-        /// <param name="maxRadius">最大圆半径</param>
-        /// <returns>检测到的圆形列表，每个元素包含圆心和半径</returns>
-        public static List<CircleSegment> DetectCircles(Mat inputImage, int minRadius = 20, int maxRadius = 100)
-        {
-            // 转换为灰度图
-            Mat gray = new Mat();
-            Cv2.CvtColor(inputImage, gray, ColorConversionCodes.BGR2GRAY);
-            
-            // 高斯模糊去噪
-            Mat blurred = new Mat();
-            Cv2.GaussianBlur(gray, blurred, new Size(9, 9), 2, 2);
-
-            // 霍夫圆变换检测圆形
-            var circles = Cv2.HoughCircles(
-                blurred,
-                HoughModes.Gradient,
-                dp: 1,
-                minDist: blurred.Rows / 8,
-                param1: 100,
-                param2: 30,
-                minRadius: minRadius,
-                maxRadius: maxRadius
-            );
-            
-            return circles.ToList();
-        }
-
     }
 }

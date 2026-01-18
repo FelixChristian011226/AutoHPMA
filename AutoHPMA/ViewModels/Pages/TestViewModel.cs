@@ -130,15 +130,6 @@ namespace AutoHPMA.ViewModels.Pages
             }
         }
 
-        // 轮廓检测
-        [ObservableProperty] private int _minLen = 60;
-        [ObservableProperty] private int _maxGap = 10;
-        [ObservableProperty] private int _angleThresh = 1;
-        [ObservableProperty] private int _minRadius = 0;
-        [ObservableProperty] private int _maxRadius = 0;
-        [ObservableProperty] private string? _detectImagePath;
-        [ObservableProperty] private System.Windows.Media.ImageSource? _detectResultImage;
-
         // 色彩过滤
         [ObservableProperty] private string? _colorFilterSourcePath;
         [ObservableProperty] private string? _colorFilterMaskPath;
@@ -747,53 +738,6 @@ namespace AutoHPMA.ViewModels.Pages
             {
                 ShowError("裁切失败：" + ex.Message);
             }
-        }
-
-        #endregion
-
-        #region 轮廓检测
-
-        [RelayCommand]
-        private void SelectDetectImage() => DetectImagePath = SelectImageFile("Image Files (*.png;*.jpg)|*.png;*.jpg") ?? DetectImagePath;
-
-        [RelayCommand]
-        private void DetectLines()
-        {
-            if (string.IsNullOrEmpty(DetectImagePath)) return;
-
-            Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
-            Mat src_binary = ContourDetectHelper.Binarize(src);
-            Mat src_line = ContourDetectHelper.DetectBlackWhiteBordersWithMorph(src_binary, minLen: MinLen, maxGap: MaxGap, angleThresh: AngleThresh);
-            DetectResultImage = ToImageSource(src_line);
-        }
-
-        [RelayCommand]
-        private void DetectRectangle()
-        {
-            if (string.IsNullOrEmpty(DetectImagePath)) return;
-
-            Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
-            Mat src_binary = ContourDetectHelper.Binarize(src, 200);
-            var rect = ContourDetectHelper.DetectApproxRectangle(src_binary);
-            Cv2.Rectangle(src, rect, Scalar.Red, 2);
-            DetectResultImage = ToImageSource(src);
-        }
-
-        [RelayCommand]
-        private void DetectCircles()
-        {
-            if (string.IsNullOrEmpty(DetectImagePath)) return;
-
-            Mat src = Cv2.ImRead(DetectImagePath, ImreadModes.Color);
-            var circles = ContourDetectHelper.DetectCircles(src, MinRadius, MaxRadius);
-
-            foreach (var circle in circles)
-            {
-                Cv2.Circle(src, (int)circle.Center.X, (int)circle.Center.Y, (int)circle.Radius, Scalar.Green, 1);
-                Cv2.Circle(src, (int)circle.Center.X, (int)circle.Center.Y, 2, Scalar.Red, 2);
-            }
-
-            DetectResultImage = ToImageSource(src);
         }
 
         #endregion
