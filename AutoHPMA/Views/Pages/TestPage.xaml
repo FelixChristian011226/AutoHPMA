@@ -833,100 +833,332 @@
                             <TextBlock Text="模板匹配" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <StackPanel Margin="0,10,0,0" Orientation="Vertical">
-                        <Grid Margin="0,0,0,10">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBox 
-                                Grid.Row="0" 
-                                Grid.Column="0" 
-                                Text="{Binding ViewModel.SourceImagePath, TargetNullValue='请点击按钮选择源图→'}" 
-                                VerticalAlignment="Center" 
-                                Margin="4"
-                                IsReadOnly="True"
-                                />
-                            <ui:Button Grid.Row="0" Grid.Column="1" Content="选择源图" Command="{Binding ViewModel.SelectSourceImageCommand}" Margin="4"/>
-
-                            <TextBox 
-                                Grid.Row="1" 
-                                Grid.Column="0" 
-                                Text="{Binding ViewModel.TemplateImagePath, TargetNullValue='请点击按钮选择模板→'}" 
-                                VerticalAlignment="Center" 
-                                Margin="4"
-                                IsReadOnly="True"/>
-                            <ui:Button Grid.Row="1" Grid.Column="1" Content="选择模板" Command="{Binding ViewModel.SelectTemplateImageCommand}" Margin="4"/>
-
-                            <TextBox 
-                                Grid.Row="2" 
-                                Grid.Column="0" 
-                                Text="{Binding ViewModel.MaskImagePath, TargetNullValue='请点击按钮选择遮罩→'}" 
-                                VerticalAlignment="Center" 
-                                Margin="4"
-                                IsReadOnly="True"/>
-                            <ui:Button Grid.Row="2" Grid.Column="1" Content="选择遮罩" Command="{Binding ViewModel.SelectMaskImageCommand}" Margin="4"/>
-
-                            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0">
-                                <TextBlock Text="Threshold:" FontWeight="Bold" VerticalAlignment="Center" Margin="8, 0, 8, 0"/>
-                                <Slider
-                                       Width="200"
-                                       Margin="0"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       IsSnapToTickEnabled="True"
-                                       Maximum="1.00"
-                                       Minimum="0.00"
-                                       TickFrequency="0.01"
-                                       Value="{Binding ViewModel.Threshold, Mode=TwoWay}" />
-                                <TextBlock Text="{Binding ViewModel.Threshold, StringFormat={}{0:F2}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="2, 0, 0, 0"/>
-                                <TextBlock Text="Mode:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="16,0,8,0"/>
-                                <ComboBox Width="150"
-                                      ItemsSource="{Binding ViewModel.MatchModes}"
-                                      SelectedItem="{Binding ViewModel.SelectedMatchMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-
-                            <ui:Button Grid.Row="3" Grid.Column="1" Content="开始匹配" Command="{Binding ViewModel.TemplateMatchCommand}" Margin="4" HorizontalAlignment="Center" Grid.ColumnSpan="1"/>
-                        </Grid>
-
-                        <Grid Margin="0,10,0,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <ui:TextBlock Grid.Row="0" Grid.Column="0" Text="匹配区域坐标：" FontWeight="Bold" Margin="4,0,0,4"/>
-                            <ui:TextBox Grid.Row="1" Grid.Column="0"
-                                Text="{Binding ViewModel.MatchRectInfo, Mode=OneWay}"
-                                AcceptsReturn="True"
-                                TextWrapping="Wrap"
-                                Height="80"
-                                IsReadOnly="True"
-                                Cursor="IBeam"
-                                Margin="4"/>
-                            <ui:Button Grid.Row="1" Grid.Column="1" 
-                                Content="裁切" 
-                                Command="{Binding ViewModel.CropImageCommand}" 
-                                Margin="4" 
-                                VerticalAlignment="Top"/>
-                        </Grid>
-
-                        <Image Source="{Binding ViewModel.ResultImage}" 
-                               Margin="0,10,0,0" 
-                               Stretch="Uniform" 
-                               MaxHeight="500"/>
-                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                        <StackPanel Margin="0,16,0,0">
+                            <!-- 输入图像卡片 -->
+                            <Border 
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <!-- 标题 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                        <ui:SymbolIcon Margin="0,0,8,0" Symbol="Image24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="输入图像" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <!-- 三列图像选择区 -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- 源图像 -->
+                                        <Border Grid.Column="0" 
+                                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                CornerRadius="6" Padding="12">
+                                            <StackPanel>
+                                                <TextBlock Text="源图像" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                                <Border Background="{ui:ThemeResource ControlFillColorSecondaryBrush}"
+                                                        CornerRadius="4" MinHeight="100" Padding="4">
+                                                    <Grid>
+                                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                    Visibility="{Binding ViewModel.SourceImagePreview, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
+                                                            <ui:SymbolIcon Symbol="ImageOff24" FontSize="24" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
+                                                            <TextBlock Text="未选择" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                                        </StackPanel>
+                                                        <Image Source="{Binding ViewModel.SourceImagePreview}" Stretch="Uniform" MaxHeight="100"/>
+                                                    </Grid>
+                                                </Border>
+                                                <ui:Button Content="选择源图" Margin="0,8,0,0" HorizontalAlignment="Stretch"
+                                                           Command="{Binding ViewModel.SelectSourceImageCommand}"
+                                                           Icon="{ui:SymbolIcon FolderOpen24}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        
+                                        <!-- 模板图像 -->
+                                        <Border Grid.Column="2" 
+                                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                CornerRadius="6" Padding="12">
+                                            <StackPanel>
+                                                <TextBlock Text="模板图像" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                                <Border Background="{ui:ThemeResource ControlFillColorSecondaryBrush}"
+                                                        CornerRadius="4" MinHeight="100" Padding="4">
+                                                    <Grid>
+                                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                    Visibility="{Binding ViewModel.TemplateImagePreview, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
+                                                            <ui:SymbolIcon Symbol="ImageOff24" FontSize="24" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
+                                                            <TextBlock Text="未选择" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                                        </StackPanel>
+                                                        <Image Source="{Binding ViewModel.TemplateImagePreview}" Stretch="Uniform" MaxHeight="100"/>
+                                                    </Grid>
+                                                </Border>
+                                                <ui:Button Content="选择模板" Margin="0,8,0,0" HorizontalAlignment="Stretch"
+                                                           Command="{Binding ViewModel.SelectTemplateImageCommand}"
+                                                           Icon="{ui:SymbolIcon FolderOpen24}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        
+                                        <!-- 遮罩图像（可选） -->
+                                        <Border Grid.Column="4" 
+                                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                CornerRadius="6" Padding="12">
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                    <TextBlock Text="遮罩图像" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="（可选）" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="4,0,0,0" VerticalAlignment="Bottom"/>
+                                                </StackPanel>
+                                                <Border Background="{ui:ThemeResource ControlFillColorSecondaryBrush}"
+                                                        CornerRadius="4" MinHeight="100" Padding="4">
+                                                    <Grid>
+                                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                    Visibility="{Binding ViewModel.MaskImagePreview, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
+                                                            <ui:SymbolIcon Symbol="ImageOff24" FontSize="24" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
+                                                            <TextBlock Text="自动生成" FontSize="11" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                                        </StackPanel>
+                                                        <Image Source="{Binding ViewModel.MaskImagePreview}" Stretch="Uniform" MaxHeight="100"/>
+                                                    </Grid>
+                                                </Border>
+                                                <Grid Margin="0,8,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="8"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ui:Button Grid.Column="0" Content="选择" HorizontalAlignment="Stretch"
+                                                               Command="{Binding ViewModel.SelectMaskImageCommand}"
+                                                               Icon="{ui:SymbolIcon FolderOpen24}"/>
+                                                    <ui:Button Grid.Column="2" ToolTip="清除遮罩"
+                                                               Command="{Binding ViewModel.ClearMaskCommand}"
+                                                               Appearance="Secondary"
+                                                               Icon="{ui:SymbolIcon Delete24}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- 匹配设置卡片 -->
+                            <Border 
+                                Margin="0,12,0,0"
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <!-- 标题 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                        <ui:SymbolIcon Margin="0,0,8,0" Symbol="Settings24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="匹配设置" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <!-- 设置项 -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="12"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- 匹配阈值 -->
+                                        <Grid Grid.Row="0" Grid.Column="0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                                <ui:TextBlock FontTypography="Body" Text="匹配阈值"/>
+                                                <ui:TextBlock 
+                                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" 
+                                                    FontSize="11"
+                                                    Text="值越高匹配越严格"/>
+                                            </StackPanel>
+                                            <Slider Grid.Column="1"
+                                                    Minimum="0" Maximum="1" 
+                                                    TickFrequency="0.01" IsSnapToTickEnabled="True"
+                                                    Value="{Binding ViewModel.Threshold, Mode=TwoWay}"
+                                                    VerticalAlignment="Center"/>
+                                            <Border Grid.Column="2" 
+                                                    Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                                    CornerRadius="4" Padding="8,4" Margin="12,0,0,0"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ViewModel.Threshold, StringFormat={}{0:F2}}" 
+                                                           FontFamily="Consolas" FontSize="13" MinWidth="30" TextAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        
+                                        <!-- 匹配模式 -->
+                                        <Grid Grid.Row="0" Grid.Column="1" Margin="24,0,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                <ui:TextBlock FontTypography="Body" Text="匹配模式"/>
+                                                <ui:TextBlock 
+                                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" 
+                                                    FontSize="11"
+                                                    Text="选择算法类型"/>
+                                            </StackPanel>
+                                            <ComboBox Grid.Column="1" Width="180"
+                                                      ItemsSource="{Binding ViewModel.MatchModes}"
+                                                      SelectedItem="{Binding ViewModel.SelectedMatchMode, Mode=TwoWay}"/>
+                                        </Grid>
+                                        
+                                        <!-- 开始匹配按钮 -->
+                                        <ui:Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                                   HorizontalAlignment="Right"
+                                                   Appearance="Primary"
+                                                   Command="{Binding ViewModel.TemplateMatchCommand}"
+                                                   Padding="20,10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="Play24" FontSize="16"/>
+                                                <TextBlock Text="开始匹配" Margin="8,0,0,0" FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </ui:Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- 匹配结果卡片 -->
+                            <Border 
+                                Margin="0,12,0,0"
+                                Padding="16"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <!-- 标题和操作 -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <ui:SymbolIcon Margin="0,0,8,0" Symbol="TargetArrow24" FontSize="16" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                            <ui:TextBlock FontTypography="BodyStrong" Text="匹配结果" VerticalAlignment="Center"/>
+                                            <Border Margin="12,0,0,0" Padding="8,4" CornerRadius="10"
+                                                    Background="{ui:ThemeResource SystemAccentColorSecondaryBrush}"
+                                                    Visibility="{Binding ViewModel.MatchCount, Converter={StaticResource IntToVisibilityConverter}}"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Foreground="White" FontSize="11" VerticalAlignment="Center">
+                                                    <Run Text="找到 "/>
+                                                    <Run Text="{Binding ViewModel.MatchCount, Mode=OneWay}"/>
+                                                    <Run Text=" 处匹配"/>
+                                                </TextBlock>
+                                            </Border>
+                                        </StackPanel>
+                                        <ui:Button Grid.Column="1"
+                                                   Content="裁切并保存"
+                                                   Command="{Binding ViewModel.CropImageCommand}"
+                                                   Icon="{ui:SymbolIcon Cut24}"
+                                                   Visibility="{Binding ViewModel.MatchCount, Converter={StaticResource IntToVisibilityConverter}}"/>
+                                    </Grid>
+                                    
+                                    <!-- 结果图像预览区域 -->
+                                    <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                            BorderThickness="1" 
+                                            BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}" 
+                                            CornerRadius="6" 
+                                            Padding="8"
+                                            MinHeight="200">
+                                        <Grid>
+                                            <!-- 占位提示 -->
+                                            <StackPanel 
+                                                HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"
+                                                Visibility="{Binding ViewModel.ResultImage, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}">
+                                                <ui:SymbolIcon 
+                                                    Symbol="ImageSearch24" 
+                                                    FontSize="40" 
+                                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                    HorizontalAlignment="Center"/>
+                                                <TextBlock 
+                                                    Text="匹配结果将显示在这里" 
+                                                    Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                                    FontSize="12"
+                                                    Margin="0,12,0,0"
+                                                    HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                            <!-- 实际结果图像 -->
+                                            <Image Source="{Binding ViewModel.ResultImage}" 
+                                                   Stretch="Uniform" 
+                                                   MaxHeight="450"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Grid>
+                                    </Border>
+                                    
+                                    <!-- 坐标详情（可折叠） -->
+                                    <Expander Margin="0,12,0,0" IsExpanded="False">
+                                        <Expander.Header>
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="TextBulletListSquare24" FontSize="14" Margin="0,0,8,0"/>
+                                                <TextBlock Text="匹配坐标详情"/>
+                                            </StackPanel>
+                                        </Expander.Header>
+                                        <ui:TextBox
+                                            Text="{Binding ViewModel.MatchRectInfo, Mode=OneWay}"
+                                            AcceptsReturn="True"
+                                            TextWrapping="Wrap"
+                                            MaxHeight="120"
+                                            IsReadOnly="True"
+                                            Cursor="IBeam"
+                                            FontFamily="Consolas"
+                                            FontSize="12"
+                                            PlaceholderText="暂无匹配结果"/>
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- 使用提示 -->
+                            <Border 
+                                Margin="0,12,0,16" 
+                                Padding="12"
+                                Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+                                CornerRadius="6"
+                                BorderBrush="{ui:ThemeResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <ui:TextBlock FontTypography="BodyStrong" Text="使用提示" />
+                                    </StackPanel>
+                                    <ui:TextBlock 
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 选择源图像和模板图像后点击「开始匹配」进行模板匹配" />
+                                    <ui:TextBlock 
+                                        Margin="0,4,0,0"
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 如果模板包含透明通道（PNG），会自动生成遮罩；也可手动选择遮罩文件" />
+                                    <ui:TextBlock 
+                                        Margin="0,4,0,0"
+                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Text="• 推荐使用 CCoeffNormed 模式，阈值建议设置在 0.8~0.95 之间" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
                 <!-- 轮廓检测 -->
                 <TabItem  MaxWidth="100">

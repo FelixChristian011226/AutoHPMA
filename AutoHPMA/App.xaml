@@ -19,6 +19,7 @@
             <converters:MouseActionTypeToColorConverter x:Key="MouseActionTypeToColorConverter" />
             <converters:MouseActionTypeToBackgroundConverter x:Key="MouseActionTypeToBackgroundConverter" />
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
             <converters:ActionTypeToDragVisibilityConverter x:Key="ActionTypeToDragVisibilityConverter" />
             <converters:ActionTypeToDurationVisibilityConverter x:Key="ActionTypeToDurationVisibilityConverter" />
             <converters:ActionTypeToTimesVisibilityConverter x:Key="ActionTypeToTimesVisibilityConverter" />

@@ -94,6 +94,42 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private List<Rect> _matchRects = new();
 
+        // 图像预览
+        [ObservableProperty]
+        private System.Windows.Media.ImageSource? _sourceImagePreview;
+
+        [ObservableProperty]
+        private System.Windows.Media.ImageSource? _templateImagePreview;
+
+        [ObservableProperty]
+        private System.Windows.Media.ImageSource? _maskImagePreview;
+
+        [ObservableProperty]
+        private int _matchCount = 0;
+
+        // 路径变更时更新预览
+        partial void OnSourceImagePathChanged(string? value) => UpdateImagePreview(value, v => SourceImagePreview = v);
+        partial void OnTemplateImagePathChanged(string? value) => UpdateImagePreview(value, v => TemplateImagePreview = v);
+        partial void OnMaskImagePathChanged(string? value) => UpdateImagePreview(value, v => MaskImagePreview = v);
+
+        private void UpdateImagePreview(string? path, Action<System.Windows.Media.ImageSource?> setter)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            {
+                setter(null);
+                return;
+            }
+            try
+            {
+                using var mat = Cv2.ImRead(path);
+                setter(ToImageSource(mat));
+            }
+            catch
+            {
+                setter(null);
+            }
+        }
+
         // 轮廓检测
         [ObservableProperty] private int _minLen = 60;
         [ObservableProperty] private int _maxGap = 10;
@@ -615,6 +651,13 @@ namespace AutoHPMA.ViewModels.Pages
         private void OnSelectMaskImage() => MaskImagePath = SelectImageFile() ?? MaskImagePath;
 
         [RelayCommand]
+        private void OnClearMask()
+        {
+            MaskImagePath = null;
+            MaskImagePreview = null;
+        }
+
+        [RelayCommand]
         private void OnTemplateMatch()
         {
             if (string.IsNullOrEmpty(SourceImagePath) || string.IsNullOrEmpty(TemplateImagePath))
@@ -641,6 +684,7 @@ namespace AutoHPMA.ViewModels.Pages
                 originalMat, templateMat, SelectedMatchMode, maskMat, threshold: Threshold);
 
             MatchRects = matches;
+            MatchCount = matches.Count;
             MatchRectInfo = string.Join("\n", matches.Select(r => $"X: {r.X}, Y: {r.Y}, Width: {r.Width}, Height: {r.Height}"));
 
             // 创建结果图像副本用于绘制
