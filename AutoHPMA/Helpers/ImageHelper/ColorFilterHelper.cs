@@ -6,8 +6,14 @@ namespace AutoHPMA.Helpers.ImageHelper
 {
     public class ColorFilterHelper
     {
-        public const int KEY_MASK_WHITE_PIXELS = 1;
-        public const int KEY_FILTERED_PIXELS = 2;
+        /// <summary>
+        /// 参与过滤的总像素数（无遮罩时为原图像素总数，有遮罩时为遮罩白色区域像素数）
+        /// </summary>
+        public const int KEY_TOTAL_FILTER_PIXELS = 1;
+        /// <summary>
+        /// 匹配目标颜色的像素数
+        /// </summary>
+        public const int KEY_MATCHED_PIXELS = 2;
 
         /// <summary>
         /// 从十六进制颜色字符串获取Color对象
@@ -45,18 +51,18 @@ namespace AutoHPMA.Helpers.ImageHelper
                 throw new ArgumentException("源图像不能为空");
 
             Mat resultMat = sourceMat.Clone();
-            int maskWhitePixels = 0;
-            int filteredPixels = 0;
+            int totalFilterPixels = 0;
+            int matchedPixels = 0;
 
-            // 如果有遮罩，应用遮罩
+            // 如果有遮罩，应用遮罩；否则使用原图全部像素
             if (maskMat != null && !maskMat.Empty())
             {
                 using Mat grayMask = new Mat();
                 Cv2.CvtColor(maskMat, grayMask, ColorConversionCodes.BGR2GRAY);
                 // 将遮罩二值化
                 Cv2.Threshold(grayMask, grayMask, 127, 255, ThresholdTypes.Binary);
-                // 统计遮罩中的白色像素数量
-                maskWhitePixels = Cv2.CountNonZero(grayMask);
+                // 统计遮罩中的白色像素数量（即参与过滤的像素数）
+                totalFilterPixels = Cv2.CountNonZero(grayMask);
                 
                 // 创建反遮罩
                 using Mat maskInverse = new Mat();
@@ -70,6 +76,11 @@ namespace AutoHPMA.Helpers.ImageHelper
                 
                 // 将非遮罩区域保留原图
                 Cv2.BitwiseAnd(sourceMat, sourceMat, resultMat, grayMask);
+            }
+            else
+            {
+                // 无遮罩时，参与过滤的像素数为原图像素总数
+                totalFilterPixels = sourceMat.Rows * sourceMat.Cols;
             }
 
             // 获取选中的颜色（目标颜色）
@@ -100,8 +111,8 @@ namespace AutoHPMA.Helpers.ImageHelper
             using Mat mask = new Mat();
             Cv2.InRange(hsvMat, lowerBound, upperBound, mask);
 
-            // 统计过滤后的像素数量
-            filteredPixels = Cv2.CountNonZero(mask);
+            // 统计匹配目标颜色的像素数量
+            matchedPixels = Cv2.CountNonZero(mask);
 
             // 创建黑色背景图像
             using Mat blackBackground = new Mat(resultMat.Size(), resultMat.Type(), Scalar.Black);
@@ -122,8 +133,8 @@ namespace AutoHPMA.Helpers.ImageHelper
             Cv2.Add(filteredImage, blackAreas, resultMat);
 
             // 将统计结果存储在结果图像的属性中
-            resultMat.Set(KEY_MASK_WHITE_PIXELS, maskWhitePixels);
-            resultMat.Set(KEY_FILTERED_PIXELS, filteredPixels);
+            resultMat.Set(KEY_TOTAL_FILTER_PIXELS, totalFilterPixels);
+            resultMat.Set(KEY_MATCHED_PIXELS, matchedPixels);
 
             return resultMat;
         }
