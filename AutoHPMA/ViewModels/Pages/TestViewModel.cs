@@ -620,40 +620,55 @@ namespace AutoHPMA.ViewModels.Pages
             if (string.IsNullOrEmpty(SourceImagePath) || string.IsNullOrEmpty(TemplateImagePath))
                 return;
 
-            Mat originalMat = Cv2.ImRead(SourceImagePath);
-            Mat detectMat = originalMat.Clone();
-            Mat templateMat = Cv2.ImRead(TemplateImagePath, ImreadModes.Unchanged);
+            // 使用 using 语句确保资源正确释放
+            using Mat originalMat = Cv2.ImRead(SourceImagePath);
+            using Mat templateMatWithAlpha = Cv2.ImRead(TemplateImagePath, ImreadModes.Unchanged);
 
-            Mat? maskMat = GetMaskMat(templateMat);
-            templateMat = Cv2.ImRead(TemplateImagePath);
+            // 生成 mask（如果需要）
+            using Mat? maskMat = GetMaskMat(templateMatWithAlpha);
+
+            // 将模板转换为 BGR 格式用于匹配
+            using Mat templateMat = templateMatWithAlpha.Channels() == 4
+                ? new Mat()
+                : templateMatWithAlpha.Clone();
+
+            if (templateMatWithAlpha.Channels() == 4)
+            {
+                Cv2.CvtColor(templateMatWithAlpha, templateMat, ColorConversionCodes.BGRA2BGR);
+            }
 
             var matches = MatchTemplateHelper.MatchOnePicForOnePic(
-                detectMat, templateMat, SelectedMatchMode, maskMat, threshold: Threshold);
+                originalMat, templateMat, SelectedMatchMode, maskMat, threshold: Threshold);
 
             MatchRects = matches;
             MatchRectInfo = string.Join("\n", matches.Select(r => $"X: {r.X}, Y: {r.Y}, Width: {r.Width}, Height: {r.Height}"));
 
+            // 创建结果图像副本用于绘制
+            using Mat resultMat = originalMat.Clone();
             foreach (var rect in matches)
             {
-                Cv2.Rectangle(originalMat, new Point(rect.X, rect.Y),
+                Cv2.Rectangle(resultMat, new Point(rect.X, rect.Y),
                     new Point(rect.X + rect.Width, rect.Y + rect.Height), Scalar.Red, thickness: 2);
             }
 
-            ResultImage = ToImageSource(originalMat);
+            ResultImage = ToImageSource(resultMat);
         }
 
+        /// <summary>
+        /// 获取遮罩图像（调用方负责释放返回的 Mat）
+        /// </summary>
         private Mat? GetMaskMat(Mat templateMat)
         {
             if (!string.IsNullOrEmpty(MaskImagePath))
             {
-                var mask = Cv2.ImRead(MaskImagePath);
-                Cv2.CvtColor(mask, mask, ColorConversionCodes.BGR2GRAY);
+                var mask = Cv2.ImRead(MaskImagePath, ImreadModes.Grayscale);
                 return mask;
             }
 
             if (templateMat.Channels() == 4)
             {
                 var mask = MatchTemplateHelper.GenerateMask(templateMat);
+                // 可选：保存生成的 mask 用于调试
                 string maskPath = Path.ChangeExtension(TemplateImagePath, null) + "_mask.png";
                 mask.SaveImage(maskPath);
                 return mask;
@@ -670,14 +685,14 @@ namespace AutoHPMA.ViewModels.Pages
 
             try
             {
-                Mat originalMat = Cv2.ImRead(SourceImagePath);
+                using Mat originalMat = Cv2.ImRead(SourceImagePath);
                 string directory = Path.GetDirectoryName(SourceImagePath)!;
                 string fileName = Path.GetFileNameWithoutExtension(SourceImagePath);
                 string extension = Path.GetExtension(SourceImagePath);
 
                 for (int i = 0; i < MatchRects.Count; i++)
                 {
-                    var croppedMat = new Mat(originalMat, MatchRects[i]);
+                    using var croppedMat = new Mat(originalMat, MatchRects[i]);
                     string outputPath = Path.Combine(directory, $"{fileName}_cropped_{i + 1}{extension}");
                     croppedMat.SaveImage(outputPath);
                 }

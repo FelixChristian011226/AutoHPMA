@@ -61,26 +61,28 @@ namespace AutoHPMA.Helpers.ImageHelper
                 using var result = new Mat();
                 Cv2.MatchTemplate(srcMat, dstMat, result, TemplateMatchModes.CCoeffNormed, maskMat!);
 
-                var mask = new Mat(result.Height, result.Width, MatType.CV_8UC1, Scalar.White);
-                var maskSub = new Mat(result.Height, result.Width, MatType.CV_8UC1, Scalar.Black);
-                while (true)
+                using var mask = new Mat(result.Height, result.Width, MatType.CV_8UC1, Scalar.White);
+                using var maskSub = new Mat(result.Height, result.Width, MatType.CV_8UC1, Scalar.Black);
+                while (points.Count < maxCount)
                 {
                     Cv2.MinMaxLoc(result, out _, out var maxValue, out _, out var maxLoc, mask);
+                    if (maxValue < threshold)
+                        break;
+
+                    points.Add(maxLoc);
+
+                    // 使用矩形遮罩排除已匹配区域
                     var maskRect = new Rect(maxLoc.X, maxLoc.Y, dstMat.Width, dstMat.Height);
                     maskSub.Rectangle(maskRect, Scalar.White, -1);
-                    mask -= maskSub;
-                    if (maxValue >= threshold)
-                        points.Add(maxLoc);
-                    else
-                        break;
+                    Cv2.Subtract(mask, maskSub, mask);
+                    maskSub.Rectangle(maskRect, Scalar.Black, -1); // 重置 maskSub
                 }
 
                 return points;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //_logger.LogError(ex.Message);
-                //_logger.LogDebug(ex, ex.Message);
+                // 静默处理异常，返回已找到的结果
                 return points;
             }
         }
@@ -94,13 +96,16 @@ namespace AutoHPMA.Helpers.ImageHelper
                 maxCount = srcMat.Width * srcMat.Height / dstMat.Width / dstMat.Height;
             }
 
+            // 克隆源图像，避免修改原图
+            using var workMat = srcMat.Clone();
+
             for (int i = 0; i < maxCount; i++)
             {
-                var point = MatchTemplate(srcMat, dstMat, matchMode, maskMat, threshold);
+                var point = MatchTemplate(workMat, dstMat, matchMode, maskMat, threshold);
                 if (point != new Point())
                 {
-                    // 把结果给遮掩掉，避免重复识别
-                    Cv2.Rectangle(srcMat, point, new Point(point.X + dstMat.Width, point.Y + dstMat.Height), Scalar.Black, -1);
+                    // 在工作副本上遮罩已匹配区域
+                    Cv2.Rectangle(workMat, point, new Point(point.X + dstMat.Width, point.Y + dstMat.Height), Scalar.Black, -1);
                     list.Add(new Rect(point.X, point.Y, dstMat.Width, dstMat.Height));
                 }
                 else
@@ -115,47 +120,56 @@ namespace AutoHPMA.Helpers.ImageHelper
         /// <summary>
         /// 从输入图像生成Mask，透明区域为黑色，非透明区域为白色
         /// </summary>
-        /// <param name="inputMat">输入图像</param>
-        /// <returns>生成的Mask</returns>
+        /// <param name="inputMat">输入图像（需要带 Alpha 通道，即 BGRA 格式）</param>
+        /// <returns>生成的 Mask（调用方负责释放）</returns>
         public static Mat GenerateMask(Mat inputMat)
         {
             try
             {
-                // 确保输入图像是BGRA格式
+                // 确保输入图像是 BGRA 格式
                 Mat bgraMat;
+                bool needDispose = false;
+
                 if (inputMat.Channels() == 4)
                 {
-                    bgraMat = inputMat.Clone();
+                    bgraMat = inputMat;
                 }
                 else
                 {
                     bgraMat = new Mat();
                     Cv2.CvtColor(inputMat, bgraMat, ColorConversionCodes.BGR2BGRA);
+                    needDispose = true;
                 }
 
-                // 创建Mask
-                var mask = new Mat(bgraMat.Size(), MatType.CV_8UC1, Scalar.Black);
-
-                // 遍历所有像素
-                for (int y = 0; y < bgraMat.Height; y++)
+                try
                 {
-                    for (int x = 0; x < bgraMat.Width; x++)
+                    // 使用向量化操作提取 Alpha 通道并生成 Mask
+                    // Split 分离 BGRA 通道: [0]=B, [1]=G, [2]=R, [3]=A
+                    Cv2.Split(bgraMat, out Mat[] channels);
+
+                    // 释放不需要的通道
+                    channels[0].Dispose();
+                    channels[1].Dispose();
+                    channels[2].Dispose();
+
+                    // 使用 Alpha 通道，阈值处理生成二值 Mask
+                    using var alphaChannel = channels[3];
+                    var mask = new Mat();
+                    Cv2.Threshold(alphaChannel, mask, 0, 255, ThresholdTypes.Binary);
+
+                    return mask;
+                }
+                finally
+                {
+                    if (needDispose)
                     {
-                        var pixel = bgraMat.Get<Vec4b>(y, x);
-                        // 如果Alpha通道值大于0，则在Mask中设置为白色
-                        if (pixel.Item3 > 0)
-                        {
-                            mask.Set(y, x, 255);
-                        }
+                        bgraMat.Dispose();
                     }
                 }
-
-                return mask;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //_logger.LogError(ex.Message);
-                //_logger.LogDebug(ex, ex.Message);
+                // 发生异常时返回空 Mat
                 return new Mat();
             }
         }
