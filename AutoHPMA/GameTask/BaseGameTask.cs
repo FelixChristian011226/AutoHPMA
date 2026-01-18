@@ -643,13 +643,22 @@ namespace AutoHPMA.GameTask
             {
                 while (!_cts.Token.IsCancellationRequested)
                 {
-                    GC.Collect();
-                    await ExecuteLoopAsync();
+                    try
+                    {
+                        GC.Collect();
+                        await ExecuteLoopAsync();
+                    }
+                    catch (OperationCanceledException) when (!_cts.Token.IsCancellationRequested)
+                    {
+                        // 操作级别取消（状态变化导致），继续下一次循环
+                        // 只有当主 CTS 未取消时才继续循环
+                        continue;
+                    }
                 }
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
-                // 任务取消异常，正常流程
+                // 任务级别取消（Stop() 调用导致），正常流程
             }
             catch (Exception ex)
             {
