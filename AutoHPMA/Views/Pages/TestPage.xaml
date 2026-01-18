@@ -34,8 +34,7 @@
                             <TextBlock Text="截屏测试" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,10,10,10">
-                        <StackPanel>
+                    <StackPanel Margin="0,10,10,10">
                             <!-- 截屏配置卡片 -->
                             <Border 
                                 Margin="0,8,0,0" 
@@ -172,8 +171,7 @@
                                         Text="3. 点击开始预览按钮查看实时截屏效果，验证截图质量和帧率" />
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
+                    </StackPanel>
                 </TabItem>
                 <!--  鼠标模拟  -->
                 <TabItem MaxWidth="100">
@@ -183,8 +181,7 @@
                             <TextBlock Text="鼠标模拟" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,10,10,10">
-                        <StackPanel>
+                    <StackPanel Margin="0,10,10,10">
                             <!-- 窗口配置卡片 -->
                             <Border 
                                 Margin="0,8,0,0" 
@@ -624,8 +621,7 @@
                                         Text="• 支持导入/导出 JSON 格式配置文件，方便保存和分享" />
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
+                    </StackPanel>
                 </TabItem>
                 <!-- 文字识别 -->
                 <TabItem  MaxWidth="100">
@@ -635,8 +631,7 @@
                             <TextBlock Text="文字识别" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
-                        <StackPanel Margin="0,16,0,0">
+                    <StackPanel Margin="0,16,8,0">
                             <!-- 设置卡片 -->
                             <Border 
                                 Padding="16"
@@ -826,8 +821,7 @@
                                         Text="• PaddleOCR 对中文识别效果更好，Tesseract 识别速度更快" />
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
+                    </StackPanel>
                 </TabItem>
                 <!-- 模板匹配 -->
                 <TabItem  MaxWidth="100">
@@ -837,8 +831,7 @@
                             <TextBlock Text="模板匹配" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
-                        <StackPanel Margin="0,16,0,0">
+                    <StackPanel Margin="0,16,8,0">
                             <!-- 输入图像卡片 -->
                             <Border 
                                 Padding="16"
@@ -1161,8 +1154,7 @@
                                         Text="• 推荐使用 CCoeffNormed 模式，阈值建议设置在 0.8~0.95 之间" />
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
+                    </StackPanel>
                 </TabItem>
                 <!-- 轮廓检测 -->
                 <TabItem MaxWidth="100">
@@ -1172,8 +1164,7 @@
                             <TextBlock Text="轮廓检测" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,10,10,10">
-                        <StackPanel>
+                    <StackPanel Margin="0,10,10,10">
                             <!-- 配置卡片 -->
                             <Border 
                                 Margin="0,8,0,0" 
@@ -1390,8 +1381,7 @@
                                         Text="• 矩形检测会自动对图像进行二值化处理，然后检测最大的近似矩形区域" />
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
+                    </StackPanel>
                 </TabItem>
                 <!-- 色彩过滤 -->
                 <TabItem MaxWidth="100">
@@ -1401,8 +1391,7 @@
                             <TextBlock Text="色彩过滤" FontWeight="Bold" />
                         </StackPanel>
                     </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
-                        <StackPanel Margin="0,16,0,0">
+                    <StackPanel Margin="0,16,8,0">
                             <!-- 输入图像卡片 -->
                             <Border 
                                 Padding="16"
@@ -1748,8 +1737,7 @@
                                         Text="• 阈值越大，匹配的颜色范围越广；建议从 15~30 开始调整" />
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
+                    </StackPanel>
                 </TabItem>
                 
             </TabControl>

@@ -22,8 +22,7 @@
         <converters:BoolToInverseBoolConverter x:Key="BoolToInverseBoolConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="40,30,40,30">
+    <StackPanel Margin="40,30,40,30">
             
             <!-- ==================== 应用设置 ==================== -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -286,6 +285,5 @@
                 HorizontalAlignment="Center"
                 Margin="0,12,0,0"/>
 
-        </StackPanel>
-    </ScrollViewer>
+    </StackPanel>
 </Page>
