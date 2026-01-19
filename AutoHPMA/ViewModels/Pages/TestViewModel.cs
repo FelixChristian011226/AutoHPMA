@@ -64,6 +64,9 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private System.Windows.Media.ImageSource? _ocrPreviewImage;
 
+        [ObservableProperty]
+        private bool _hideWindowOnScreenshot = false;
+
         public ObservableCollection<string> OCRs { get; } = new() { "PaddleOCR", "Tesseract" };
 
         // 模板匹配
@@ -557,8 +560,31 @@ namespace AutoHPMA.ViewModels.Pages
         [RelayCommand]
         public async Task OCRFromScreenshot()
         {
+            // 获取主窗口引用
+            System.Windows.Window? mainWindow = null;
+            System.Windows.WindowState? previousState = null;
+            
             try
             {
+                // 如果启用了隐藏窗口选项，最小化应用窗口
+                if (HideWindowOnScreenshot)
+                {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        // 通过 Windows 集合查找 MainWindow
+                        mainWindow = System.Windows.Application.Current.Windows
+                            .OfType<Views.Windows.MainWindow>()
+                            .FirstOrDefault();
+                        
+                        if (mainWindow != null)
+                        {
+                            previousState = mainWindow.WindowState;
+                            mainWindow.WindowState = System.Windows.WindowState.Minimized;
+                        }
+                    });
+                    await Task.Delay(300); // 等待窗口最小化动画完成
+                }
+
                 // 清空剪切板以便检测新的截图
                 System.Windows.Clipboard.Clear();
 
@@ -571,24 +597,66 @@ namespace AutoHPMA.ViewModels.Pages
                 };
                 System.Diagnostics.Process.Start(psi);
 
+                // 等待截图工具启动
+                await Task.Delay(800);
+
                 // 等待用户完成截图（监控剪切板变化）
                 OcrResult = "请完成截图...";
                 
                 bool screenshotCaptured = false;
-                for (int i = 0; i < 60; i++) // 最多等待60秒
+                const int maxWaitMs = 60000; // 最多等待60秒
+                const int checkIntervalMs = 100; // 每100毫秒检查一次
+                int elapsedMs = 0;
+                int noChangeCount = 0; // 检测前台窗口无变化计数
+                
+                // 获取本应用主窗口句柄
+                IntPtr mainWindowHandle = IntPtr.Zero;
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    await Task.Delay(1000);
-                    
+                    var win = System.Windows.Application.Current.Windows
+                        .OfType<Views.Windows.MainWindow>()
+                        .FirstOrDefault();
+                    if (win != null)
+                    {
+                        mainWindowHandle = new System.Windows.Interop.WindowInteropHelper(win).Handle;
+                    }
+                });
+                
+                while (elapsedMs < maxWaitMs)
+                {
+                    // 检查剪贴板是否有图像
                     if (System.Windows.Clipboard.ContainsImage())
                     {
                         screenshotCaptured = true;
                         break;
                     }
+                    
+                    // 检测当前前台窗口是否为本应用（表示截图工具已关闭）
+                    if (mainWindowHandle != IntPtr.Zero && elapsedMs > 2000)
+                    {
+                        var foregroundWindow = Helpers.WindowInteractionHelper.GetForegroundWindow();
+                        if (foregroundWindow == mainWindowHandle)
+                        {
+                            noChangeCount++;
+                            // 连续检测到多次前台窗口是本应用，说明截图工具已关闭
+                            if (noChangeCount >= 3)
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            noChangeCount = 0;
+                        }
+                    }
+                    
+                    await Task.Delay(checkIntervalMs);
+                    elapsedMs += checkIntervalMs;
                 }
 
                 if (!screenshotCaptured)
                 {
-                    OcrResult = "截图超时或已取消";
+                    OcrResult = "截图已取消";
                     return;
                 }
 
@@ -607,6 +675,18 @@ namespace AutoHPMA.ViewModels.Pages
             catch (Exception ex)
             {
                 OcrResult = "识别出错：" + ex.Message;
+            }
+            finally
+            {
+                // 恢复窗口状态
+                if (previousState.HasValue && mainWindow != null)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        mainWindow.WindowState = previousState.Value;
+                        mainWindow.Activate();
+                    });
+                }
             }
         }
 

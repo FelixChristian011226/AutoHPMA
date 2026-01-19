@@ -665,6 +665,24 @@
                                             ItemsSource="{Binding ViewModel.OCRs}"
                                             SelectedItem="{Binding ViewModel.SelectedOCR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </Grid>
+                                    
+                                    <!-- 隐藏应用窗口选项 -->
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <ui:TextBlock FontTypography="Body" Text="截图时隐藏窗口"/>
+                                            <ui:TextBlock 
+                                                Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" 
+                                                FontSize="12"
+                                                Text="启用后点击截图时自动最小化应用"/>
+                                        </StackPanel>
+                                        <ui:ToggleSwitch
+                                            Grid.Column="1"
+                                            IsChecked="{Binding ViewModel.HideWindowOnScreenshot, Mode=TwoWay}" />
+                                    </Grid>
                                 </StackPanel>
                             </Border>
 
