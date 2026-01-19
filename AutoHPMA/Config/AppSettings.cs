@@ -35,6 +35,9 @@ namespace AutoHPMA.Config
         [JsonPropertyName("joinOthers")]
         public bool JoinOthers { get; set; } = false;
 
+        [JsonPropertyName("stopWhenContributionFull")]
+        public bool StopWhenContributionFull { get; set; } = false;
+
         [JsonPropertyName("autoForbiddenForestTimes")]
         public int AutoForbiddenForestTimes { get; set; } = 30;
 

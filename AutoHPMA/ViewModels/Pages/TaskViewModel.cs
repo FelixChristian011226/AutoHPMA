@@ -51,6 +51,9 @@ namespace AutoHPMA.ViewModels.Pages
         private bool _joinOthers = false;
 
         [ObservableProperty]
+        private bool _stopWhenContributionFull = false;
+
+        [ObservableProperty]
         private int _autoForbiddenForestTimes = 30;
 
         [ObservableProperty]
@@ -115,6 +118,7 @@ namespace AutoHPMA.ViewModels.Pages
         {
             AnswerDelay = _settings.AnswerDelay;
             JoinOthers = _settings.JoinOthers;
+            StopWhenContributionFull = _settings.StopWhenContributionFull;
             AutoForbiddenForestTimes = _settings.AutoForbiddenForestTimes;
             SelectedTeamPosition = _settings.SelectedTeamPosition;
             AutoCookingTimes = _settings.AutoCookingTimes;
@@ -287,7 +291,8 @@ namespace AutoHPMA.ViewModels.Pages
                     new Dictionary<string, object>
                     {
                         { "AnswerDelay", AnswerDelay },
-                        { "JoinOthers", JoinOthers }
+                        { "JoinOthers", JoinOthers },
+                        { "StopWhenContributionFull", StopWhenContributionFull }
                     });
         }
 
@@ -368,6 +373,7 @@ namespace AutoHPMA.ViewModels.Pages
 
         partial void OnAnswerDelayChanged(int value) => SaveSetting(() => _settings.AnswerDelay = value);
         partial void OnJoinOthersChanged(bool value) => SaveSetting(() => _settings.JoinOthers = value);
+        partial void OnStopWhenContributionFullChanged(bool value) => SaveSetting(() => _settings.StopWhenContributionFull = value);
         partial void OnAutoForbiddenForestTimesChanged(int value) => SaveSetting(() => _settings.AutoForbiddenForestTimes = value);
         partial void OnSelectedTeamPositionChanged(string value) => SaveSetting(() => _settings.SelectedTeamPosition = value);
         partial void OnAutoCookingTimesChanged(int value) => SaveSetting(() => _settings.AutoCookingTimes = value);

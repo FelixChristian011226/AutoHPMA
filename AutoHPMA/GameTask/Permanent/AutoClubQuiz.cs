@@ -55,6 +55,7 @@ public class AutoClubQuiz : BaseGameTask
     private GatherRefreshMode _gatherRefreshMode = GatherRefreshMode.Badge;
     private int _answerDelay = 0;
     private bool _joinOthers = true;
+    private bool _stopWhenContributionFull = false;
     private int roundIndex = 1;
 
     #endregion
@@ -437,6 +438,20 @@ public class AutoClubQuiz : BaseGameTask
 
         if (!match.Success)
         {
+            // 检测是否是贡献已满的情况（模糊匹配"本周"和"上限"）
+            if (ocrText.Contains("本周") && ocrText.Contains("上限"))
+            {
+                _logger.LogInformation("本周社团贡献已满。");
+                ToastNotificationHelper.ShowToastWithImage("答题结束", "本周社团贡献已满。", captureMat);
+                
+                if (_stopWhenContributionFull)
+                {
+                    _logger.LogInformation("已配置贡献满时停止，任务即将终止。");
+                    Stop();
+                }
+                return;
+            }
+            
             _logger.LogWarning("无法识别社团贡献分数，请检查OCR设置或截图质量。");
             return;
         }
@@ -486,6 +501,11 @@ public class AutoClubQuiz : BaseGameTask
             if (TryGetParameter(parameters, "JoinOthers", out bool joinOthers))
             {
                 _joinOthers = joinOthers;
+            }
+
+            if (TryGetParameter(parameters, "StopWhenContributionFull", out bool stopWhenContributionFull))
+            {
+                _stopWhenContributionFull = stopWhenContributionFull;
             }
 
             return true;

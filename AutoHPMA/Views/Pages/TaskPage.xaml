@@ -52,6 +52,14 @@
                     </controls:SettingRow.SettingContent>
                 </controls:SettingRow>
                 <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
+                <controls:SettingRow Title="贡献满时停止" Description="当本周社团贡献已达上限时，自动停止答题任务">
+                    <controls:SettingRow.SettingContent>
+                        <ui:ToggleSwitch 
+                            OnContent="On" OffContent="Off"
+                            IsChecked="{Binding ViewModel.StopWhenContributionFull, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </controls:SettingRow.SettingContent>
+                </controls:SettingRow>
+                <Separator Margin="-18,0" BorderThickness="0,1,0,0" />
                 <controls:SettingRow Title="打开题库目录" Description="点击打开题库文件所在目录">
                     <controls:SettingRow.SettingContent>
                         <ui:Button Command="{Binding ViewModel.OpenQuestionBankCommand}" Content="打开" Icon="{ui:SymbolIcon FolderOpen24}" />
