@@ -1,12 +1,10 @@
-**English | [中文](README_ZH.md)**
-
-# AutoHPMA - Harry Potter: Magic Awakened Automation Tool
+**[English](README_EN.md) | 中文**
 
 <div align=center>
   <h1 align="center">
   <img src="https://github.com/FelixChristian011226/AutoHPMA/blob/master/AutoHPMA/Assets/hpma.png" width=50%>
   <br/>
-  <a href="https://felixchristian011226.github.io/AutoHPMA-Web">AutoHPMA</a>
+  <a href="https://autohpma.top">AutoHPMA</a>
   </h1>
 </div>
 
@@ -18,76 +16,71 @@
   <img src="https://img.shields.io/github/stars/FelixChristian011226/AutoHPMA">
 </div>
 
-**AutoHPMA** is a WPF tool developed in C# for the game *Harry Potter: Magic Awakened (HPMA)*, designed to automate various repetitive gameplay tasks for players.
+<br>
 
-<br/>
+**AutoHPMA** 是一款基于 C# 和 WPF 开发的桌面工具，专为《哈利波特：魔法觉醒》设计，旨在为游戏玩家实现一些简单的自动化功能。
 
-## Features
+<br>
 
-- **Auto Club Quiz**  
-  Fully automated quiz answering powered by a state machine. Supports auto-entering club scene, OCR recognition of questions and options, database matching, and accurate answering. Results are pushed via Windows notifications.
+## 功能
 
-- **Auto Forbidden Forest Exploration**  
-  Automatically completes a specified number of Forbidden Forest runs. Detects player role (leader/member), likes teammates, and handles the entire process without manual input.
+- **自动社团答题**：自动重复参与社团答题活动，OCR识别题目选项，匹配题库作答。
+- **自动禁林探索**：自动完成指定次数禁林探索任务，结算页面自动点赞队友。
+- **自动巫师烹饪**：支持多种菜谱的自动烹饪流程。用户可自定义或添加菜谱配置。
+- **自动甜蜜冒险**：针对限时活动“甜蜜冒险”实现自动化，自动匹配、自动推进回合、自动结算。
 
-- **Auto Wizard Cooking**  
-  Automates multiple recipes. Users can customize or add new recipes, with full automation for dragging ingredients, tools, seasonings, and cooking.
+<br>
 
-- **Auto Sweet Adventure**  
-  Automates the limited-time event "Sweet Adventure", including matchmaking, round progression, and result settlement.
+## 特性
 
-<br/>
+- 日志系统：游戏窗口覆盖日志显示，同时支持本地日志记录
+- 遮罩窗口：可自定义显示的实时遮罩窗口，显示匹配结果
+- 热键绑定：用户可自定义热键，通过快捷键快速启用各项功能
+- 通知功能：支持原生 Windows 通知，实时推送运行结果
+<br>
 
-## Highlights
+## 安装
 
-- Logging System: Overlays logs on the game window and supports local file logging.
-- Overlay Mask Window: Customizable real-time overlay showing match results.
-- Hotkey Binding: Bind custom hotkeys to quickly activate each feature.
-- Notification System: Native Windows notifications for real-time result feedback.
+### 环境要求
 
-<br/>
+- Windows 10 或更高版本
+- .NET 8.0 或以上
 
-## Installation Guide
+### 安装步骤
 
-### Requirements
+1. 前往[Releases](https://github.com/FelixChristian011226/AutoHPMA/releases)获取最新发布版本。
+2. 下载并双击 `AutoHPMA-Setup.exe` 启动安装程序。
+3. 按提示完成安装，可自定义安装路径和开机启动设置。
+4. 若首次启动提示缺少 .NET 运行时，请前往 [Microsoft .NET 官网](https://dotnet.microsoft.com/download) 安装对应版本。
 
-- Windows 10 or later
-- .NET 8.0 or newer
+<br>
 
-### Steps
+## 使用
 
-1. Go to the [Releases](https://github.com/FelixChristian011226/AutoHPMA/releases) page to download the latest version.
-2. Download and run `AutoHPMA-Setup.exe` to start the installer.
-3. Follow the instructions to complete the installation. You can choose the installation path and whether to launch on startup.
-4. If prompted about missing .NET runtime on first launch, download it from the [Microsoft .NET website](https://dotnet.microsoft.com/download).
+1. 启动 `AutoHPMA.exe`
+2. 在主页点击"启动"按钮绑定游戏窗口
+3. 前往"任务"页面开启所需功能
 
-### Launch & Usage
+更详细的功能说明、使用教程、常见问题解答等，请访问 [官方文档](https://autohpma.top)。
 
-1. Run `AutoHPMA.exe`
-2. Configure required parameters as instructed
-3. Click the "Start" button on the main page
-4. Navigate to additional tabs to enable desired features
+<br>
 
-For more detailed usage, tutorials, and FAQs, visit the [official website](https://autohpma-web.vercel.app/).
+## 注意事项
 
-<br/>
+- **仅适配 MuMu 模拟器**，推荐分辨率 1280×720。其余分辨率可能截图异常。
+- 请将游戏画质设置为默认"标准"画质。
+- 脚本运行期间请勿最小化游戏窗口，否则可能导致窗口异常置顶。
+- 本工具为个人开发，仅供学习与交流使用，风险自负。
 
-## Notes
+<br>
 
-- **Only compatible with the MuMu emulator**, with a recommended resolution of 1280×720. 1600×900 may cause screenshot issues.
-- Set game graphics to the default "Standard" quality. Avoid changing graphical parameters that may affect UI layout.
-- Do not minimize the game or click “Show Desktop” during script execution; this may cause overlay issues. If issues arise, try switching windows several times or rebooting the system.
-- This is a personal project for learning and sharing purposes. Use at your own risk.
+## 贡献
 
-<br/>
+欢迎反馈和贡献！如果您有改进 AutoHPMA 的建议或希望贡献代码，请随时在 GitHub 页面上提出问题或创建拉取请求。
 
-## Contribution
+<br>
 
-Feedback and contributions are welcome! If you have suggestions or wish to contribute, feel free to open an issue or submit a pull request on GitHub.
+## 许可证
 
-<br/>
-
-## License
-
-This project is licensed under the [GPL-3.0 License](https://github.com/FelixChristian011226/AutoHPMA/blob/master/LICENSE) – see the LICENSE file for details.
+本项目根据 [GPL-3.0 许可证](https://github.com/FelixChristian011226/AutoHPMA/blob/master/LICENSE) 授权发布 - 有关详情，请参阅 LICENSE 文件。
 
