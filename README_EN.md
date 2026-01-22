@@ -18,7 +18,8 @@
 
 <br>
 
-**AutoHPMA** is a desktop tool built with C# and WPF, designed for *Harry Potter: Magic Awakened* to provide players with simple automation features.
+**AutoHPMA** is a desktop tool built with C# and WPF, designed for *Harry Potter: Magic Awakened* to provide players with simple automation features.  
+
 **Note**: This app only support Chinese version currently. Multi-language support is not yet available. I welcome any developers who would like to help with the development—please get in touch!
 
 <br>
