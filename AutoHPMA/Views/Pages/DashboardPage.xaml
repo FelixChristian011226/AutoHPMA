@@ -37,25 +37,26 @@
                 </Border>
                 <Grid>
                     <StackPanel
-                        Margin="52,0,0,26"
+                        Margin="24,0,0,16"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Bottom"
                         Background="Transparent">
                         <ui:TextBlock FontTypography="Title" Text="AutoHPMA" />
-                        <ui:TextBlock
-                            FontTypography="Subtitle"
-                            Opacity="0.8"
-                            Text="哈利波特 · 魔法觉醒" />
-                        <ui:TextBlock FontTypography="BodyStrong" Opacity="0.6">
-                            <Hyperlink
-                                Command="{Binding ViewModel.GoToWikiUrlCommand}"
+                        <StackPanel Orientation="Horizontal" Cursor="Hand">
+                            <StackPanel.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding ViewModel.GoToWikiUrlCommand}" />
+                            </StackPanel.InputBindings>
+                            <ui:TextBlock 
+                                FontTypography="BodyStrong" 
+                                Opacity="0.8"
                                 Foreground="#B7FFFFFF"
-                                TextDecorations="None">
-                                <Run>点击查看文档</Run>
-                                <Run FontFamily="{StaticResource FluentSystemIcons}" FontWeight="Light">&#xEE7A;</Run>
-                            </Hyperlink>
-
-                        </ui:TextBlock>
+                                Text="点击查看文档" />
+                            <ui:SymbolIcon 
+                                Symbol="Link24" 
+                                FontSize="14"
+                                Margin="4,0,0,0"
+                                Foreground="#B7FFFFFF" />
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Grid>
