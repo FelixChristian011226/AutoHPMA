@@ -97,7 +97,7 @@ namespace AutoHPMA
                 
                 // 注册更新服务
                 services.AddSingleton<IUpdateService, UpdateService>();
-            }).Build();
+        }).Build();
 
         public static ILogger<T> GetLogger<T>()
         {
@@ -108,8 +108,6 @@ namespace AutoHPMA
         {
             get { return _host.Services; }
         }
-
-        private static Services.HotkeyManager? _hotkeyManager;
 
         /// <summary>
         /// Occurs when the application is loading.
@@ -144,19 +142,6 @@ namespace AutoHPMA
                 else
                 {
                     Application.Current.Shutdown();
-                }
-            }
-
-            // 初始化全局热键管理器
-            var mainWindow = _host.Services.GetService(typeof(MainWindow)) as Window;
-            if (mainWindow != null)
-            {
-                if (_hotkeyManager == null)
-                    _hotkeyManager = new Services.HotkeyManager(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
-                var hotkeyVM = _host.Services.GetService(typeof(ViewModels.Pages.HotkeySettingsViewModel)) as ViewModels.Pages.HotkeySettingsViewModel;
-                if (hotkeyVM != null)
-                {
-                    hotkeyVM.SetHotkeyManager(_hotkeyManager);
                 }
             }
         }

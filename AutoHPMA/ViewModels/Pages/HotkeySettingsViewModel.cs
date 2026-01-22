@@ -31,8 +31,7 @@ namespace AutoHPMA.ViewModels.Pages
         [ObservableProperty]
         private bool _isWaitingForKey;
 
-        private HotkeyManager? _hotkeyManager;
-        private Dictionary<string, int> _hotkeyIds = new();
+        private KeyboardHookManager? _keyboardHookManager;
 
         public HotkeySettingsViewModel(AppSettings settings, ILogger<HotkeySettingsViewModel> logger)
         {
@@ -42,11 +41,31 @@ namespace AutoHPMA.ViewModels.Pages
             LoadHotkeyBindings();
         }
 
-        public void SetHotkeyManager(HotkeyManager manager)
+        /// <summary>
+        /// 设置键盘钩子管理器
+        /// </summary>
+        public void SetKeyboardHookManager(KeyboardHookManager manager)
         {
-            _hotkeyManager = manager;
-            _hotkeyManager.HotkeyPressed += (s, e) => ExecuteHotkeyAction(GetActionNameByHotkey(e.Modifiers, e.Key));
+            _keyboardHookManager = manager;
+            _keyboardHookManager.HotkeyPressed += OnHotkeyPressed;
             RegisterAllHotkeys();
+        }
+
+        /// <summary>
+        /// 更新目标窗口句柄（当游戏窗口句柄发生变化时调用）
+        /// </summary>
+        public void UpdateTargetWindow(IntPtr hwnd)
+        {
+            _keyboardHookManager?.SetTargetWindow(hwnd);
+        }
+
+        private void OnHotkeyPressed(object? sender, HotkeyEventArgs e)
+        {
+            // 直接使用 ActionName 执行操作
+            if (!string.IsNullOrEmpty(e.ActionName))
+            {
+                ExecuteHotkeyAction(e.ActionName);
+            }
         }
 
         private void LoadHotkeyBindings()
@@ -122,18 +141,20 @@ namespace AutoHPMA.ViewModels.Pages
 
         private void RegisterAllHotkeys()
         {
-            if (_hotkeyManager == null) return;
-            foreach (var id in _hotkeyIds.Values)
-                _hotkeyManager.UnregisterHotKey(id);
-            _hotkeyIds.Clear();
+            if (_keyboardHookManager == null) return;
+            
+            // 先注销所有热键
+            _keyboardHookManager.UnregisterAll();
+            
+            // 重新注册所有热键
             foreach (var binding in HotkeyBindings)
             {
                 if (binding.Key != Key.None)
                 {
                     try
                     {
-                        int id = _hotkeyManager.RegisterHotKey(binding.Modifiers, binding.Key);
-                        _hotkeyIds[binding.Name] = id;
+                        _keyboardHookManager.RegisterHotkey(binding.Name, binding.Modifiers, binding.Key);
+                        _logger.LogDebug($"Registered hotkey: {binding.Name} -> {binding.Modifiers}+{binding.Key}");
                     }
                     catch (Exception ex)
                     {
@@ -168,12 +189,6 @@ namespace AutoHPMA.ViewModels.Pages
                 else if (p.Equals("Win", StringComparison.OrdinalIgnoreCase)) mod |= ModifierKeys.Windows;
                 else if (Enum.TryParse<Key>(p, out var k)) key = k;
             }
-        }
-
-        private string GetActionNameByHotkey(ModifierKeys mod, Key key)
-        {
-            var binding = HotkeyBindings.FirstOrDefault(b => b.Key == key && b.Modifiers == mod);
-            return binding?.Name ?? string.Empty;
         }
 
         /// <summary>

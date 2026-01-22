@@ -33,7 +33,7 @@ namespace AutoHPMA.Views.Windows
         private readonly ISnackbarService _snackbarService;
         private readonly IUpdateService _updateService;
         private readonly ILogger<MainWindow> _logger;
-        private static Services.HotkeyManager? _hotkeyManager;
+        private static KeyboardHookManager? _keyboardHookManager;
 
         public MainWindowViewModel ViewModel { get; }
 
@@ -111,12 +111,27 @@ namespace AutoHPMA.Views.Windows
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (_hotkeyManager == null)
-                _hotkeyManager = new Services.HotkeyManager(new System.Windows.Interop.WindowInteropHelper(this).Handle);
-            var hotkeyVM = App.Services.GetService(typeof(ViewModels.Pages.HotkeySettingsViewModel)) as ViewModels.Pages.HotkeySettingsViewModel;
+            // 初始化键盘钩子管理器
+            if (_keyboardHookManager == null)
+            {
+                _keyboardHookManager = new KeyboardHookManager();
+                // 设置初始目标窗口
+                _keyboardHookManager.SetTargetWindow(AppContextService.Instance.DisplayHwnd);
+                
+                // 监听 DisplayHwnd 变化，动态更新目标窗口
+                AppContextService.Instance.PropertyChanged += (s, args) =>
+                {
+                    if (args.PropertyName == nameof(AppContextService.DisplayHwnd))
+                    {
+                        _keyboardHookManager.SetTargetWindow(AppContextService.Instance.DisplayHwnd);
+                    }
+                };
+            }
+            
+            var hotkeyVM = App.Services.GetService(typeof(HotkeySettingsViewModel)) as HotkeySettingsViewModel;
             if (hotkeyVM != null)
             {
-                hotkeyVM.SetHotkeyManager(_hotkeyManager);
+                hotkeyVM.SetKeyboardHookManager(_keyboardHookManager);
             }
 
             // 启动时自动检查更新
